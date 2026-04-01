@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RevRec Billing — Synder Internal App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .mono { font-family: 'Courier New', Courier, monospace; }
+    
+    /* Progress bar animation */
+    .progress-fill {
+      transition: width 600ms ease-out;
+      width: 0%;
+    }
+    .progress-fill.animate {
+      /* width set via JS */
+    }
+
+    /* State transitions */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Fade transition */
+    .fade-in {
+      animation: fadeIn 200ms ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open {
+      display: flex;
+      animation: fadeIn 150ms ease-out;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: -80px;
+      right: 24px;
+      z-index: 200;
+      transition: top 300ms ease-out;
+    }
+    .toast.show { top: 24px; }
+
+    /* Table row expand */
+    .expand-row { display: none; }
+    .expand-row.open { display: table-row; }
+
+    /* Sidebar */
+    .nav-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; border-radius: 6px;
+      cursor: pointer; color: #374151; font-size: 14px;
+      transition: all 150ms;
+    }
+    .nav-item:hover { background: #f3f4f6; }
+    .nav-item.active { background: #eff6ff; color: #2563eb; font-weight: 500; }
+
+    /* Blurred overlay for paused schedule */
+    .blur-overlay-container { position: relative; }
+    .blur-overlay-content { filter: blur(4px); user-select: none; pointer-events: none; }
+    .blur-overlay-message {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.7);
+    }
+
+    /* Demo controls */
+    #demo-controls {
+      position: fixed; bottom: 24px; right: 24px;
+      z-index: 50;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+    /* Plan card */
+    .plan-card { cursor: pointer; transition: all 150ms; }
+    .plan-card:hover:not(.disabled):not(.current) { border-color: #2563eb; box-shadow: 0 0 0 3px #dbeafe; }
+    .plan-card.selected { border-color: #2563eb; box-shadow: 0 0 0 3px #dbeafe; }
+    .plan-card.disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Toggle switch */
+    .toggle-switch {
+      position: relative; display: inline-block;
+      width: 44px; height: 24px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: #d1d5db; border-radius: 24px;
+      cursor: pointer; transition: 200ms;
+    }
+    .toggle-slider:before {
+      content: ''; position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; bottom: 3px;
+      background: white; border-radius: 50%;
+      transition: 200ms;
+    }
+    input:checked + .toggle-slider { background: #2563eb; }
+    input:checked + .toggle-slider:before { transform: translateX(20px); }
+
+    /* Badge */
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 9999px;
+      font-size: 12px; font-weight: 500;
+    }
+
+    /* Dropdown */
+    select {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 8px center;
+      background-repeat: no-repeat;
+      background-size: 16px;
+      padding-right: 32px;
+      appearance: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+
+<!-- Layout -->
+<div class="flex h-screen overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-56 bg-white border-r border-gray-200 flex flex-col shrink-0">
+    <!-- Logo -->
+    <div class="h-14 flex items-center px-4 border-b border-gray-200">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" fill="white" fill-opacity="0.9"/>
+          </svg>
+        </div>
+        <span class="font-semibold text-gray-900 text-sm">Synder</span>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 p-3 overflow-y-auto">
+      <div class="mb-4">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-1">User Screens</p>
+        <div class="nav-item active" onclick="showScreen('subscriptions')" id="nav-subscriptions">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+          Subscriptions
+        </div>
+        <div class="nav-item" onclick="showScreen('sub-detail')" id="nav-sub-detail">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Sub Detail (Paused)
+        </div>
+        <div class="nav-item" onclick="showScreen('manage-plan')" id="nav-manage-plan">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+          </svg>
+          Manage Plan
+        </div>
+      </div>
+      <div>
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-1">Admin Screens</p>
+        <div class="nav-item" onclick="showScreen('billing-history')" id="nav-billing-history">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+          </svg>
+          Billing History
+        </div>
+        <div class="nav-item" onclick="showScreen('plan-assignment')" id="nav-plan-assignment">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          Plan Assignment
+        </div>
+      </div>
+    </nav>
+
+    <!-- User -->
+    <div class="p-3 border-t border-gray-200">
+      <div class="flex items-center gap-2 px-2 py-1.5 rounded-lg">
+        <div class="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-semibold">AC</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-medium text-gray-900 truncate">Acme Corp</p>
+          <p class="text-xs text-gray-400 truncate">Pro Plan</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 overflow-y-auto">
+
+    <!-- ===== SCREEN 1: SUBSCRIPTIONS ===== -->
+    <div class="screen active fade-in" id="screen-subscriptions">
+      <div class="max-w-6xl mx-auto px-6 py-6">
+        <!-- Page header -->
+        <div class="mb-6">
+          <h1 class="text-xl font-semibold text-gray-900">Revenue Recognition Subscriptions</h1>
+          <p class="text-sm text-gray-500 mt-0.5">Track and manage your billable subscriptions</p>
+        </div>
+
+        <!-- Usage Meter Card -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-4" id="usage-meter-card">
+          <!-- Normal & Warning state header -->
+          <div id="meter-header-normal" class="">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <p class="text-sm font-medium text-gray-900" id="meter-label">1,847 / 2,500 subscriptions used</p>
+                <p class="text-xs text-gray-500 mt-0.5">Starter plan • Mar 15 – Apr 14, 2026</p>
+              </div>
+              <a href="#" onclick="showScreen('manage-plan'); return false;" class="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                Manage Plan
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+            <!-- Progress bar -->
+            <div class="w-full bg-gray-100 rounded-full h-2.5 mb-1 overflow-hidden" style="position:relative;">
+              <div class="h-2.5 rounded-full progress-fill" id="progress-bar" style="background:#16a34a; width:0%"></div>
+            </div>
+            <div class="flex justify-between text-xs text-gray-400">
+              <span id="used-label">1,847 used</span>
+              <span id="cap-label">2,500 capacity</span>
+            </div>
+          </div>
+
+          <!-- Over-limit state header (hidden by default) -->
+          <div id="meter-header-over" class="hidden">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-gray-900">2,547 / 2,500 subscriptions used</p>
+                <p class="text-xs text-gray-500 mt-0.5">Starter plan • Mar 15 – Apr 14, 2026</p>
+              </div>
+              <button onclick="openModal('upgrade-modal')" class="ml-4 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
+                Upgrade Now
+              </button>
+              <a href="#" onclick="showScreen('manage-plan'); return false;" class="ml-3 text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                Manage Plan
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-2.5 mb-1 overflow-hidden" style="position:relative;">
+              <div class="h-2.5 rounded-full" style="background:#dc2626; width:100%"></div>
+            </div>
+            <div class="flex justify-between text-xs text-gray-400">
+              <span>2,547 used</span>
+              <span>2,500 capacity</span>
+            </div>
+          </div>
+
+          <!-- Warning banner -->
+          <div id="warning-banner" class="hidden mt-3 flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-lg px-3.5 py-2.5">
+            <span class="text-amber-600 mt-0.5">⚠️</span>
+            <div class="flex-1">
+              <p class="text-sm text-amber-800">You're approaching your plan limit. Consider upgrading to avoid paused subscriptions.</p>
+            </div>
+            <a href="#" onclick="showScreen('manage-plan'); return false;" class="text-sm text-amber-700 font-medium hover:underline whitespace-nowrap">Upgrade Plan →</a>
+          </div>
+
+          <!-- Over-limit banner -->
+          <div id="overlimit-banner" class="hidden mt-3 flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-lg px-3.5 py-2.5">
+            <span class="text-red-600 mt-0.5">🔴</span>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-red-800">47 subscriptions paused — plan limit exceeded.</p>
+              <p class="text-sm text-red-700">RevRec journal entries are not being generated for paused subscriptions.</p>
+              <p class="text-xs text-gray-600 mt-1">Your Synder Sync continues to work normally for all subscriptions.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+          <div class="px-5 py-3 border-b border-gray-100 flex items-center gap-3">
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-500">Status</label>
+              <select id="filter-status" onchange="filterTable()" class="text-sm border border-gray-200 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="all">All</option>
+                <option value="Ready">Ready</option>
+                <option value="Paused">Paused</option>
+                <option value="Trial">Trial</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-gray-500">Billable</label>
+              <select id="filter-billable" onchange="filterTable()" class="text-sm border border-gray-200 rounded-md px-2.5 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="all">All</option>
+                <option value="true">Billable</option>
+                <option value="false">Not Billable</option>
+              </select>
+            </div>
+            <div class="flex-1 flex items-center">
+              <div class="relative">
+                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/></svg>
+                <input type="text" id="search-box" oninput="filterTable()" placeholder="Search subscriptions..." class="pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-sm bg-white text-gray-700 w-60 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+            <span class="text-xs text-gray-400 ml-auto" id="row-count">19 subscriptions</span>
+          </div>
+
+          <!-- Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                  <th class="text-left px-5 py-3 font-medium">Name</th>
+                  <th class="text-left px-5 py-3 font-medium">Customer</th>
+                  <th class="text-left px-3 py-3 font-medium">Status</th>
+                  <th class="text-left px-3 py-3 font-medium">Billable</th>
+                  <th class="text-right px-3 py-3 font-medium">Monthly Rev</th>
+                  <th class="text-left px-3 py-3 font-medium">Recognition Period</th>
+                  <th class="text-left px-3 py-3 font-medium">Next JE Date</th>
+                </tr>
+              </thead>
+              <tbody id="subs-table-body">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN 2: SUBSCRIPTION DETAIL (PAUSED) ===== -->
+    <div class="screen" id="screen-sub-detail">
+      <div class="max-w-4xl mx-auto px-6 py-6">
+        <!-- Breadcrumb -->
+        <div class="flex items-center gap-2 text-sm text-gray-500 mb-4">
+          <span class="cursor-pointer hover:text-blue-600" onclick="showScreen('subscriptions')">Subscriptions</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <span class="text-gray-900 font-medium">Growth Monthly</span>
+        </div>
+
+        <!-- Header -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-3 mb-1">
+                <h1 class="text-xl font-semibold text-gray-900">Growth Monthly</h1>
+                <span class="badge bg-red-100 text-red-700">Paused</span>
+              </div>
+              <p class="text-sm text-gray-500">PayFlow Pro</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-500">Billable:</span>
+              <span class="badge bg-green-100 text-green-700">✓ Yes</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paused Notice -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-4">
+          <div class="flex gap-3">
+            <span class="text-2xl mt-0.5">⚠️</span>
+            <div class="flex-1">
+              <h3 class="font-semibold text-amber-900 mb-1">This subscription is paused</h3>
+              <p class="text-sm text-amber-800 mb-0.5">Your RevRec plan limit has been reached. Revenue recognition journal entries are not being generated.</p>
+              <p class="text-sm text-amber-700">Your Synder Sync data continues to flow normally.</p>
+              <div class="mt-3">
+                <button onclick="showScreen('manage-plan')" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                  Upgrade Plan →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recognition Schedule (blurred) -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-4">
+          <h2 class="font-semibold text-gray-900 mb-4">Recognition Schedule</h2>
+          <div class="blur-overlay-container">
+            <div class="blur-overlay-content">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-xs text-gray-500 uppercase border-b border-gray-100">
+                    <th class="text-left py-2">Month</th>
+                    <th class="text-right py-2">Amount</th>
+                    <th class="text-left py-2 pl-4">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b border-gray-50"><td class="py-2.5 text-gray-700">March 2026</td><td class="py-2.5 text-right mono text-gray-700">$149.00</td><td class="py-2.5 pl-4"><span class="badge bg-gray-100 text-gray-500">Paused</span></td></tr>
+                  <tr class="border-b border-gray-50"><td class="py-2.5 text-gray-700">April 2026</td><td class="py-2.5 text-right mono text-gray-700">$149.00</td><td class="py-2.5 pl-4"><span class="badge bg-gray-100 text-gray-500">Paused</span></td></tr>
+                  <tr class="border-b border-gray-50"><td class="py-2.5 text-gray-700">May 2026</td><td class="py-2.5 text-right mono text-gray-700">$149.00</td><td class="py-2.5 pl-4"><span class="badge bg-gray-100 text-gray-500">Paused</span></td></tr>
+                  <tr class="border-b border-gray-50"><td class="py-2.5 text-gray-700">June 2026</td><td class="py-2.5 text-right mono text-gray-700">$149.00</td><td class="py-2.5 pl-4"><span class="badge bg-gray-100 text-gray-500">Paused</span></td></tr>
+                  <tr><td class="py-2.5 text-gray-700">July 2026</td><td class="py-2.5 text-right mono text-gray-700">$149.00</td><td class="py-2.5 pl-4"><span class="badge bg-gray-100 text-gray-500">Paused</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="blur-overlay-message">
+              <div class="bg-white border border-gray-200 rounded-xl px-6 py-4 text-center shadow-lg max-w-sm">
+                <p class="font-semibold text-gray-900 mb-1">Recognition schedule is paused</p>
+                <p class="text-sm text-gray-600 mb-3">Upgrade your plan to resume. Journal entries will be generated retroactively for the paused period.</p>
+                <button onclick="showScreen('manage-plan')" class="px-4 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">Upgrade Plan →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subscription Info -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <h2 class="font-semibold text-gray-900 mb-4">Subscription Details</h2>
+          <div class="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+            <div><span class="text-gray-500">Integration</span></div><div class="flex items-center gap-2"><div class="w-4 h-4 bg-violet-500 rounded-full"></div><span class="font-medium">Stripe</span></div>
+            <div><span class="text-gray-500">Subscription ID</span></div><div><span class="mono text-xs bg-gray-100 px-2 py-0.5 rounded">sub_1PbK89c1234</span></div>
+            <div><span class="text-gray-500">Customer</span></div><div class="font-medium">PayFlow Pro</div>
+            <div><span class="text-gray-500">Amount</span></div><div class="mono font-medium">$149.00/mo</div>
+            <div><span class="text-gray-500">Start Date</span></div><div>Mar 1, 2026</div>
+            <div><span class="text-gray-500">Status in Stripe</span></div><div><span class="badge bg-green-100 text-green-700">Active</span></div>
+            <div><span class="text-gray-500">Recognition Period</span></div><div>Mar 2026 – Feb 2027</div>
+            <div><span class="text-gray-500">Synder Sync</span></div><div class="flex items-center gap-1.5"><span class="text-green-500">✅</span><span>Active — data still flowing</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN 3: MANAGE PLAN ===== -->
+    <div class="screen" id="screen-manage-plan">
+      <div class="max-w-5xl mx-auto px-6 py-6">
+        <div class="mb-6">
+          <h1 class="text-xl font-semibold text-gray-900">Manage RevRec Plan</h1>
+          <p class="text-sm text-gray-500 mt-0.5">View your current plan and upgrade or downgrade at any time</p>
+        </div>
+
+        <!-- Current Plan Card -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-xs text-gray-500 uppercase tracking-wider font-medium mb-1">Current Plan</p>
+              <div class="flex items-center gap-3">
+                <h2 class="text-2xl font-bold text-gray-900">Starter</h2>
+                <span class="badge bg-blue-100 text-blue-700">Active</span>
+              </div>
+              <div class="mt-3 flex flex-wrap gap-4 text-sm text-gray-600">
+                <div><span class="text-gray-400">Capacity:</span> <span class="font-medium mono">2,500</span> subscriptions</div>
+                <div><span class="text-gray-400">Price:</span> <span class="font-medium mono">$149/mo</span></div>
+                <div><span class="text-gray-400">Billing period:</span> Mar 15 – Apr 14, 2026</div>
+                <div><span class="text-gray-400">Next renewal:</span> Apr 15, 2026</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-3xl font-bold text-gray-900 mono">$149</p>
+              <p class="text-sm text-gray-400">/month</p>
+            </div>
+          </div>
+
+          <!-- Auto-upgrade toggle -->
+          <div class="mt-4 pt-4 border-t border-gray-100">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-900">Auto-upgrade when plan limit is reached</p>
+                <p class="text-xs text-gray-500 mt-0.5" id="auto-upgrade-desc">New subscriptions will be paused if you exceed your capacity. You can upgrade manually anytime.</p>
+              </div>
+              <label class="toggle-switch ml-4">
+                <input type="checkbox" id="auto-upgrade-toggle" onchange="toggleAutoUpgrade()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upgrade Section -->
+        <div class="mb-6">
+          <h2 class="text-base font-semibold text-gray-900 mb-3">Upgrade Your Plan</h2>
+          <div class="grid grid-cols-3 gap-3" id="plan-cards-grid">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+
+        <!-- Downgrade Section -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <h2 class="text-base font-semibold text-gray-900 mb-1">Downgrade</h2>
+          <p class="text-sm text-gray-500 mb-3">Reduce your plan capacity. Subscriptions above the new limit will be paused.</p>
+          <button onclick="openModal('downgrade-modal')" class="text-sm text-gray-600 border border-gray-200 rounded-lg px-4 py-2 hover:bg-gray-50 transition-colors">
+            Downgrade to a lower plan →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN 4: BILLING HISTORY (ADMIN) ===== -->
+    <div class="screen" id="screen-billing-history">
+      <div class="max-w-5xl mx-auto px-6 py-6">
+        <!-- Admin badge -->
+        <div class="flex items-center gap-2 mb-4">
+          <span class="badge bg-violet-100 text-violet-700 text-xs">Admin Panel</span>
+          <span class="text-xs text-gray-400">CSM / Success Team View</span>
+        </div>
+
+        <!-- Org header -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-4">
+          <div class="flex items-start justify-between">
+            <div>
+              <h1 class="text-xl font-semibold text-gray-900">Acme Corp</h1>
+              <p class="text-sm text-gray-500 mono mt-0.5">org_abc123</p>
+            </div>
+            <div class="flex gap-6 text-sm">
+              <div class="text-right"><p class="text-gray-400 text-xs">Main Plan</p><p class="font-medium">Pro</p></div>
+              <div class="text-right"><p class="text-gray-400 text-xs">RevRec Plan</p><p class="font-medium">Starter (2,500 subs)</p></div>
+              <div class="text-right"><p class="text-gray-400 text-xs">Current Billable</p><p class="font-semibold mono text-blue-600">1,847</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="grid grid-cols-4 gap-3 mb-4">
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <p class="text-xs text-gray-500">Periods Tracked</p>
+            <p class="text-2xl font-bold text-gray-900 mono mt-1">7</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <p class="text-xs text-gray-500">Avg Billable Count</p>
+            <p class="text-2xl font-bold text-gray-900 mono mt-1">1,498</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <p class="text-xs text-gray-500">Growth Trend</p>
+            <p class="text-2xl font-bold text-green-600 mono mt-1">+14%</p>
+            <p class="text-xs text-gray-400">MoM</p>
+          </div>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <p class="text-xs text-gray-500">Total Billed</p>
+            <p class="text-2xl font-bold text-gray-900 mono mt-1">$596</p>
+          </div>
+        </div>
+
+        <!-- Billing history table -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+          <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+            <h2 class="font-semibold text-gray-900">Billing History</h2>
+            <div class="flex gap-2">
+              <button class="text-sm text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors flex items-center gap-1.5">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Export CSV
+              </button>
+              <button class="text-sm text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition-colors flex items-center gap-1.5">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Email Report
+              </button>
+            </div>
+          </div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                <th class="text-left px-5 py-3 font-medium">Period</th>
+                <th class="text-right px-3 py-3 font-medium">Peak Count</th>
+                <th class="text-right px-3 py-3 font-medium">End Count</th>
+                <th class="text-left px-3 py-3 font-medium">Plan Tier</th>
+                <th class="text-right px-5 py-3 font-medium">Charge</th>
+                <th class="px-3 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Row 1 - Current -->
+              <tr class="border-b border-gray-50 bg-blue-50/30">
+                <td class="px-5 py-3">
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium text-gray-900">Mar 15 – Apr 14, 2026</span>
+                    <span class="badge bg-blue-100 text-blue-700 text-xs">Current</span>
+                  </div>
+                </td>
+                <td class="px-3 py-3 text-right mono font-medium">1,847</td>
+                <td class="px-3 py-3 text-right mono text-gray-400">—</td>
+                <td class="px-3 py-3"><span class="badge bg-gray-100 text-gray-700">Starter</span></td>
+                <td class="px-5 py-3 text-right mono font-medium">$149.00</td>
+                <td class="px-3 py-3 text-right"><button onclick="toggleExpand('detail-0')" class="text-xs text-blue-600 hover:underline">See details</button></td>
+              </tr>
+              <tr class="expand-row" id="detail-0"><td colspan="6" class="px-5 py-3 bg-blue-50/20"><div class="text-xs text-gray-600 space-y-1" id="detail-0-content"></div></td></tr>
+
+              <!-- Row 2 -->
+              <tr class="border-b border-gray-50">
+                <td class="px-5 py-3 font-medium text-gray-900">Feb 15 – Mar 14, 2026</td>
+                <td class="px-3 py-3 text-right mono">1,792</td>
+                <td class="px-3 py-3 text-right mono">1,803</td>
+                <td class="px-3 py-3"><span class="badge bg-gray-100 text-gray-700">Starter</span></td>
+                <td class="px-5 py-3 text-right mono">$149.00</td>
+                <td class="px-3 py-3 text-right"><button onclick="toggleExpand('detail-1')" class="text-xs text-blue-600 hover:underline">See details</button></td>
+              </tr>
+              <tr class="expand-row" id="detail-1"><td colspan="6" class="px-5 py-3 bg-gray-50"><div class="text-xs text-gray-600 space-y-1" id="detail-1-content"></div></td></tr>
+
+              <!-- Row 3 -->
+              <tr class="border-b border-gray-50">
+                <td class="px-5 py-3 font-medium text-gray-900">Jan 15 – Feb 14, 2026</td>
+                <td class="px-3 py-3 text-right mono">1,654</td>
+                <td class="px-3 py-3 text-right mono">1,710</td>
+                <td class="px-3 py-3"><span class="badge bg-gray-100 text-gray-700">Starter</span></td>
+                <td class="px-5 py-3 text-right mono">$149.00</td>
+                <td class="px-3 py-3 text-right"><button onclick="toggleExpand('detail-2')" class="text-xs text-blue-600 hover:underline">See details</button></td>
+              </tr>
+              <tr class="expand-row" id="detail-2"><td colspan="6" class="px-5 py-3 bg-gray-50"><div class="text-xs text-gray-600"></div></td></tr>
+
+              <!-- Row 4 -->
+              <tr class="border-b border-gray-50">
+                <td class="px-5 py-3 font-medium text-gray-900">Dec 15, 2025 – Jan 14, 2026</td>
+                <td class="px-3 py-3 text-right mono">1,580</td>
+                <td class="px-3 py-3 text-right mono">1,612</td>
+                <td class="px-3 py-3"><span class="badge bg-gray-100 text-gray-700">Starter</span></td>
+                <td class="px-5 py-3 text-right mono">$149.00</td>
+                <td class="px-3 py-3 text-right"><button onclick="toggleExpand('detail-3')" class="text-xs text-blue-600 hover:underline">See details</button></td>
+              </tr>
+              <tr class="expand-row" id="detail-3"><td colspan="6" class="px-5 py-3 bg-gray-50"><div class="text-xs text-gray-600"></div></td></tr>
+
+              <!-- Row 5 -->
+              <tr class="border-b border-gray-50">
+                <td class="px-5 py-3 font-medium text-gray-900">Nov 15 – Dec 14, 2025</td>
+                <td class="px-3 py-3 text-right mono">1,423</td>
+                <td class="px-3 py-3 text-right mono">1,501</td>
+                <td class="px-3 py-3"><span class="badge bg-gray-100 text-gray-700">Free</span></td>
+                <td class="px-5 py-3 text-right mono text-gray-400">$0.00</td>
+                <td class="px-3 py-3 text-right"><button onclick="toggleExpand('detail-4')" class="text-xs text-blue-600 hover:underline">See details</button></td>
+              </tr>
+              <tr class="expand-row" id="detail-4"><td colspan="6" class="px-5 py-3 bg-gray-50"><div class="text-xs text-gray-600"></div></td></tr>
+
+              <!-- Row 6 -->
+              <tr class="border-b border-gray-50">
+                <td class="px-5 py-3 font-medium text-gray-900">Oct 15 – Nov 14, 2025</td>
+                <td class="px-3 py-3 text-right mono">1,102</td>
+                <td class="px-3 py-3 text-right mono">1,340</td>
+                <td class="px-3 py-3"><span class="badge bg-gray-100 text-gray-700">Free</span></td>
+                <td class="px-5 py-3 text-right mono text-gray-400">$0.00</td>
+                <td class="px-3 py-3 text-right"><button onclick="toggleExpand('detail-5')" class="text-xs text-blue-600 hover:underline">See details</button></td>
+              </tr>
+              <tr class="expand-row" id="detail-5"><td colspan="6" class="px-5 py-3 bg-gray-50"><div class="text-xs text-gray-600"></div></td></tr>
+
+              <!-- Row 7 -->
+              <tr>
+                <td class="px-5 py-3 font-medium text-gray-900">Sep 15 – Oct 14, 2025</td>
+                <td class="px-3 py-3 text-right mono">890</td>
+                <td class="px-3 py-3 text-right mono">1,020</td>
+                <td class="px-3 py-3"><span class="badge bg-gray-100 text-gray-700">Free</span></td>
+                <td class="px-5 py-3 text-right mono text-gray-400">$0.00</td>
+                <td class="px-3 py-3 text-right"><button onclick="toggleExpand('detail-6')" class="text-xs text-blue-600 hover:underline">See details</button></td>
+              </tr>
+              <tr class="expand-row" id="detail-6"><td colspan="6" class="px-5 py-3 bg-gray-50"><div class="text-xs text-gray-600"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SCREEN 5: PLAN ASSIGNMENT (ADMIN) ===== -->
+    <div class="screen" id="screen-plan-assignment">
+      <div class="max-w-3xl mx-auto px-6 py-6">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="badge bg-violet-100 text-violet-700 text-xs">Admin Panel</span>
+          <span class="text-xs text-gray-400">CSM / Success Team View</span>
+        </div>
+
+        <div class="mb-6">
+          <h1 class="text-xl font-semibold text-gray-900">Plan Assignment</h1>
+          <p class="text-sm text-gray-500 mt-0.5">Assign RevRec plans to organizations</p>
+        </div>
+
+        <!-- Org info -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-4">
+          <div class="grid grid-cols-3 gap-4 text-sm">
+            <div>
+              <p class="text-xs text-gray-400 mb-1">Organization</p>
+              <p class="font-semibold text-gray-900">Acme Corp</p>
+              <p class="text-xs text-gray-400 mono mt-0.5">org_abc123</p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">Main Synder Plan</p>
+              <p class="font-medium"><span class="badge bg-blue-100 text-blue-700">Pro</span></p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">Current Billable Subs</p>
+              <p class="font-semibold mono text-blue-600">1,847</p>
+            </div>
+          </div>
+          <div class="mt-3 pt-3 border-t border-gray-100">
+            <p class="text-xs text-gray-400 mb-1">Current RevRec Plan</p>
+            <p class="text-sm font-medium">Starter <span class="text-gray-400">(2,500 subscriptions)</span></p>
+          </div>
+        </div>
+
+        <!-- Plan Selector -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-4">
+          <h2 class="font-semibold text-gray-900 mb-4">Select Plan</h2>
+          <div class="space-y-2" id="admin-plan-radios">
+            <!-- Generated by JS -->
+          </div>
+
+          <!-- Warning -->
+          <div id="plan-warning" class="hidden mt-3 flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-lg px-3.5 py-2.5">
+            <span class="text-amber-600">⚠️</span>
+            <p class="text-sm text-amber-800" id="plan-warning-text"></p>
+          </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-4">
+          <h2 class="font-semibold text-gray-900 mb-4">Settings</h2>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-900">Auto-upgrade</p>
+                <p class="text-xs text-gray-500">Automatically upgrade when limit is reached</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="flex-1">
+                <label class="text-sm font-medium text-gray-900 block mb-1">Billing Cycle</label>
+                <select class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option>Monthly</option>
+                  <option>Yearly</option>
+                </select>
+              </div>
+              <div class="flex-1">
+                <label class="text-sm font-medium text-gray-900 block mb-1">Currency</label>
+                <select class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option>USD</option>
+                  <option>EUR</option>
+                  <option>GBP</option>
+                  <option>CAD</option>
+                  <option>AUD</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-3">
+          <button onclick="openModal('apply-plan-modal')" class="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-sm">
+            Apply Plan
+          </button>
+          <button onclick="openModal('invoice-modal')" class="px-5 py-2.5 border border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm">
+            Send Invoice for Historical Periods
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Demo Controls -->
+<div id="demo-controls" class="hidden">
+  <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Demo Controls</p>
+  <div class="flex gap-2">
+    <button onclick="setState('normal')" id="btn-normal" class="px-3 py-1.5 text-xs rounded-md border font-medium transition-all bg-green-50 border-green-300 text-green-700">Normal</button>
+    <button onclick="setState('warning')" id="btn-warning" class="px-3 py-1.5 text-xs rounded-md border font-medium transition-all border-gray-200 text-gray-600 bg-white hover:bg-gray-50">Warning</button>
+    <button onclick="setState('overLimit')" id="btn-over" class="px-3 py-1.5 text-xs rounded-md border font-medium transition-all border-gray-200 text-gray-600 bg-white hover:bg-gray-50">Over Limit</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="bg-gray-900 text-white text-sm px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5">
+    <span id="toast-icon">✓</span>
+    <span id="toast-text">Setting updated</span>
+  </div>
+</div>
+
+<!-- Modal: Upgrade Confirmation -->
+<div class="modal-overlay" id="upgrade-modal" onclick="closeModal('upgrade-modal')">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4" onclick="event.stopPropagation()">
+    <h2 class="text-lg font-semibold text-gray-900 mb-1">Upgrade to Growth plan?</h2>
+    <p class="text-sm text-gray-600 mb-4">You'll be charged $349/mo starting from your next billing date.</p>
+    <div class="bg-gray-50 rounded-xl p-4 mb-4 space-y-2 text-sm">
+      <div class="flex justify-between"><span class="text-gray-600">New monthly price</span><span class="mono font-medium">$349.00/mo</span></div>
+      <div class="flex justify-between"><span class="text-gray-600">Next billing date</span><span>Apr 15, 2026</span></div>
+      <div class="flex justify-between border-t border-gray-200 pt-2 mt-2"><span class="text-gray-600">Prorated charge (remaining period)</span><span class="mono font-medium">$133.00</span></div>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeModal('upgrade-modal')" class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors text-sm">Cancel</button>
+      <button onclick="confirmUpgrade()" class="flex-1 px-4 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors text-sm">Confirm Upgrade</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Downgrade Warning -->
+<div class="modal-overlay" id="downgrade-modal" onclick="closeModal('downgrade-modal')">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="text-xl">⚠️</span>
+      <h2 class="text-lg font-semibold text-gray-900">Downgrade warning</h2>
+    </div>
+    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm text-amber-800">
+      <p class="font-medium mb-1">Downgrading to Free will pause approximately 847 subscriptions.</p>
+      <p>Your current billable count (1,847) exceeds the Free plan limit (1,000).</p>
+    </div>
+    <div class="mb-4 text-sm text-gray-700 space-y-1.5">
+      <p>Paused subscriptions:</p>
+      <p class="flex items-center gap-2"><span class="text-red-500">❌</span> Will NOT have RevRec journal entries generated</p>
+      <p class="flex items-center gap-2"><span class="text-green-500">✅</span> Will still sync data via Synder normally</p>
+      <p class="flex items-center gap-2"><span class="text-green-500">✅</span> Will be restored automatically if you upgrade later</p>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeModal('downgrade-modal')" class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors text-sm">Cancel</button>
+      <button onclick="confirmDowngrade()" class="flex-1 px-4 py-2.5 bg-red-600 text-white font-medium rounded-xl hover:bg-red-700 transition-colors text-sm">Yes, downgrade</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Apply Plan (Admin) -->
+<div class="modal-overlay" id="apply-plan-modal" onclick="closeModal('apply-plan-modal')">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4" onclick="event.stopPropagation()">
+    <h2 class="text-lg font-semibold text-gray-900 mb-1">Assign Growth plan?</h2>
+    <p class="text-sm text-gray-600 mb-4">This will assign the Growth plan ($349/mo) to Acme Corp. This will not reset the billing period.</p>
+    <div class="bg-gray-50 rounded-xl p-4 mb-4 text-sm space-y-1.5">
+      <div class="flex justify-between"><span class="text-gray-600">Plan</span><span class="font-medium">Growth (5,000 subs)</span></div>
+      <div class="flex justify-between"><span class="text-gray-600">Price</span><span class="mono font-medium">$349/mo</span></div>
+      <div class="flex justify-between"><span class="text-gray-600">Org</span><span>Acme Corp (org_abc123)</span></div>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeModal('apply-plan-modal')" class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors text-sm">Cancel</button>
+      <button onclick="applyPlan()" class="flex-1 px-4 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors text-sm">Apply Plan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Send Invoice -->
+<div class="modal-overlay" id="invoice-modal" onclick="closeModal('invoice-modal')">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4" onclick="event.stopPropagation()">
+    <h2 class="text-lg font-semibold text-gray-900 mb-1">Send Invoice for Historical Periods</h2>
+    <p class="text-sm text-gray-600 mb-4">Select a date range for historical billing.</p>
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">From</label>
+        <input type="date" value="2025-09-15" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">To</label>
+        <input type="date" value="2025-12-14" class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+    </div>
+    <div class="bg-blue-50 rounded-xl p-3 mb-4 text-sm text-blue-800">
+      Estimated invoice: <span class="font-semibold mono">$0.00</span> (Free tier periods selected)
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeModal('invoice-modal')" class="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors text-sm">Cancel</button>
+      <button onclick="closeModal('invoice-modal'); showToast('Invoice sent to Acme Corp')" class="flex-1 px-4 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors text-sm">Send Invoice</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const PLANS = [
+  { id: 'free', name: 'Free', capacity: 1000, monthly: 0 },
+  { id: 'starter', name: 'Starter', capacity: 2500, monthly: 149 },
+  { id: 'growth', name: 'Growth', capacity: 5000, monthly: 349 },
+  { id: 'business', name: 'Business', capacity: 10000, monthly: 649 },
+  { id: 'professional', name: 'Professional', capacity: 20000, monthly: 1199 },
+  { id: 'scale', name: 'Scale', capacity: 50000, monthly: 2499 },
+];
+
+const SUBSCRIPTIONS = [
+  { id: 'sub_001', name: 'Pro Monthly', customer: 'TechFlow Inc', status: 'Ready', billable: true, revenue: 99, period: 'Jan 2026 – Dec 2026', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_002', name: 'Enterprise Annual', customer: 'DataSync Corp', status: 'Ready', billable: true, revenue: 499, period: 'Mar 2026 – Feb 2027', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_003', name: 'Starter Monthly', customer: 'CloudBase LLC', status: 'Ready', billable: true, revenue: 29, period: 'Feb 2026 – Jan 2027', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_004', name: 'Business Quarterly', customer: 'Acme Analytics', status: 'Ready', billable: true, revenue: 199, period: 'Jan 2026 – Dec 2026', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_005', name: 'Growth Monthly', customer: 'ScaleUp Ltd', status: 'Ready', billable: true, revenue: 149, period: 'Nov 2025 – Oct 2026', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_006', name: 'Pro Annual', customer: 'BookKeep Pro', status: 'Ready', billable: true, revenue: 79, period: 'Apr 2025 – Mar 2026', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_007', name: 'Enterprise Monthly', customer: 'FinTrack Systems', status: 'Ready', billable: true, revenue: 599, period: 'Dec 2025 – Nov 2026', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_008', name: 'Starter Annual', customer: 'QuickSync Co', status: 'Ready', billable: true, revenue: 19, period: 'Jun 2025 – May 2026', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_009', name: 'Business Monthly', customer: 'RevenueStack', status: 'Ready', billable: true, revenue: 249, period: 'Feb 2026 – Jan 2027', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_010', name: 'Growth Annual', customer: 'LedgerWise', status: 'Ready', billable: true, revenue: 129, period: 'Jan 2026 – Dec 2026', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_011', name: 'Pro Monthly', customer: 'SyncPoint', status: 'Ready', billable: true, revenue: 99, period: 'Mar 2026 – Feb 2027', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_012', name: 'Enterprise Quarterly', customer: 'NetSuite Bridge', status: 'Ready', billable: true, revenue: 399, period: 'Oct 2025 – Sep 2026', nextJE: 'Apr 1, 2026' },
+  { id: 'sub_013', name: 'Growth Monthly', customer: 'PayFlow Pro', status: 'Paused', billable: true, revenue: 149, period: 'Mar 2026 – Feb 2027', nextJE: '—' },
+  { id: 'sub_014', name: 'Starter Monthly', customer: 'InvoiceHub', status: 'Paused', billable: true, revenue: 49, period: 'Mar 2026 – Feb 2027', nextJE: '—' },
+  { id: 'sub_015', name: 'Pro Monthly', customer: 'BillingBridge', status: 'Paused', billable: true, revenue: 99, period: 'Feb 2026 – Jan 2027', nextJE: '—' },
+  { id: 'sub_016', name: 'Starter Trial', customer: 'NewCo Beta', status: 'Trial', billable: false, revenue: 0, period: 'Mar 2026 – ?', nextJE: '—' },
+  { id: 'sub_017', name: 'Growth Trial', customer: 'TestOrg Alpha', status: 'Trial', billable: false, revenue: 0, period: 'Mar 2026 – ?', nextJE: '—' },
+  { id: 'sub_018', name: 'Pro Annual (expired)', customer: 'OldClient Inc', status: 'Completed', billable: false, revenue: 79, period: 'Jan 2025 – Dec 2025', nextJE: '—' },
+  { id: 'sub_019', name: 'Starter Monthly (expired)', customer: 'RetiredSub LLC', status: 'Completed', billable: false, revenue: 29, period: 'Jun 2025 – Nov 2025', nextJE: '—' },
+];
+
+const USAGE_STATES = {
+  normal: { billable: 1847, capacity: 2500, paused: 0 },
+  warning: { billable: 2340, capacity: 2500, paused: 0 },
+  overLimit: { billable: 2547, capacity: 2500, paused: 47 },
+};
+
+const PERIOD_DETAIL = [
+  { name: 'Pro Monthly', customer: 'TechFlow Inc', from: '2026-02-15', to: 'ongoing' },
+  { name: 'Enterprise Annual', customer: 'DataSync Corp', from: '2026-02-20', to: 'ongoing' },
+  { name: 'Starter Monthly', customer: 'CloudBase LLC', from: '2026-02-15', to: 'ongoing' },
+  { name: 'Business Quarterly', customer: 'Acme Analytics', from: '2026-01-15', to: 'ongoing' },
+  { name: 'Growth Monthly', customer: 'ScaleUp Ltd', from: '2025-11-01', to: 'ongoing' },
+];
+
+// ===== STATE =====
+let currentState = 'normal';
+let currentScreen = 'subscriptions';
+let selectedAdminPlan = 'starter';
+
+// ===== SCREEN NAVIGATION =====
+function showScreen(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const el = document.getElementById('screen-' + screen);
+  if (el) { el.classList.add('active'); el.classList.add('fade-in'); setTimeout(() => el.classList.remove('fade-in'), 300); }
+
+  const nav = document.getElementById('nav-' + screen);
+  if (nav) nav.classList.add('active');
+
+  currentScreen = screen;
+
+  // Show/hide demo controls
+  document.getElementById('demo-controls').classList.toggle('hidden', screen !== 'subscriptions');
+
+  // Animate progress bar when entering subscriptions
+  if (screen === 'subscriptions') {
+    setTimeout(() => animateProgressBar(), 50);
+  }
+}
+
+// ===== STATE MANAGEMENT =====
+function setState(state) {
+  currentState = state;
+  const usage = USAGE_STATES[state];
+
+  // Update button styles
+  ['normal', 'warning', 'overLimit'].forEach(s => {
+    const btnId = { normal: 'btn-normal', warning: 'btn-warning', overLimit: 'btn-over' }[s];
+    const btn = document.getElementById(btnId);
+    btn.className = 'px-3 py-1.5 text-xs rounded-md border font-medium transition-all ';
+    if (s === state) {
+      if (s === 'normal') btn.className += 'bg-green-50 border-green-300 text-green-700';
+      else if (s === 'warning') btn.className += 'bg-amber-50 border-amber-300 text-amber-700';
+      else btn.className += 'bg-red-50 border-red-300 text-red-700';
+    } else {
+      btn.className += 'border-gray-200 text-gray-600 bg-white hover:bg-gray-50';
+    }
+  });
+
+  // Update usage meter
+  const normalHeader = document.getElementById('meter-header-normal');
+  const overHeader = document.getElementById('meter-header-over');
+  const warningBanner = document.getElementById('warning-banner');
+  const overlimitBanner = document.getElementById('overlimit-banner');
+
+  if (state === 'overLimit') {
+    normalHeader.classList.add('hidden');
+    overHeader.classList.remove('hidden');
+    warningBanner.classList.add('hidden');
+    overlimitBanner.classList.remove('hidden');
+  } else {
+    normalHeader.classList.remove('hidden');
+    overHeader.classList.add('hidden');
+    overlimitBanner.classList.add('hidden');
+    warningBanner.classList.toggle('hidden', state !== 'warning');
+  }
+
+  animateProgressBar();
+  renderTable();
+}
+
+function animateProgressBar() {
+  const state = USAGE_STATES[currentState];
+  const pct = Math.min(100, (state.billable / state.capacity) * 100);
+  const bar = document.getElementById('progress-bar');
+  const label = document.getElementById('meter-label');
+  const usedLbl = document.getElementById('used-label');
+  const capLbl = document.getElementById('cap-label');
+
+  let color = '#16a34a'; // green
+  if (pct >= 95) color = '#dc2626'; // red
+  else if (pct >= 80) color = '#ea580c'; // orange
+  else if (pct >= 60) color = '#d97706'; // amber
+
+  bar.style.background = color;
+  bar.style.width = '0%';
+  label.textContent = `${state.billable.toLocaleString()} / ${state.capacity.toLocaleString()} subscriptions used`;
+  usedLbl.textContent = `${state.billable.toLocaleString()} used`;
+  capLbl.textContent = `${state.capacity.toLocaleString()} capacity`;
+
+  setTimeout(() => { bar.style.width = pct + '%'; }, 30);
+}
+
+// ===== TABLE RENDERING =====
+function getStatusBadge(status) {
+  const cfg = {
+    Ready: 'bg-green-100 text-green-700',
+    Paused: 'bg-red-100 text-red-700',
+    Trial: 'bg-violet-100 text-violet-700',
+    Completed: 'bg-gray-100 text-gray-500',
+  };
+  return `<span class="badge ${cfg[status] || 'bg-gray-100 text-gray-500'}">${status}</span>`;
+}
+
+function renderTable() {
+  const statusFilter = document.getElementById('filter-status').value;
+  const billableFilter = document.getElementById('filter-billable').value;
+  const search = (document.getElementById('search-box').value || '').toLowerCase();
+
+  let subs = SUBSCRIPTIONS;
+  // In normal/warning state, hide paused subs
+  if (currentState !== 'overLimit') {
+    subs = subs.filter(s => s.status !== 'Paused');
+  }
+
+  // Apply filters
+  if (statusFilter !== 'all') subs = subs.filter(s => s.status === statusFilter);
+  if (billableFilter !== 'all') subs = subs.filter(s => String(s.billable) === billableFilter);
+  if (search) subs = subs.filter(s => s.name.toLowerCase().includes(search) || s.customer.toLowerCase().includes(search));
+
+  document.getElementById('row-count').textContent = `${subs.length} subscription${subs.length !== 1 ? 's' : ''}`;
+
+  const tbody = document.getElementById('subs-table-body');
+  tbody.innerHTML = subs.map((s, i) => `
+    <tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors ${s.status === 'Paused' ? 'bg-red-50/30' : ''}">
+      <td class="px-5 py-3 font-medium text-gray-900">${s.name}</td>
+      <td class="px-5 py-3 text-gray-600">${s.customer}</td>
+      <td class="px-3 py-3">${getStatusBadge(s.status)}</td>
+      <td class="px-3 py-3">${s.billable ? '<span class="text-green-600 font-medium">✓ Yes</span>' : '<span class="text-gray-400">—</span>'}</td>
+      <td class="px-3 py-3 text-right mono text-gray-700">${s.revenue > 0 ? '$' + s.revenue.toFixed(2) + '/mo' : '—'}</td>
+      <td class="px-3 py-3 text-gray-600 text-xs">${s.period}</td>
+      <td class="px-3 py-3 ${s.nextJE === '—' ? 'text-gray-400' : 'text-gray-700'}">${s.nextJE}</td>
+    </tr>
+  `).join('');
+}
+
+function filterTable() { renderTable(); }
+
+// ===== PLAN CARDS (Manage Plan) =====
+function renderPlanCards() {
+  const currentBillable = 2340; // warning state for demo
+  const grid = document.getElementById('plan-cards-grid');
+  if (!grid) return;
+
+  grid.innerHTML = PLANS.map(plan => {
+    const isCurrent = plan.id === 'starter';
+    const isDisabled = plan.capacity < currentBillable && !isCurrent;
+    const isRecommended = plan.id === 'growth';
+    const delta = plan.monthly - 149;
+
+    return `
+      <div class="plan-card bg-white rounded-xl border-2 p-4 ${isCurrent ? 'border-blue-500 current' : isDisabled ? 'border-gray-200 disabled' : 'border-gray-200'} ${isRecommended ? '' : ''}"
+           onclick="${isDisabled ? '' : isCurrent ? '' : `openModal('upgrade-modal')`}" >
+        <div class="flex items-start justify-between mb-3">
+          <p class="font-semibold text-gray-900">${plan.name}</p>
+          <div class="flex flex-col items-end gap-1">
+            ${isCurrent ? '<span class="badge bg-blue-100 text-blue-700 text-xs">Current</span>' : ''}
+            ${isRecommended ? '<span class="badge bg-green-100 text-green-700 text-xs">Recommended</span>' : ''}
+            ${isDisabled ? '<span class="badge bg-gray-100 text-gray-400 text-xs">Below usage</span>' : ''}
+          </div>
+        </div>
+        <p class="text-2xl font-bold mono text-gray-900 mb-1">$${plan.monthly}<span class="text-base font-normal text-gray-400">/mo</span></p>
+        <p class="text-xs text-gray-500 mb-3">${plan.capacity.toLocaleString()} subscriptions</p>
+        ${!isCurrent && !isDisabled ? `<p class="text-xs ${delta > 0 ? 'text-gray-500' : 'text-green-600'}">+ $${Math.abs(delta)}/mo from current</p>` : ''}
+        ${isCurrent ? '<p class="text-xs text-blue-600 font-medium">Your current plan</p>' : ''}
+        ${isDisabled ? '<p class="text-xs text-gray-400">Below your current usage</p>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ===== ADMIN PLAN RADIOS =====
+function renderAdminPlanRadios() {
+  const container = document.getElementById('admin-plan-radios');
+  if (!container) return;
+  const currentBillable = 1847;
+
+  container.innerHTML = PLANS.map(plan => {
+    const isCurrent = plan.id === 'starter';
+    const isBelowUsage = plan.capacity < currentBillable;
+
+    return `
+      <label class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${isCurrent ? 'border-blue-200 bg-blue-50/50' : 'border-gray-200 hover:bg-gray-50'}"
+             onclick="selectAdminPlan('${plan.id}', ${isBelowUsage}, ${plan.capacity})">
+        <input type="radio" name="admin-plan" value="${plan.id}" ${isCurrent ? 'checked' : ''} class="accent-blue-600">
+        <div class="flex-1">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-medium text-gray-900">${plan.name}</span>
+            ${isCurrent ? '<span class="badge bg-blue-100 text-blue-700 text-xs">Current</span>' : ''}
+            ${isBelowUsage ? '<span class="badge bg-amber-100 text-amber-700 text-xs">⚠ Below usage</span>' : ''}
+          </div>
+          <p class="text-xs text-gray-500">≤${plan.capacity.toLocaleString()} subscriptions</p>
+        </div>
+        <span class="text-sm font-medium mono text-gray-700">${plan.monthly === 0 ? 'Free' : '$' + plan.monthly + '/mo'}</span>
+      </label>
+    `;
+  }).join('');
+}
+
+function selectAdminPlan(planId, isBelowUsage, capacity) {
+  selectedAdminPlan = planId;
+  const warning = document.getElementById('plan-warning');
+  const warningText = document.getElementById('plan-warning-text');
+  if (isBelowUsage) {
+    const pause = 1847 - capacity;
+    warningText.textContent = `This plan's capacity (${capacity.toLocaleString()}) is below the org's current billable count (1,847). Assigning this plan will pause ${pause.toLocaleString()} subscriptions.`;
+    warning.classList.remove('hidden');
+  } else {
+    warning.classList.add('hidden');
+  }
+}
+
+// ===== BILLING HISTORY DETAIL =====
+function setupBillingDetails() {
+  const detailContent = document.getElementById('detail-0-content');
+  if (!detailContent) return;
+  detailContent.innerHTML = PERIOD_DETAIL.map(d => `
+    <div class="flex gap-4 py-1.5 border-b border-gray-100 last:border-0">
+      <span class="font-medium text-gray-800 w-40">${d.name}</span>
+      <span class="text-gray-500 w-40">${d.customer}</span>
+      <span class="mono text-gray-500">From: ${d.from}</span>
+      <span class="mono text-gray-500">To: ${d.to}</span>
+    </div>
+  `).join('');
+
+  const d1 = document.getElementById('detail-1-content');
+  if (d1) d1.innerHTML = PERIOD_DETAIL.slice(0, 4).map(d => `
+    <div class="flex gap-4 py-1.5 border-b border-gray-100 last:border-0">
+      <span class="font-medium text-gray-800 w-40">${d.name}</span>
+      <span class="text-gray-500 w-40">${d.customer}</span>
+      <span class="mono text-gray-500">From: ${d.from}</span>
+      <span class="mono text-gray-500">To: ${d.to}</span>
+    </div>
+  `).join('');
+}
+
+function toggleExpand(id) {
+  const row = document.getElementById(id);
+  row.classList.toggle('open');
+}
+
+// ===== MODALS =====
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function confirmUpgrade() {
+  closeModal('upgrade-modal');
+  showToast('✓ Upgraded to Growth plan successfully!');
+}
+
+function confirmDowngrade() {
+  closeModal('downgrade-modal');
+  showToast('Plan downgraded. 847 subscriptions paused.');
+}
+
+function applyPlan() {
+  closeModal('apply-plan-modal');
+  showToast('✓ Growth plan assigned to Acme Corp');
+}
+
+// ===== TOAST =====
+function showToast(message, icon = '✓') {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = message;
+  document.getElementById('toast-icon').textContent = icon;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ===== AUTO-UPGRADE TOGGLE =====
+function toggleAutoUpgrade() {
+  const isOn = document.getElementById('auto-upgrade-toggle').checked;
+  const desc = document.getElementById('auto-upgrade-desc');
+  if (isOn) {
+    desc.textContent = 'Your plan will automatically upgrade to the next tier if you exceed your current capacity. You\'ll receive an email notification.';
+    showToast('Auto-upgrade enabled');
+  } else {
+    desc.textContent = 'New subscriptions will be paused if you exceed your capacity. You can upgrade manually anytime.';
+    showToast('Auto-upgrade disabled');
+  }
+}
+
+// ===== INIT =====
+window.addEventListener('DOMContentLoaded', () => {
+  renderTable();
+  renderPlanCards();
+  renderAdminPlanRadios();
+  setupBillingDetails();
+  // Initial progress bar animation
+  setTimeout(() => animateProgressBar(), 100);
+  // Show demo controls
+  document.getElementById('demo-controls').classList.remove('hidden');
+});
+</script>
+</body>
+</html>

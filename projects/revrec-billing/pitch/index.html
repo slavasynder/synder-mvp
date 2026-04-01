@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RevRec Billing: Automated Usage-Based Billing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      colors: {
+        'gray-850': '#18212f',
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #111827; color: #f9fafb; font-family: 'Inter', system-ui, sans-serif; }
+
+  /* Progress bar */
+  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: #3b82f6; transition: width 0.3s ease; z-index: 100; }
+
+  /* Slide wrapper */
+  #slide-deck { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 60px 32px 80px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .slide.active { opacity: 1; pointer-events: all; }
+
+  .slide-inner {
+    width: 100%; max-width: 1100px;
+    display: flex; flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+    max-height: calc(100vh - 140px);
+    scrollbar-width: none;
+  }
+  .slide-inner::-webkit-scrollbar { display: none; }
+
+  /* Navigation dots */
+  #nav-dots { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 100; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #374151; cursor: pointer; transition: background 0.2s, transform 0.2s; }
+  .dot.active { background: #3b82f6; transform: scale(1.4); }
+  .dot:hover:not(.active) { background: #6b7280; }
+
+  /* Slide counter */
+  #slide-counter { position: fixed; bottom: 20px; right: 28px; font-size: 12px; color: #6b7280; font-variant-numeric: tabular-nums; z-index: 100; }
+
+  /* Overview grid */
+  #overview {
+    position: fixed; inset: 0; background: rgba(17,24,39,0.97);
+    display: none; z-index: 200;
+    overflow-y: auto; padding: 40px 32px;
+  }
+  #overview.visible { display: block; }
+  #overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; max-width: 1200px; margin: 0 auto; }
+  #overview h2 { text-align: center; font-size: 1.2rem; color: #9ca3af; margin-bottom: 24px; letter-spacing: 0.05em; text-transform: uppercase; font-size: 12px; }
+  .thumb {
+    background: #1f2937; border: 2px solid #374151; border-radius: 10px;
+    padding: 12px; cursor: pointer; transition: border-color 0.15s, transform 0.15s;
+    aspect-ratio: 16/9; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; overflow: hidden;
+  }
+  .thumb:hover { border-color: #3b82f6; transform: scale(1.03); }
+  .thumb.active-thumb { border-color: #3b82f6; }
+  .thumb-num { font-size: 10px; color: #6b7280; margin-bottom: 4px; }
+  .thumb-title { font-size: 11px; font-weight: 600; color: #d1d5db; line-height: 1.3; }
+  #overview-close { position: fixed; top: 24px; right: 32px; color: #6b7280; cursor: pointer; font-size: 24px; z-index: 210; }
+  #overview-close:hover { color: #f9fafb; }
+
+  /* Utility classes */
+  .card { background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 20px 24px; }
+  .card-sm { background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 14px 18px; }
+  .accent { color: #3b82f6; }
+  .success { color: #22c55e; }
+  .warning { color: #f59e0b; }
+  .danger { color: #ef4444; }
+  .violet { color: #a78bfa; font-family: 'Courier New', monospace; }
+  .muted { color: #9ca3af; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .tag-violet { background: rgba(167,139,250,0.15); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.3); }
+
+  .slide-title { font-size: 2.2rem; font-weight: 800; line-height: 1.15; color: #f9fafb; }
+  .slide-subtitle { font-size: 1rem; color: #9ca3af; font-weight: 400; margin-top: 6px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+
+  .progress-bar-bg { background: #1f2937; border-radius: 999px; overflow: hidden; height: 8px; }
+  .progress-bar-fill { height: 100%; border-radius: 999px; transition: width 0.3s ease; }
+
+  .check-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .check-icon { flex-shrink: 0; margin-top: 1px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  .h-divider { border: none; border-top: 1px solid #374151; margin: 14px 0; }
+
+  /* Highlight box */
+  .highlight-box { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: 10px; padding: 14px 18px; }
+  .warning-box { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 14px 18px; }
+  .danger-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 14px 18px; }
+  .success-box { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 14px 18px; }
+
+  /* Effort bar */
+  .effort-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .effort-label { width: 260px; font-size: 13px; color: #d1d5db; flex-shrink: 0; }
+  .effort-track { flex: 1; background: #374151; border-radius: 4px; height: 10px; }
+  .effort-fill { height: 100%; border-radius: 4px; }
+  .effort-size { font-size: 12px; font-weight: 700; width: 36px; text-align: right; }
+
+  /* Keyboard hint */
+  #keyboard-hint { position: fixed; bottom: 20px; left: 28px; font-size: 11px; color: #4b5563; z-index: 100; }
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.4s ease both; }
+
+  /* Fullscreen fix */
+  :fullscreen body, :-webkit-full-screen body { background: #111827; }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div id="progress-bar"></div>
+
+<!-- Slide Deck -->
+<div id="slide-deck">
+
+  <!-- ─────────────────── SLIDE 1: TITLE ─────────────────── -->
+  <div class="slide" data-slide="1">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-blue" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Milestone 1 — Internal Technical Pitch</div>
+        <h1 style="font-size:3rem; font-weight:800; line-height:1.1; color:#f9fafb; margin-bottom:16px;">
+          RevRec Billing:<br/>
+          <span class="accent">Automated Usage-Based Billing</span>
+        </h1>
+        <p style="font-size:1.25rem; color:#9ca3af; margin-bottom:12px; font-weight:400;">Milestone 1: Core Billing Engine</p>
+        <p style="font-size:1rem; color:#6b7280; margin-bottom:48px;">From manual CSM tracking to automated, self-serve billing</p>
+        <div style="width:60px; height:2px; background:#374151; margin:0 auto 48px;"></div>
+        <p style="font-size:13px; color:#6b7280; letter-spacing:0.08em; text-transform:uppercase;">Synder Product &nbsp;•&nbsp; Q2 2026</p>
+        <p style="font-size:12px; color:#4b5563; margin-top:8px;">Audience: CTO · Tech Leads · QA · UI/UX</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 2: THE PROBLEM ─────────────────── -->
+  <div class="slide" data-slide="2">
+    <div class="slide-inner">
+      <div class="section-label">Context</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">What We're Fixing</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Three compounding problems in the current RevRec billing process</p>
+
+      <div class="grid-3" style="margin-bottom:20px;">
+        <div class="card" style="border-top:3px solid #ef4444;">
+          <div style="font-size:2rem; margin-bottom:12px;">📊</div>
+          <div style="font-size:1rem; font-weight:700; color:#f9fafb; margin-bottom:8px;">Manual Tracking</div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">CSMs track subscription counts in spreadsheets. No automation, no enforcement. Every billing cycle is a manual reconciliation exercise.</p>
+        </div>
+        <div class="card" style="border-top:3px solid #f59e0b;">
+          <div style="font-size:2rem; margin-bottom:12px;">💸</div>
+          <div style="font-size:1rem; font-weight:700; color:#f9fafb; margin-bottom:8px;">Revenue Leakage</div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;"><span class="warning" style="font-weight:600;">~$10K MRR lost</span> to under-tracked usage. 68 orgs using RevRec today, zero with automated billing. Leakage is structural.</p>
+        </div>
+        <div class="card" style="border-top:3px solid #6b7280;">
+          <div style="font-size:2rem; margin-bottom:12px;">🚫</div>
+          <div style="font-size:1rem; font-weight:700; color:#f9fafb; margin-bottom:8px;">No Self-Serve</div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">Users can't see their own usage, can't upgrade themselves. Every plan change requires CSM intervention — high-friction, unscalable.</p>
+        </div>
+      </div>
+
+      <div class="card" style="background:rgba(59,130,246,0.06); border-color:rgba(59,130,246,0.25);">
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+          <div>
+            <div class="section-label">Current State</div>
+            <div style="font-size:1.6rem; font-weight:800; color:#9ca3af;">$13,935 <span style="font-size:1rem; font-weight:400;">MRR</span></div>
+          </div>
+          <div style="color:#6b7280; font-size:1.5rem;">→</div>
+          <div>
+            <div class="section-label">Projected (automated)</div>
+            <div style="font-size:1.6rem; font-weight:800; color:#22c55e;">$20,227 <span style="font-size:1rem; font-weight:400;">MRR</span></div>
+          </div>
+          <div style="text-align:right;">
+            <div class="tag tag-green" style="font-size:13px; padding:4px 14px;">+45% MRR</div>
+            <div style="font-size:13px; color:#9ca3af; margin-top:4px;">+$75K ARR from 68 existing orgs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 3: PRICING MODEL ─────────────────── -->
+  <div class="slide" data-slide="3">
+    <div class="slide-inner">
+      <div class="section-label">Business Model</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Per-Subscription Flat-Tier Pricing</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Package-based model — pay for a bundle of subscription slots</p>
+
+      <div class="grid-3" style="margin-bottom:16px;">
+        <div class="card" style="text-align:center; border-top:3px solid #3b82f6;">
+          <div class="tag tag-blue" style="margin-bottom:12px;">Band 1</div>
+          <div style="font-size:2rem; font-weight:800; color:#f9fafb; font-family:'Courier New',monospace;">$0.07</div>
+          <div style="font-size:12px; color:#9ca3af; margin-bottom:12px;">per sub / mo</div>
+          <hr class="h-divider" />
+          <div style="font-size:13px; color:#d1d5db; margin-bottom:4px;"><span class="violet">500</span> subs / package</div>
+          <div style="font-size:12px; color:#6b7280;">Range: 1K – 10K subs</div>
+          <div style="font-size:13px; color:#22c55e; margin-top:10px; font-weight:600;">e.g. 5K subs = $350/mo</div>
+        </div>
+        <div class="card" style="text-align:center; border-top:3px solid #a78bfa;">
+          <div class="tag tag-violet" style="margin-bottom:12px;">Band 2</div>
+          <div style="font-size:2rem; font-weight:800; color:#f9fafb; font-family:'Courier New',monospace;">$0.05</div>
+          <div style="font-size:12px; color:#9ca3af; margin-bottom:12px;">per sub / mo</div>
+          <hr class="h-divider" />
+          <div style="font-size:13px; color:#d1d5db; margin-bottom:4px;"><span class="violet">1,000</span> subs / package</div>
+          <div style="font-size:12px; color:#6b7280;">Range: 10K – 50K subs</div>
+          <div style="font-size:13px; color:#22c55e; margin-top:10px; font-weight:600;">e.g. 25K subs = $1,250/mo</div>
+        </div>
+        <div class="card" style="text-align:center; border-top:3px solid #22c55e;">
+          <div class="tag tag-green" style="margin-bottom:12px;">Band 3</div>
+          <div style="font-size:2rem; font-weight:800; color:#f9fafb; font-family:'Courier New',monospace;">$0.03</div>
+          <div style="font-size:12px; color:#9ca3af; margin-bottom:12px;">per sub / mo</div>
+          <hr class="h-divider" />
+          <div style="font-size:13px; color:#d1d5db; margin-bottom:4px;"><span class="violet">10,000</span> subs / package</div>
+          <div style="font-size:12px; color:#6b7280;">Range: 50K – 200K+ subs</div>
+          <div style="font-size:13px; color:#22c55e; margin-top:10px; font-weight:600;">e.g. 100K subs = $3,000/mo</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="gap:12px;">
+        <div class="card-sm" style="background:rgba(34,197,94,0.05); border-color:rgba(34,197,94,0.2);">
+          <div style="font-size:12px; color:#6b7280; margin-bottom:4px;">Free tier</div>
+          <p style="font-size:13px; color:#d1d5db;">0–50 subs included free. Pro plan: up to <span class="success">1,000</span> included. Premium: up to <span class="success">5,000</span> included — no add-on needed below these thresholds.</p>
+        </div>
+        <div class="card-sm" style="background:rgba(59,130,246,0.05); border-color:rgba(59,130,246,0.2);">
+          <div style="font-size:12px; color:#6b7280; margin-bottom:4px;">Competitor comparison — 5K subs</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-size:13px; color:#d1d5db;">Synder RevRec</span>
+            <span class="accent" style="font-weight:700; font-size:14px;">$350/mo</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-size:13px; color:#9ca3af;">Stripe Billing (0.25% vol)</span>
+            <span style="color:#ef4444; font-weight:700; font-size:14px;">$1,000/mo</span>
+          </div>
+          <div class="tag tag-green">Saves ~$7,800/yr</div>
+          <div style="font-size:11px; color:#6b7280; margin-top:6px;">Currencies: USD · EUR · GBP · CAD · AUD (1.4×)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 4: MILESTONE OVERVIEW ─────────────────── -->
+  <div class="slide" data-slide="4">
+    <div class="slide-inner">
+      <div class="section-label">Roadmap</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Three Milestones</h1>
+      <p class="slide-subtitle" style="margin-bottom:32px;">Phased delivery — this pitch covers Milestone 1</p>
+
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <!-- M1 - Active -->
+        <div class="card" style="border:2px solid #3b82f6; background:rgba(59,130,246,0.06); position:relative;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:16px;">
+              <div style="background:#3b82f6; color:white; border-radius:8px; padding:6px 14px; font-weight:700; font-size:13px; white-space:nowrap;">Milestone 1</div>
+              <div>
+                <div style="font-size:1.05rem; font-weight:700; color:#f9fafb; margin-bottom:2px;">Core Billing Engine</div>
+                <div style="font-size:13px; color:#9ca3af;">Counting logic · plan structure · limit enforcement · usage UI · admin billing history</div>
+              </div>
+            </div>
+            <div class="tag tag-blue" style="font-size:12px; padding:4px 14px;">👈 THIS PITCH</div>
+          </div>
+          <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+            <span class="tag tag-blue">10 Stories</span>
+            <span class="tag tag-blue">Backend + Frontend</span>
+            <span class="tag tag-blue">Admin Panel</span>
+            <span class="tag tag-blue">Stripe Integration</span>
+          </div>
+        </div>
+
+        <!-- M2 - Dimmed -->
+        <div class="card" style="opacity:0.5;">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div style="background:#374151; color:#9ca3af; border-radius:8px; padding:6px 14px; font-weight:700; font-size:13px; white-space:nowrap;">Milestone 2</div>
+            <div>
+              <div style="font-size:1.05rem; font-weight:600; color:#d1d5db; margin-bottom:2px;">Self-Serve Flows & PLG</div>
+              <div style="font-size:13px; color:#6b7280;">Subscription UI integration · upgrade/downgrade flows · onboarding · Stripe comparison calculator</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- M3 - Dimmed -->
+        <div class="card" style="opacity:0.5;">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div style="background:#374151; color:#9ca3af; border-radius:8px; padding:6px 14px; font-weight:700; font-size:13px; white-space:nowrap;">Milestone 3</div>
+            <div>
+              <div style="font-size:1.05rem; font-weight:600; color:#d1d5db; margin-bottom:2px;">Migration & Analytics</div>
+              <div style="font-size:13px; color:#6b7280;">Success migration tooling · historical import pricing · billing analytics · HubSpot integration</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="margin-top:20px;">
+        <div style="font-size:13px; color:#93c5fd;">📌 Today's pitch covers all 10 stories in Milestone 1. Milestones 2 and 3 are planned but not yet scoped for effort estimation. Full artifacts for M1 are ready (tasks, pricing, design brief, migration policy).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 5: STORY 1 ─────────────────── -->
+  <div class="slide" data-slide="5">
+    <div class="slide-inner">
+      <div class="section-label">Story 1 of 10</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">Billable Subscription Counting Logic</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Core backend — what makes a subscription "billable"</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">What's Billable</div>
+          <div class="check-item">
+            <span style="font-size:16px;" class="check-icon">✅</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Has at least one <strong>non-zero invoice</strong> (not trial-only)</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:16px;" class="check-icon">✅</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Has current or future recognition periods</span>
+          </div>
+          <hr class="h-divider" />
+          <div class="check-item">
+            <span style="font-size:16px;" class="check-icon">❌</span>
+            <span style="font-size:13px; color:#9ca3af; line-height:1.5;">Trial subscriptions excluded (zero invoices only)</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:16px;" class="check-icon">❌</span>
+            <span style="font-size:13px; color:#9ca3af; line-height:1.5;">Subscriptions with only past recognition periods excluded</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Two Counting Aspects</div>
+          <div class="card-sm" style="margin-bottom:10px; border-left:3px solid #ef4444;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+              <span style="font-size:16px;">🔴</span>
+              <span style="font-weight:700; color:#f9fafb; font-size:13px;">Live Counter</span>
+            </div>
+            <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Real-time billable count for current billing period. Powers the usage meter (Story 5) and limit enforcement (Story 6).</p>
+          </div>
+          <div class="card-sm" style="border-left:3px solid #3b82f6;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+              <span style="font-size:16px;">🔵</span>
+              <span style="font-weight:700; color:#f9fafb; font-size:13px;">Historical Attribution</span>
+            </div>
+            <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Subscription counted only in periods where it was genuinely billable. No retroactive smearing. Powers billing history (Story 9).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">📅</span>
+          <span style="font-size:13px; color:#fcd34d;"><strong>Important:</strong> Billing periods are anchored to plan start date (e.g., Mar 15 – Apr 14), <em>NOT</em> calendar months. Period boundary handling is the most complex piece of this story.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 6: STORY 2 ─────────────────── -->
+  <div class="slide" data-slide="6">
+    <div class="slide-inner">
+      <div class="section-label">Story 2 of 10</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">RevRec Add-On Plan Structure</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Stripe products/plans + admin panel wiring</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Stripe Object Creation</div>
+          <div class="check-item">
+            <span class="accent check-icon" style="font-size:14px; font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db;">Create Stripe products for all tiers × 5 currencies (USD, EUR, GBP, CAD, AUD)</span>
+          </div>
+          <div class="check-item">
+            <span class="accent check-icon" style="font-size:14px; font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db;">× 2 billing cycles (monthly, yearly)</span>
+          </div>
+          <div class="highlight-box" style="margin-top:10px; margin-bottom:10px; padding:10px 14px;">
+            <span style="font-family:'Courier New',monospace; font-size:1.4rem; font-weight:700; color:#a78bfa;">~60</span>
+            <span style="font-size:13px; color:#9ca3af; margin-left:8px;">Stripe objects to create and manage</span>
+          </div>
+          <div class="check-item">
+            <span class="accent check-icon" style="font-size:14px; font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db;">Wire to admin panel: CSM can assign any tier to any org</span>
+          </div>
+          <div class="check-item">
+            <span class="accent check-icon" style="font-size:14px; font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db;">Plan assignment does <strong>NOT</strong> reset billing period</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Free Tier Inclusions</div>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+            <div class="card-sm" style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:13px; color:#d1d5db;">Pro Plan</span>
+              <span class="tag tag-green">≤ 1,000 subs free</span>
+            </div>
+            <div class="card-sm" style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:13px; color:#d1d5db;">Premium Plan</span>
+              <span class="tag tag-green">≤ 5,000 subs free</span>
+            </div>
+            <div class="card-sm" style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:13px; color:#d1d5db;">Any plan (base)</span>
+              <span class="tag tag-green">0–50 subs always free</span>
+            </div>
+          </div>
+          <div style="font-size:12px; color:#6b7280;">Add-on to main Synder subscription only.<br/>Standalone RevRec product pricing NOT affected.</div>
+        </div>
+      </div>
+
+      <div class="card" style="background:rgba(59,130,246,0.04);">
+        <div style="font-size:12px; color:#6b7280; margin-bottom:8px;">Admin Panel Navigation Path</div>
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <span class="card-sm" style="padding:4px 12px; font-size:12px; color:#93c5fd;">Admin Panel</span>
+          <span class="muted">→</span>
+          <span class="card-sm" style="padding:4px 12px; font-size:12px; color:#93c5fd;">Sync Product</span>
+          <span class="muted">→</span>
+          <span class="card-sm" style="padding:4px 12px; font-size:12px; color:#93c5fd;">Additional Packages</span>
+          <span class="muted">→</span>
+          <span class="card-sm" style="padding:4px 12px; font-size:12px; color:#93c5fd;">Revenue Recognition</span>
+          <span class="muted">→</span>
+          <span class="card-sm" style="padding:4px 12px; font-size:12px; color:#22c55e; border-color:rgba(34,197,94,0.3);">Plan Selector</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 7: STORY 3 ─────────────────── -->
+  <div class="slide" data-slide="7">
+    <div class="slide-inner">
+      <div class="section-label">Story 3 of 10</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">RevRec Plan Availability by Synder Plan</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Who can see and use RevRec billing controls</p>
+
+      <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px;">
+        <!-- Row 1 - Essential -->
+        <div class="card" style="border-left:4px solid #ef4444; display:flex; align-items:center; gap:20px;">
+          <div style="width:36px; height:36px; background:rgba(239,68,68,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🚫</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:3px;">Essential Plan (or below)</div>
+            <div style="font-size:13px; color:#9ca3af;">RevRec billing controls are <strong style="color:#ef4444;">NOT displayed</strong> at all. Feature is invisible to these users.</div>
+          </div>
+          <div class="tag tag-red">Hidden</div>
+        </div>
+
+        <!-- Row 2 - Pro/Premium, RevRec off -->
+        <div class="card" style="border-left:4px solid #f59e0b; display:flex; align-items:center; gap:20px;">
+          <div style="width:36px; height:36px; background:rgba(245,158,11,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">⚠️</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:3px;">Pro / Premium — RevRec Disabled by CSM</div>
+            <div style="font-size:13px; color:#9ca3af;">Controls are <strong style="color:#f59e0b;">visible but grayed out</strong>. Message shown: "RevRec must be enabled by your CSM." Raises awareness, creates CSM touchpoint.</div>
+          </div>
+          <div class="tag tag-amber">Visible, Locked</div>
+        </div>
+
+        <!-- Row 3 - Pro/Premium, RevRec on -->
+        <div class="card" style="border-left:4px solid #22c55e; display:flex; align-items:center; gap:20px;">
+          <div style="width:36px; height:36px; background:rgba(34,197,94,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">✅</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:3px;">Pro / Premium — RevRec Enabled by CSM</div>
+            <div style="font-size:13px; color:#9ca3af;">Controls are <strong style="color:#22c55e;">fully interactive</strong>. User can subscribe, upgrade, downgrade, and manage their RevRec plan without contacting Success.</div>
+          </div>
+          <div class="tag tag-green">Active</div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">🔑</span>
+          <span style="font-size:13px; color:#93c5fd;"><strong>Two gates required:</strong> eligible plan (Pro+) AND RevRec enabled by CSM. Both conditions must be true for full interactivity.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 8: STORY 4 ─────────────────── -->
+  <div class="slide" data-slide="8">
+    <div class="slide-inner">
+      <div class="section-label">Story 4 of 10</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">Self-Serve RevRec Subscription Flow</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Users subscribe to RevRec add-on without contacting Success</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px;">Where Controls Appear</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div class="check-item"><span class="accent check-icon" style="font-weight:700;">→</span><span style="font-size:13px; color:#d1d5db;">First subscription page</span></div>
+            <div class="check-item"><span class="accent check-icon" style="font-weight:700;">→</span><span style="font-size:13px; color:#d1d5db;">Manage subscription page</span></div>
+            <div class="check-item"><span class="accent check-icon" style="font-weight:700;">→</span><span style="font-size:13px; color:#d1d5db;">Upgrade plan page</span></div>
+            <div class="check-item"><span class="accent check-icon" style="font-weight:700;">→</span><span style="font-size:13px; color:#d1d5db;">Thank You page (post-checkout)</span></div>
+          </div>
+          <hr class="h-divider" />
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px; margin-top:4px;">Smart Pre-Selection</div>
+          <p style="font-size:13px; color:#d1d5db; line-height:1.5;">System checks current billable count → pre-selects the minimum package that covers all current subscriptions.</p>
+          <div class="warning-box" style="margin-top:10px; padding:8px 12px;">
+            <span style="font-size:12px; color:#fcd34d;"><strong>Rule:</strong> Only shows tiers covering ALL current subs. Packages below current count are hidden.</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Subscription Flow</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="card-sm" style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#3b82f6; color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">1</span>
+              <span style="font-size:13px; color:#d1d5db;">Count current billable subscriptions</span>
+            </div>
+            <div class="card-sm" style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#3b82f6; color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">2</span>
+              <span style="font-size:13px; color:#d1d5db;">Filter tiers → show only those covering count</span>
+            </div>
+            <div class="card-sm" style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#3b82f6; color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">3</span>
+              <span style="font-size:13px; color:#d1d5db;">User selects package</span>
+            </div>
+            <div class="card-sm" style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#3b82f6; color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">4</span>
+              <span style="font-size:13px; color:#d1d5db;">Stripe subscription created</span>
+            </div>
+            <div class="card-sm" style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#22c55e; color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">5</span>
+              <span style="font-size:13px; color:#d1d5db;">Thank You page + auto-upgrade toggle</span>
+            </div>
+          </div>
+          <div class="card-sm" style="margin-top:12px; border-color:rgba(167,139,250,0.3);">
+            <div style="font-size:12px; color:#c4b5fd;"><strong>Edge case:</strong> User with 1,490 subs → minimum selectable = 1,500 package. Cannot select 1,000.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 9: STORY 5 ─────────────────── -->
+  <div class="slide" data-slide="9">
+    <div class="slide-inner">
+      <div class="section-label">Story 5 of 10</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">Usage Meter UI</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Billable subscription counter on the Subscriptions page</p>
+
+      <div class="grid-3" style="margin-bottom:16px;">
+        <!-- Normal -->
+        <div class="card" style="border-top:3px solid #22c55e;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="font-size:16px;">🟢</span>
+            <span style="font-weight:700; color:#f9fafb;">Normal</span>
+          </div>
+          <div style="font-size:1.3rem; font-weight:800; color:#f9fafb; font-family:'Courier New',monospace; margin-bottom:4px;">1,847 / 2,500</div>
+          <div style="font-size:11px; color:#6b7280; margin-bottom:10px;">subs used</div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width:73.9%; background:#22c55e;"></div>
+          </div>
+          <div style="font-size:12px; color:#22c55e; margin-top:6px;">73.9% — No warnings</div>
+        </div>
+
+        <!-- Warning -->
+        <div class="card" style="border-top:3px solid #f59e0b;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="font-size:16px;">🟡</span>
+            <span style="font-weight:700; color:#f9fafb;">Warning (80%+)</span>
+          </div>
+          <div style="font-size:1.3rem; font-weight:800; color:#f9fafb; font-family:'Courier New',monospace; margin-bottom:4px;">2,340 / 2,500</div>
+          <div style="font-size:11px; color:#6b7280; margin-bottom:10px;">subs used</div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width:93.6%; background:#f59e0b;"></div>
+          </div>
+          <div style="font-size:12px; color:#f59e0b; margin-top:6px;">93.6% — ⚠️ Warning banner shown</div>
+        </div>
+
+        <!-- Over limit -->
+        <div class="card" style="border-top:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="font-size:16px;">🔴</span>
+            <span style="font-weight:700; color:#f9fafb;">Over Limit</span>
+          </div>
+          <div style="font-size:1.3rem; font-weight:800; color:#ef4444; font-family:'Courier New',monospace; margin-bottom:4px;">2,547 / 2,500</div>
+          <div style="font-size:11px; color:#6b7280; margin-bottom:10px;">subs used — <strong style="color:#ef4444;">+47 paused</strong></div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width:100%; background:#ef4444;"></div>
+          </div>
+          <div style="font-size:12px; color:#ef4444; margin-top:6px;">💥 Paused banner + Upgrade Now button</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px;">Additional Scope</div>
+        <div style="display:flex; flex-wrap:wrap; gap:16px;">
+          <div class="check-item" style="flex:1; min-width:220px;">
+            <span class="accent check-icon" style="font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db;">New column in subscriptions table: <strong>"Billable / Not Billable"</strong> status indicator</span>
+          </div>
+          <div class="check-item" style="flex:1; min-width:220px;">
+            <span class="accent check-icon" style="font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db;">New filter: Billable status + "Paused" in status dropdown</span>
+          </div>
+          <div class="check-item" style="flex:1; min-width:220px;">
+            <span class="accent check-icon" style="font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db;">Quick-link to upgrade appears next to counter when limits hit</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 10: STORY 6 ─────────────────── -->
+  <div class="slide" data-slide="10">
+    <div class="slide-inner">
+      <div class="section-label">Story 6 of 10</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">Subscription Limit Enforcement</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">What happens when an org exceeds their plan limit</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px;">When Limit is Hit</div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">✅</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Existing subs within limit → stay <strong style="color:#22c55e;">"Ready"</strong></span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">🔴</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">New incoming subs above limit → <strong style="color:#ef4444;">"Paused"</strong></span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">⚡</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Active billable count must always fit within plan limit</span>
+          </div>
+          <hr class="h-divider" />
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">🔄</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;"><strong>Auto-upgrade ON:</strong> next tier purchased automatically, no interruption</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">⏸️</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;"><strong>Auto-upgrade OFF:</strong> subs paused until manual upgrade</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px;">Paused Subscription Behavior</div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">❌</span>
+            <span style="font-size:13px; color:#9ca3af; line-height:1.5;">RevRec journal entries <strong>STOP</strong> generating</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">❌</span>
+            <span style="font-size:13px; color:#9ca3af; line-height:1.5;">No recognition schedule generated or visible</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">❌</span>
+            <span style="font-size:13px; color:#9ca3af; line-height:1.5;">Not included in RevRec reports</span>
+          </div>
+          <hr class="h-divider" />
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">✅</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Normal transactions still pass to Synder Sync</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">✅</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Synder Sync continues working normally</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">✅</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Data still flows — only JEs blocked</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-box">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:18px;">🔄</span>
+          <span style="font-size:13px; color:#86efac;"><strong>On upgrade / un-pause:</strong> RevRec JEs generated <em>retroactively</em> for the paused period. No data loss — recognition catches up automatically.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 11: STORY 7 ─────────────────── -->
+  <div class="slide" data-slide="11">
+    <div class="slide-inner">
+      <div class="section-label">Story 7 of 10</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">Auto-Upgrade Setting</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Optional automatic tier upgrade when limit is reached</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Toggle Placement</div>
+          <div class="check-item">
+            <span class="accent check-icon" style="font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db;">Thank You page (immediately post-subscription)</span>
+          </div>
+          <div class="check-item">
+            <span class="accent check-icon" style="font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db;">Manage subscription page</span>
+          </div>
+          <hr class="h-divider" />
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:12px;">Defaults</div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">🔕</span>
+            <span style="font-size:13px; color:#d1d5db;">Default: <strong>OFF</strong> for Premium orgs</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">⚙️</span>
+            <span style="font-size:13px; color:#d1d5db;">Configurable per-org for others</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">📨</span>
+            <span style="font-size:13px; color:#d1d5db;">HubSpot event fires on ANY Pro/Premium limit hit — regardless of auto-upgrade setting</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Decision Logic</div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="card-sm" style="text-align:center; padding:12px;">
+              <div style="font-size:12px; color:#6b7280; margin-bottom:6px;">Trigger</div>
+              <div style="font-weight:700; color:#f9fafb;">Limit Hit</div>
+            </div>
+            <div style="text-align:center; color:#6b7280; font-size:11px;">↓</div>
+            <div style="display:flex; gap:10px;">
+              <div class="card-sm success-box" style="flex:1; text-align:center; padding:10px;">
+                <div style="font-size:11px; color:#6b7280; margin-bottom:4px;">Auto-Upgrade ON</div>
+                <div style="font-size:12px; color:#22c55e; font-weight:600;">Buy next tier</div>
+                <div style="font-size:11px; color:#6b7280; margin-top:4px;">No interruption</div>
+              </div>
+              <div class="card-sm danger-box" style="flex:1; text-align:center; padding:10px;">
+                <div style="font-size:11px; color:#6b7280; margin-bottom:4px;">Auto-Upgrade OFF</div>
+                <div style="font-size:12px; color:#ef4444; font-weight:600;">Pause subs</div>
+                <div style="font-size:11px; color:#6b7280; margin-top:4px;">User notified</div>
+              </div>
+            </div>
+            <div style="text-align:center; color:#6b7280; font-size:11px;">↓ (always)</div>
+            <div class="card-sm" style="text-align:center; padding:10px; border-color:rgba(167,139,250,0.3); background:rgba(167,139,250,0.05);">
+              <div style="font-size:12px; color:#c4b5fd; font-weight:600;">HubSpot event fired</div>
+              <div style="font-size:11px; color:#6b7280; margin-top:2px;">For Pro & Premium limit hits</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 12: STORY 8 ─────────────────── -->
+  <div class="slide" data-slide="12">
+    <div class="slide-inner">
+      <div class="section-label">Story 8 of 10</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">Downgrade / Cancel Flow</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Safely reducing plan tier with pausing safeguards</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Downgrade Rules</div>
+          <div class="check-item">
+            <span class="accent check-icon" style="font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Downgrade to any lower tier, minimum = free included amount (Pro: 1,000 · Premium: 5,000)</span>
+          </div>
+          <div class="check-item">
+            <span class="accent check-icon" style="font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">If downgrade causes over-limit: excess subs marked <strong style="color:#ef4444;">Paused</strong> automatically</span>
+          </div>
+          <div class="check-item">
+            <span class="accent check-icon" style="font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">System enforces: active billable count ≤ new plan limit at all times</span>
+          </div>
+          <div class="check-item">
+            <span class="accent check-icon" style="font-weight:700;">→</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Paused subs: Synder Sync continues normally (Story 6 rules apply)</span>
+          </div>
+          <hr class="h-divider" />
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">🚫</span>
+            <span style="font-size:13px; color:#9ca3af; line-height:1.5;"><strong>Full cancel NOT available self-serve</strong> — requires new org. UI shows explanation.</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">UX Warning Before Confirmation</div>
+          <div class="warning-box" style="margin-bottom:14px;">
+            <div style="display:flex; align-items:flex-start; gap:8px;">
+              <span style="font-size:16px; flex-shrink:0;">⚠️</span>
+              <div>
+                <div style="font-size:13px; font-weight:700; color:#fbbf24; margin-bottom:4px;">Before Downgrade Confirms</div>
+                <div style="font-size:12px; color:#fcd34d; font-style:italic; line-height:1.6;">
+                  "Downgrading to Free will pause approximately 1,340 subscriptions. RevRec journal entries will stop generating for those subscriptions. You can re-activate them by upgrading your plan."
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Minimum Plan Floors</div>
+          <div class="card-sm" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:13px; color:#d1d5db;">Pro minimum free tier</span>
+            <span class="violet" style="font-size:13px; font-weight:700;">1,000 subs</span>
+          </div>
+          <div class="card-sm" style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:13px; color:#d1d5db;">Premium minimum free tier</span>
+            <span class="violet" style="font-size:13px; font-weight:700;">5,000 subs</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 13: STORY 9 ─────────────────── -->
+  <div class="slide" data-slide="13">
+    <div class="slide-inner">
+      <div class="section-label">Story 9 of 10</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">Billing History Page (Admin)</h1>
+      <p class="slide-subtitle" style="margin-bottom:16px;">Evolve existing admin page from calendar-month to billing-period view</p>
+
+      <div class="highlight-box" style="margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">📌</span>
+          <span style="font-size:13px; color:#93c5fd;"><strong>NOT a new page</strong> — adaptation of the existing "Billable Subscriptions" admin page. Three targeted changes.</span>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-bottom:16px;">
+        <div class="card" style="border-top:3px solid #3b82f6;">
+          <div style="font-size:1.5rem; margin-bottom:8px;">📅</div>
+          <div style="font-weight:700; color:#f9fafb; margin-bottom:6px;">Period Alignment</div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.5;">Calendar months → billing periods anchored to plan start date. Shows "Mar 15 – Apr 14" instead of "March".</p>
+        </div>
+        <div class="card" style="border-top:3px solid #a78bfa;">
+          <div style="font-size:1.5rem; margin-bottom:8px;">📊</div>
+          <div style="font-weight:700; color:#f9fafb; margin-bottom:6px;">Attribution Accuracy</div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.5;">Sub appears only in periods where it was genuinely billable. No approximation, no smearing across period boundaries.</p>
+        </div>
+        <div class="card" style="border-top:3px solid #22c55e;">
+          <div style="font-size:1.5rem; margin-bottom:8px;">🔍</div>
+          <div style="font-weight:700; color:#f9fafb; margin-bottom:6px;">Drill-Down</div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.5;">Each period: peak count, end count, active tier, expandable list of specific billable subs.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px; color:#6b7280; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.06em; font-weight:600;">Sample Period View</div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; font-size:12px; border-collapse:collapse;">
+            <thead>
+              <tr style="color:#6b7280; border-bottom:1px solid #374151;">
+                <th style="text-align:left; padding:6px 10px; font-weight:600;">Period</th>
+                <th style="text-align:right; padding:6px 10px; font-weight:600;">Peak Count</th>
+                <th style="text-align:right; padding:6px 10px; font-weight:600;">End Count</th>
+                <th style="text-align:left; padding:6px 10px; font-weight:600;">Active Tier</th>
+                <th style="text-align:right; padding:6px 10px; font-weight:600;">Billed</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #374151; color:#d1d5db;">
+                <td style="padding:6px 10px; font-family:'Courier New',monospace; color:#a78bfa;">Mar 15 – Apr 14</td>
+                <td style="text-align:right; padding:6px 10px;">2,547</td>
+                <td style="text-align:right; padding:6px 10px;">2,340</td>
+                <td style="padding:6px 10px;"><span class="tag tag-blue">Band 1 / 2,500</span></td>
+                <td style="text-align:right; padding:6px 10px; color:#22c55e; font-weight:600;">$350</td>
+              </tr>
+              <tr style="border-bottom:1px solid #374151; color:#d1d5db;">
+                <td style="padding:6px 10px; font-family:'Courier New',monospace; color:#a78bfa;">Feb 15 – Mar 14</td>
+                <td style="text-align:right; padding:6px 10px;">1,890</td>
+                <td style="text-align:right; padding:6px 10px;">1,847</td>
+                <td style="padding:6px 10px;"><span class="tag tag-blue">Band 1 / 2,000</span></td>
+                <td style="text-align:right; padding:6px 10px; color:#22c55e; font-weight:600;">$280</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px; font-size:12px; color:#6b7280;">Use cases: billing auditability · Success invoicing · usage trend analysis · dispute resolution</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 14: STORY 10 ─────────────────── -->
+  <div class="slide" data-slide="14">
+    <div class="slide-inner">
+      <div class="section-label">Story 10 of 10</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">RevRec Trial for Trial Orgs</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Unlimited RevRec during main Synder trial</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Trial Rules</div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">✅</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Trial orgs get <strong>unlimited RevRec subscriptions</strong> — no count limit applied</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">✅</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">RevRec trial end date = main Synder trial end date (same expiry)</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">✅</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Same sync restrictions as main trial apply</span>
+          </div>
+          <hr class="h-divider" />
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">⏹️</span>
+            <span style="font-size:13px; color:#9ca3af; line-height:1.5;">On trial expiry without paid subscription → RevRec suspended</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">🔄</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">On conversion to Pro → standard billing kicks in (1,000 included; excess → add-on or paused)</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Lifecycle Timeline</div>
+          <div style="display:flex; flex-direction:column; gap:0;">
+            <div class="card-sm" style="border-left:3px solid #22c55e; border-radius:0; border-top-left-radius:8px; border-top-right-radius:8px; margin-bottom:2px;">
+              <div style="font-size:11px; color:#6b7280; margin-bottom:2px;">Phase 1</div>
+              <div style="font-weight:700; color:#22c55e; font-size:13px;">Trial (Unlimited)</div>
+              <div style="font-size:12px; color:#9ca3af; margin-top:2px;">No limits · Full RevRec features · Same expiry as Synder trial</div>
+            </div>
+            <div style="text-align:center; color:#6b7280; font-size:18px; line-height:1; padding:4px 0;">↓</div>
+            <div class="card-sm" style="border-left:3px solid #3b82f6; margin-bottom:2px;">
+              <div style="font-size:11px; color:#6b7280; margin-bottom:2px;">Phase 2 — if converted</div>
+              <div style="font-weight:700; color:#3b82f6; font-size:13px;">Pro Conversion</div>
+              <div style="font-size:12px; color:#9ca3af; margin-top:2px;">1,000 subs included free</div>
+            </div>
+            <div style="text-align:center; color:#6b7280; font-size:18px; line-height:1; padding:4px 0;">↓</div>
+            <div class="card-sm" style="border-left:3px solid #f59e0b; margin-bottom:2px;">
+              <div style="font-size:11px; color:#6b7280; margin-bottom:2px;">Phase 3 — if exceeds</div>
+              <div style="font-weight:700; color:#f59e0b; font-size:13px;">Exceed 1,000 subs</div>
+              <div style="font-size:12px; color:#9ca3af; margin-top:2px;">Add-on required → or subs paused</div>
+            </div>
+            <div style="text-align:center; color:#6b7280; font-size:18px; line-height:1; padding:4px 0;">↓</div>
+            <div class="card-sm" style="border-left:3px solid #ef4444; border-radius:0; border-bottom-left-radius:8px; border-bottom-right-radius:8px;">
+              <div style="font-size:11px; color:#6b7280; margin-bottom:2px;">Phase 2 alt — if not converted</div>
+              <div style="font-weight:700; color:#ef4444; font-size:13px;">Trial Expired</div>
+              <div style="font-size:12px; color:#9ca3af; margin-top:2px;">RevRec suspended</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 15: HISTORICAL IMPORT PRICING ─────────────────── -->
+  <div class="slide" data-slide="15">
+    <div class="slide-inner">
+      <div class="section-label">Pricing Addendum</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">Historical Import Pricing</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Same per-subscription rate × months imported</p>
+
+      <div class="card" style="margin-bottom:16px; background:rgba(59,130,246,0.06); border-color:rgba(59,130,246,0.25);">
+        <div style="font-size:13px; color:#9ca3af; margin-bottom:6px;">Pricing Rule</div>
+        <div style="font-size:1rem; color:#93c5fd; font-weight:500; line-height:1.5;">Each historical month charged at the customer's regular per-sub rate × billable sub count for that month</div>
+      </div>
+
+      <div class="grid-3" style="margin-bottom:16px;">
+        <div class="card" style="text-align:center;">
+          <div class="section-label" style="margin-bottom:8px;">Example A</div>
+          <div style="font-size:1.4rem; font-weight:800; color:#a78bfa; font-family:'Courier New',monospace; margin-bottom:4px;">2K subs</div>
+          <div style="font-size:13px; color:#9ca3af; margin-bottom:12px;">12 months imported</div>
+          <div style="font-size:13px; color:#9ca3af; margin-bottom:4px;">12 × $140</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#22c55e; font-family:'Courier New',monospace;">$1,680</div>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div class="section-label" style="margin-bottom:8px;">Example B</div>
+          <div style="font-size:1.4rem; font-weight:800; color:#a78bfa; font-family:'Courier New',monospace; margin-bottom:4px;">5K subs</div>
+          <div style="font-size:13px; color:#9ca3af; margin-bottom:12px;">12 months imported</div>
+          <div style="font-size:13px; color:#9ca3af; margin-bottom:4px;">12 × $350</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#22c55e; font-family:'Courier New',monospace;">$4,200</div>
+        </div>
+        <div class="card" style="text-align:center;">
+          <div class="section-label" style="margin-bottom:8px;">Example C</div>
+          <div style="font-size:1.4rem; font-weight:800; color:#a78bfa; font-family:'Courier New',monospace; margin-bottom:4px;">25K subs</div>
+          <div style="font-size:13px; color:#9ca3af; margin-bottom:12px;">24 months imported</div>
+          <div style="font-size:13px; color:#9ca3af; margin-bottom:4px;">24 × $1,250</div>
+          <div style="font-size:1.8rem; font-weight:800; color:#22c55e; font-family:'Courier New',monospace;">$30,000</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="gap:12px;">
+        <div class="card-sm" style="background:rgba(34,197,94,0.05); border-color:rgba(34,197,94,0.2);">
+          <div style="font-size:12px; color:#6b7280; margin-bottom:6px;">Volume Discount</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <span style="font-size:13px; color:#d1d5db;">12+ months</span>
+            <span class="tag tag-green">10% off</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:13px; color:#d1d5db;">24+ months</span>
+            <span class="tag tag-green">20% off</span>
+          </div>
+        </div>
+        <div class="card-sm" style="background:rgba(167,139,250,0.05); border-color:rgba(167,139,250,0.2);">
+          <div style="font-size:12px; color:#6b7280; margin-bottom:6px;">Competitive Advantage</div>
+          <p style="font-size:13px; color:#c4b5fd; line-height:1.5;">No competitor prices historical import separately — we have pricing power here. Unique value proposition.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 16: DEPENDENCIES ─────────────────── -->
+  <div class="slide" data-slide="16">
+    <div class="slide-inner">
+      <div class="section-label">Technical Context</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Dependencies & Integration Points</h1>
+      <p class="slide-subtitle" style="margin-bottom:20px;">Systems touched and external dependencies for Milestone 1</p>
+
+      <div class="grid-2" style="gap:12px;">
+        <div class="card-sm">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:16px;">💳</span>
+            <span style="font-weight:700; color:#f9fafb; font-size:13px;">Stripe</span>
+          </div>
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;">~60 new product/plan objects (tiers × currencies × cycles). Proration logic for mid-cycle changes. Webhook handling.</p>
+        </div>
+        <div class="card-sm">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:16px;">🧾</span>
+            <span style="font-weight:700; color:#f9fafb; font-size:13px;">Billing System</span>
+          </div>
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Add-on type support for RevRec. One-time invoice capability for historical billing. Mid-cycle proration calculations.</p>
+        </div>
+        <div class="card-sm">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:16px;">📐</span>
+            <span style="font-weight:700; color:#f9fafb; font-size:13px;">RevRec Module</span>
+          </div>
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;">New "Paused" status. Billable count tracking + historical snapshots. Retroactive JE generation on un-pause.</p>
+        </div>
+        <div class="card-sm">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:16px;">⚙️</span>
+            <span style="font-weight:700; color:#f9fafb; font-size:13px;">Admin Panel</span>
+          </div>
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;">New RevRec controls under Sync → Additional Packages. Billing history page redesign (Story 9). CSM tier assignment.</p>
+        </div>
+        <div class="card-sm">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:16px;">📢</span>
+            <span style="font-weight:700; color:#f9fafb; font-size:13px;">HubSpot</span>
+          </div>
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;">New event: "RevRec limit hit" for Pro AND Premium orgs. Fires regardless of auto-upgrade setting. CRM visibility into upgrade pressure.</p>
+        </div>
+        <div class="card-sm">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:16px;">🎨</span>
+            <span style="font-weight:700; color:#f9fafb; font-size:13px;">UI/UX</span>
+          </div>
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;">7 screens/components to design. Design task ready: <span style="font-family:'Courier New',monospace; color:#a78bfa;">07-design-task.md</span></p>
+        </div>
+        <div class="card-sm" style="grid-column:span 2;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:16px;">👥</span>
+            <span style="font-weight:700; color:#f9fafb; font-size:13px;">Success Team</span>
+          </div>
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Migration policy ready (<span style="font-family:'Courier New',monospace; color:#a78bfa;">06-migration-policy.md</span>). Training required on admin panel + manual override flow. Onboarding materials needed.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 17: T-SHIRT SIZE & RISK ─────────────────── -->
+  <div class="slide" data-slide="17">
+    <div class="slide-inner">
+      <div class="section-label">Estimation</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">Effort Estimate & Key Risks</h1>
+      <p class="slide-subtitle" style="margin-bottom:20px;">Initial t-shirt sizing — to be validated by CTO/TL/QA</p>
+
+      <div class="grid-2" style="margin-bottom:16px; gap:16px;">
+        <div class="card">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+            <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em;">Effort Breakdown</div>
+            <div class="tag tag-red" style="font-size:13px; padding:4px 14px;">Overall: L–XL</div>
+          </div>
+
+          <div class="effort-bar">
+            <div class="effort-label">Backend (counting, Stripe, enforcement, snapshots)</div>
+            <div class="effort-track"><div class="effort-fill" style="width:85%; background:#3b82f6;"></div></div>
+            <div class="effort-size accent" style="font-family:'Courier New',monospace;">L</div>
+          </div>
+          <div class="effort-bar">
+            <div class="effort-label">Frontend (meter, sub flows, upgrade/downgrade, admin)</div>
+            <div class="effort-track"><div class="effort-fill" style="width:85%; background:#3b82f6;"></div></div>
+            <div class="effort-size accent" style="font-family:'Courier New',monospace;">L</div>
+          </div>
+          <div class="effort-bar">
+            <div class="effort-label">Stripe setup (plans × currencies × cycles)</div>
+            <div class="effort-track"><div class="effort-fill" style="width:30%; background:#22c55e;"></div></div>
+            <div class="effort-size success" style="font-family:'Courier New',monospace;">S</div>
+          </div>
+          <div class="effort-bar">
+            <div class="effort-label">Admin panel updates</div>
+            <div class="effort-track"><div class="effort-fill" style="width:55%; background:#f59e0b;"></div></div>
+            <div class="effort-size warning" style="font-family:'Courier New',monospace;">M</div>
+          </div>
+          <div class="effort-bar">
+            <div class="effort-label">QA (edge cases, period boundaries, retroactive JEs)</div>
+            <div class="effort-track"><div class="effort-fill" style="width:70%; background:#f59e0b;"></div></div>
+            <div class="effort-size warning" style="font-family:'Courier New',monospace;">M–L</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Key Risks</div>
+          <div class="danger-box" style="margin-bottom:10px;">
+            <div style="display:flex; align-items:flex-start; gap:8px;">
+              <span style="font-size:14px; flex-shrink:0;">🔴</span>
+              <div>
+                <div style="font-size:13px; font-weight:700; color:#fca5a5; margin-bottom:3px;">Period-Anchored Counting — HIGH</div>
+                <p style="font-size:12px; color:#fca5a5; opacity:0.8; line-height:1.5;">Billing period boundary handling, snapshot accuracy, and retroactive JE generation are the most complex pieces. Careful design required.</p>
+              </div>
+            </div>
+          </div>
+          <div class="warning-box" style="margin-bottom:10px;">
+            <div style="display:flex; align-items:flex-start; gap:8px;">
+              <span style="font-size:14px; flex-shrink:0;">🟡</span>
+              <div>
+                <div style="font-size:13px; font-weight:700; color:#fcd34d; margin-bottom:3px;">~60 Stripe Objects — MEDIUM</div>
+                <p style="font-size:12px; color:#fcd34d; opacity:0.8; line-height:1.5;">Create and maintain across currencies/cycles. Tedious but straightforward. Infrastructure risk if not scripted.</p>
+              </div>
+            </div>
+          </div>
+          <div class="warning-box">
+            <div style="display:flex; align-items:flex-start; gap:8px;">
+              <span style="font-size:14px; flex-shrink:0;">🟡</span>
+              <div>
+                <div style="font-size:13px; font-weight:700; color:#fcd34d; margin-bottom:3px;">Retroactive JE Generation — MEDIUM</div>
+                <p style="font-size:12px; color:#fcd34d; opacity:0.8; line-height:1.5;">Paused → Ready JE catch-up needs careful testing for correctness, order, and idempotency.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 18: OUTCOMES / WHAT WE NEED ─────────────────── -->
+  <div class="slide" data-slide="18">
+    <div class="slide-inner">
+      <div class="section-label">Call to Action</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">What We Need From This Pitch</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Expected outputs and next steps after today's review</p>
+
+      <div class="grid-2" style="margin-bottom:16px; gap:16px;">
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Session Outputs</div>
+          <div class="check-item" style="margin-bottom:12px;">
+            <span class="success check-icon" style="font-size:16px;">✅</span>
+            <div>
+              <div style="font-size:13px; font-weight:600; color:#f9fafb;">Opportunity → Clear</div>
+              <div style="font-size:12px; color:#6b7280; margin-top:1px;">Everyone aligned on the problem and revenue impact</div>
+            </div>
+          </div>
+          <div class="check-item" style="margin-bottom:12px;">
+            <span class="accent check-icon" style="font-size:16px;">→</span>
+            <div>
+              <div style="font-size:13px; font-weight:600; color:#f9fafb;">CTO/TL/QA revisit initial t-shirt size</div>
+              <div style="font-size:12px; color:#6b7280; margin-top:1px;">Validate or adjust L–XL estimate</div>
+            </div>
+          </div>
+          <div class="check-item" style="margin-bottom:12px;">
+            <span class="accent check-icon" style="font-size:16px;">→</span>
+            <div>
+              <div style="font-size:13px; font-weight:600; color:#f9fafb;">Tech Design track identified based on size</div>
+              <div style="font-size:12px; color:#6b7280; margin-top:1px;">Full Tech Vision, RFC, or direct tasking</div>
+            </div>
+          </div>
+          <div class="check-item">
+            <span class="accent check-icon" style="font-size:16px;">→</span>
+            <div>
+              <div style="font-size:13px; font-weight:600; color:#f9fafb;">Tasks created for: UI/UX design · Tech Vision · Test Plan</div>
+              <div style="font-size:12px; color:#6b7280; margin-top:1px;">Owners assigned to each track</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Artifacts Ready Now</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="color:#22c55e; font-size:14px; flex-shrink:0;">✅</span>
+              <span style="font-size:13px; color:#d1d5db;">Technical task with <strong>10 stories + Acceptance Criteria</strong></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="color:#22c55e; font-size:14px; flex-shrink:0;">✅</span>
+              <span style="font-size:13px; color:#d1d5db;">Pricing architecture + full rate card</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="color:#22c55e; font-size:14px; flex-shrink:0;">✅</span>
+              <span style="font-size:13px; color:#d1d5db;">Migration policy for Success team</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="color:#22c55e; font-size:14px; flex-shrink:0;">✅</span>
+              <span style="font-size:13px; color:#d1d5db;">Design task for UI/UX (<strong>7 screens</strong>)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="color:#22c55e; font-size:14px; flex-shrink:0;">✅</span>
+              <span style="font-size:13px; color:#d1d5db;">Historical sync pricing analysis</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="color:#22c55e; font-size:14px; flex-shrink:0;">✅</span>
+              <span style="font-size:13px; color:#d1d5db;">Replit mock prototypes (billing page + app screens)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="background:rgba(34,197,94,0.07); border-color:rgba(34,197,94,0.3); text-align:center;">
+        <div style="font-size:1.8rem; font-weight:800; color:#22c55e; font-family:'Courier New',monospace; margin-bottom:4px;">+$75K ARR</div>
+        <div style="font-size:14px; color:#9ca3af;">from existing 68 orgs alone, with no new customer acquisition</div>
+        <div style="font-size:12px; color:#6b7280; margin-top:4px;">Current: $13,935 MRR &nbsp;→&nbsp; Projected: $20,227 MRR (+45%)</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Navigation Dots -->
+<div id="nav-dots"></div>
+
+<!-- Slide Counter -->
+<div id="slide-counter">1 / 18</div>
+
+<!-- Keyboard hint -->
+<div id="keyboard-hint">← → navigate &nbsp;·&nbsp; Esc overview &nbsp;·&nbsp; F fullscreen</div>
+
+<!-- Overview Grid -->
+<div id="overview">
+  <div style="max-width:1200px; margin:0 auto;">
+    <h2>SLIDE OVERVIEW</h2>
+    <div id="overview-grid"></div>
+  </div>
+  <div id="overview-close" title="Close overview">✕</div>
+</div>
+
+<script>
+const TOTAL = 18;
+const TITLES = [
+  "RevRec Billing: Automated Usage-Based Billing",
+  "What We're Fixing",
+  "Per-Subscription Flat-Tier Pricing",
+  "Three Milestones",
+  "Story 1: Billable Subscription Counting Logic",
+  "Story 2: RevRec Add-On Plan Structure",
+  "Story 3: Plan Availability by Synder Plan",
+  "Story 4: Self-Serve Subscription Flow",
+  "Story 5: Usage Meter UI",
+  "Story 6: Subscription Limit Enforcement",
+  "Story 7: Auto-Upgrade Setting",
+  "Story 8: Downgrade / Cancel Flow",
+  "Story 9: Billing History Page (Admin)",
+  "Story 10: RevRec Trial for Trial Orgs",
+  "Historical Import Pricing",
+  "Dependencies & Integration Points",
+  "Effort Estimate & Key Risks",
+  "What We Need From This Pitch"
+];
+
+let current = 1;
+
+// Build dots
+const dotsEl = document.getElementById('nav-dots');
+for (let i = 1; i <= TOTAL; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.dataset.slide = i;
+  d.title = TITLES[i-1];
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+// Build overview grid
+const grid = document.getElementById('overview-grid');
+for (let i = 1; i <= TOTAL; i++) {
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb' + (i === 1 ? ' active-thumb' : '');
+  thumb.dataset.slide = i;
+  thumb.innerHTML = `<div class="thumb-num">Slide ${i}</div><div class="thumb-title">${TITLES[i-1]}</div>`;
+  thumb.addEventListener('click', () => { goTo(i); hideOverview(); });
+  grid.appendChild(thumb);
+}
+
+function goTo(n) {
+  if (n < 1 || n > TOTAL) return;
+  // Hide current
+  const prev = document.querySelector('.slide.active');
+  if (prev) prev.classList.remove('active');
+  const prevDot = document.querySelector('.dot.active');
+  if (prevDot) prevDot.classList.remove('active');
+  const prevThumb = document.querySelector('.thumb.active-thumb');
+  if (prevThumb) prevThumb.classList.remove('active-thumb');
+
+  current = n;
+  // Show new
+  const next = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (next) next.classList.add('active');
+  const dots = document.querySelectorAll('.dot');
+  if (dots[n-1]) dots[n-1].classList.add('active');
+  const thumbs = document.querySelectorAll('.thumb');
+  if (thumbs[n-1]) thumbs[n-1].classList.add('active-thumb');
+
+  // Update counter
+  document.getElementById('slide-counter').textContent = `${n} / ${TOTAL}`;
+
+  // Update progress bar
+  const pct = (n / TOTAL) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+// Initialize
+goTo(1);
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current - 1);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    const ov = document.getElementById('overview');
+    if (ov.classList.contains('visible')) {
+      hideOverview();
+    } else {
+      showOverview();
+    }
+  } else if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault();
+    toggleFullscreen();
+  }
+});
+
+function showOverview() {
+  document.getElementById('overview').classList.add('visible');
+}
+function hideOverview() {
+  document.getElementById('overview').classList.remove('visible');
+}
+document.getElementById('overview-close').addEventListener('click', hideOverview);
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen().catch(() => {});
+  }
+}
+
+// Touch/swipe support
+let touchStartX = 0;
+let touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    if (dx < 0) goTo(current + 1);
+    else goTo(current - 1);
+  }
+}, { passive: true });
+</script>
+</body>
+</html>
