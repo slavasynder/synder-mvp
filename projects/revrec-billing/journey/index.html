@@ -71,7 +71,6 @@
             <div class="mermaid">
 flowchart LR
     subgraph CUSTOMER ["👤 CUSTOMER"]
-        direction LR
         C_START(["User interested in\nSynder Pro/Premium"])
         C_MAIN_CALL["Scheduled call\nwith Sales — main plan"]  
         C_MAIN_AGREE{"Purchases\nmain plan?"}
@@ -88,7 +87,6 @@ flowchart LR
     end
 
     subgraph SALES ["💼 SALES REP"]
-        direction LR
         S_MAIN_CALL["Presents Synder\nmain plan pricing"]
         S_MAIN_HANDOFF["Hands off to CSM\nafter main plan purchase"]
         S_REVREC_CALL["RevRec quote\nRuns Stripe sub lookup\nactive subs → tier → × months\nExplains ongoing pricing"]
@@ -96,7 +94,6 @@ flowchart LR
     end
 
     subgraph CSM ["🧑‍💼 CSM"]
-        direction LR
         CSM_SETUP["Goes through needs\nConfigures Synder"]
 
         CSM_ENABLE_A["Enables & configures\nRevRec on account"]
@@ -108,7 +105,6 @@ flowchart LR
     end
 
     subgraph SYSTEM ["⚙️ SYNDER / REVREC"]
-        direction LR
         SYS_MAIN_PLAN["Main plan activated\nBilling period set"]
 
         SYS_HIST_A["Historical data processing\nstarts immediately"]
@@ -142,7 +138,6 @@ flowchart LR
         SYS_RR_ROLLBACK(["🔄 RevRec data: ROLLED BACK\nHistorical unlimited during trial\nRollback prevents free data exploit"])
     end
 
-    %% ── Entry: main plan sale ──
     C_START --> C_MAIN_CALL
     C_MAIN_CALL --> S_MAIN_CALL
     S_MAIN_CALL --> C_MAIN_AGREE
@@ -152,7 +147,6 @@ flowchart LR
     CSM_SETUP --> SYS_MAIN_PLAN
     SYS_MAIN_PLAN --> C_PAID
 
-    %% ── Branch A: paid user, RevRec interest later ──
     C_PAID --> C_REVREC_CTA
     C_REVREC_CTA --> S_REVREC_CALL
     S_REVREC_CALL --> C_REVREC_AGREE
@@ -171,7 +165,6 @@ flowchart LR
     SYS_LIMITS_A -->|"Within"| SYS_OK_A
     SYS_LIMITS_A -->|"Exceeds"| SYS_STOP_A
 
-    %% ── Branch B: trial user, RevRec during trial ──
     C_TRIAL --> C_REVREC_B
     C_REVREC_B --> S_REVREC_CALL
     C_REVREC_AGREE_B -->|"No"| C_TRIAL
