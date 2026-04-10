@@ -77,8 +77,6 @@ flowchart LR
         C_AGREE{"Comfortable\nwith pricing?"}
 
         C_PAID["On paid Pro/Premium\nUses main product"]
-        C_HIST{"Wants historical\ndata import?"}
-        C_AGREES_HIST["Reviews historical quote\nAgrees to proceed"]
         C_LIMITS_A{"Exceeds plan\nlimits?"}
 
         C_TRIAL["On main plan trial\nTests Synder Sync"]
@@ -89,7 +87,7 @@ flowchart LR
 
     subgraph SALES ["💼 SALES REP"]
         direction LR
-        S_CALL["Runs Stripe sub lookup\nQuotes historical price\nactive subs → tier → × months\nExplains ongoing pricing"]
+        S_CALL["RevRec quote only\nRuns Stripe sub lookup\nactive subs → tier → × months\nExplains ongoing pricing"]
         S_HANDOFF["Hands off to CSM\nCustomer agrees to proceed"]
     end
 
@@ -97,20 +95,19 @@ flowchart LR
         direction LR
         CSM_SETUP["Goes through needs\nConfigures Synder"]
 
-        CSM_ENABLE_A["Enables & configures\nRevRec on account\nPro: 1,000/mo · Premium: 5,000/mo"]
-        CSM_HIST_CALL["Runs Stripe sub lookup\nQuotes historical import price\nactive subs → tier → × months"]
-        CSM_INVOICE_HIST["Sends manual invoice\nfor historical data import"]
+        CSM_ENABLE_A["Enables & configures\nRevRec on account"]
+        CSM_INVOICE_HIST["Runs Stripe sub lookup\nQuotes & invoices historical data\nactive subs → tier → × months\nManual invoice — must be paid"]
 
         CSM_ENABLE_B["Enables & configures\nRevRec on account\nTrial tied to main plan end"]
-        CSM_INVOICE_B["Sends manual invoice\nfor historical data import"]
+        CSM_INVOICE_B["Runs Stripe sub lookup\nQuotes & invoices historical data\nManual invoice — must be paid"]
     end
 
     subgraph SYSTEM ["⚙️ SYNDER / REVREC"]
         direction LR
         SYS_MAIN_PLAN["Main plan activated\nBilling period set"]
 
-        SYS_REVREC_A["RevRec active\nSubs processed within plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
-        SYS_HIST_IMPORT["Historical import runs\nBackground processing"]
+        SYS_HIST_A["Historical data processing starts\nimmediately on enablement"]
+        SYS_REVREC_A["RevRec active\nSubs within plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
         SYS_AUTO_A{"Auto-upgrade\nenabled?"}
         SYS_UPGRADED_A(["✅ Auto-upgrades\nwhen plan limits hit"])
         SYS_LIMITS_A{"Within plan\nlimits?"}
@@ -152,25 +149,22 @@ flowchart LR
     SYS_MAIN_PLAN -->|"Branch B\nStays on trial"| C_TRIAL
 
     C_PAID --> CSM_ENABLE_A
-    CSM_ENABLE_A --> SYS_REVREC_A
-    SYS_REVREC_A --> C_HIST
-    C_HIST -->|"Yes"| CSM_HIST_CALL
-    CSM_HIST_CALL --> C_AGREES_HIST
-    C_AGREES_HIST --> CSM_INVOICE_HIST
-    CSM_INVOICE_HIST --> SYS_HIST_IMPORT
-    SYS_HIST_IMPORT --> SYS_AUTO_A
+    CSM_ENABLE_A --> SYS_HIST_A
+    CSM_ENABLE_A --> CSM_INVOICE_HIST
+    SYS_HIST_A --> SYS_REVREC_A
+    SYS_REVREC_A --> C_LIMITS_A
+    C_LIMITS_A -->|"No — within limits"| SYS_OK_NO_HIST
+    C_LIMITS_A -->|"Yes — exceeds"| SYS_STOP_NO_HIST
+    C_LIMITS_A -->|"Wants ongoing\nadd-on"| SYS_AUTO_A
     SYS_AUTO_A -->|"ON (default)"| SYS_UPGRADED_A
     SYS_AUTO_A -->|"OFF"| SYS_LIMITS_A
     SYS_LIMITS_A -->|"Within limits"| SYS_OK_A
     SYS_LIMITS_A -->|"Exceeds significantly"| SYS_STOP_A
 
-    C_HIST -->|"No — uses within\nplan limits"| C_LIMITS_A
-    C_LIMITS_A -->|"No"| SYS_OK_NO_HIST
-    C_LIMITS_A -->|"Yes"| SYS_STOP_NO_HIST
-
     C_TRIAL --> C_REVREC_B
     C_REVREC_B --> CSM_ENABLE_B
     CSM_ENABLE_B --> SYS_TRIAL_B
+    CSM_ENABLE_B --> CSM_INVOICE_B
     SYS_TRIAL_B --> C_AGREE_B
     C_AGREE_B -->|"No — trial expires"| SYS_NOTHING
     C_AGREE_B -->|"Yes"| C_BUY_B
@@ -211,6 +205,7 @@ flowchart LR
     style CSM_ENABLE_B fill:#dbeafe,stroke:#2563eb
     style CSM_INVOICE_HIST fill:#fef08a,stroke:#ca8a04
     style CSM_INVOICE_B fill:#fef08a,stroke:#ca8a04
+    style SYS_HIST_A fill:#fed7aa,stroke:#ea580c
     style CUSTOMER fill:#eff6ff,stroke:#3b82f6,color:#1e3a5f
     style SALES fill:#fdf4ff,stroke:#a855f7,color:#3b0764
     style CSM fill:#f0fdf4,stroke:#22c55e,color:#14532d
