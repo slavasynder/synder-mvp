@@ -71,73 +71,73 @@
             <div class="mermaid">
 flowchart LR
     subgraph CUSTOMER ["👤 CUSTOMER"]
-        C_START(["User interested in\nSynder Pro/Premium"])
-        C_MAIN_CALL["Scheduled call\nwith Sales — main plan"]  
-        C_MAIN_AGREE{"Purchases\nmain plan?"}
+        C_START(["User interested in Synder Pro/Premium"])
+        C_MAIN_CALL["Scheduled call with Sales - main plan"]  
+        C_MAIN_AGREE{"Purchases main plan?"}
 
-        C_PAID["On paid Pro/Premium\nUses main product"]
-        C_REVREC_CTA["Gets interested in RevRec\nSchedules call via in-app CTA"]
-        C_REVREC_AGREE{"Agrees to\nenable RevRec?"}
-        C_LIMITS_A{"Sub count\nexceeds plan limits?"}
+        C_PAID["On paid Pro/Premium Uses main product"]
+        C_REVREC_CTA["Gets interested in RevRec Schedules call via in-app CTA"]
+        C_REVREC_AGREE{"Agrees to enable RevRec?"}
+        C_LIMITS_A{"Sub count exceeds plan limits?"}
 
-        C_TRIAL["On main plan trial\nTests Synder Sync"]
-        C_REVREC_B["Gets interested\nin RevRec"]
-        C_REVREC_AGREE_B{"Agrees to\nenable RevRec?"}
-        C_BUY_B{"Purchase decision\nat trial end"}
+        C_TRIAL["On main plan trial Tests Synder Sync"]
+        C_REVREC_B["Gets interested in RevRec"]
+        C_REVREC_AGREE_B{"Agrees to enable RevRec?"}
+        C_BUY_B{"Purchase decision at trial end"}
     end
 
     subgraph SALES ["💼 SALES REP"]
-        S_MAIN_CALL["Presents Synder\nmain plan pricing"]
-        S_MAIN_HANDOFF["Hands off to CSM\nafter main plan purchase"]
-        S_REVREC_CALL["RevRec quote\nRuns Stripe sub lookup\nactive subs → tier → × months\nExplains ongoing pricing"]
-        S_REVREC_HANDOFF["Hands off to CSM\nto enable RevRec"]
-        S_REVREC_CALL_B["RevRec quote\nRuns Stripe sub lookup\nactive subs → tier → × months\nExplains ongoing pricing"]
-        S_REVREC_HANDOFF_B["Hands off to CSM\nto enable RevRec"]
+        S_MAIN_CALL["Presents Synder main plan pricing"]
+        S_MAIN_HANDOFF["Hands off to CSM after main plan purchase"]
+        S_REVREC_CALL["RevRec quote Runs Stripe sub lookup active subs -> tier -> × months Explains ongoing pricing"]
+        S_REVREC_HANDOFF["Hands off to CSM to enable RevRec"]
+        S_REVREC_CALL_B["RevRec quote Runs Stripe sub lookup active subs -> tier -> × months Explains ongoing pricing"]
+        S_REVREC_HANDOFF_B["Hands off to CSM to enable RevRec"]
     end
 
     subgraph CSM ["🧑‍💼 CSM"]
-        CSM_SETUP["Goes through needs\nConfigures Synder"]
+        CSM_SETUP["Goes through needs Configures Synder"]
 
-        CSM_ENABLE_A["Enables & configures\nRevRec on account"]
-        CSM_INVOICE_A["Runs Stripe sub lookup\nQuotes & invoices historical data\nactive subs → tier → × months\nManual invoice — must be paid"]
+        CSM_ENABLE_A["Enables & configures RevRec on account"]
+        CSM_INVOICE_A["Runs Stripe sub lookup Quotes & invoices historical data active subs -> tier -> × months Manual invoice - must be paid"]
 
-        CSM_ENABLE_B["Enables & configures\nRevRec on account"]
-        CSM_INVOICE_B["Runs Stripe sub lookup\nQuotes & invoices historical data\nManual invoice — must be paid"]
-        CSM_PURCHASE_B["Enables ongoing plan\nConfirms plan selection"]
+        CSM_ENABLE_B["Enables & configures RevRec on account"]
+        CSM_INVOICE_B["Runs Stripe sub lookup Quotes & invoices historical data Manual invoice - must be paid"]
+        CSM_PURCHASE_B["Enables ongoing plan Confirms plan selection"]
     end
 
     subgraph SYSTEM ["⚙️ SYNDER / REVREC"]
-        SYS_MAIN_PLAN["Main plan activated\nBilling period set"]
+        SYS_MAIN_PLAN["Main plan activated Billing period set"]
 
-        SYS_HIST_A["Historical data processing\nstarts immediately"]
-        SYS_REVREC_A["RevRec active\nSubs processed at plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
-        SYS_OK_NO_HIST(["✅ Within plan limits\nSubs processed — all good"])
-        SYS_STOP_LIMITS_A(["⛔ RevRec stopped\nExceeds plan limits\nData processed internally\nnot returned to Sync\nReports blurred · Upgrade prompt"])
-        SYS_AUTO_A{"Auto-upgrade\nenabled?"}
-        SYS_UPGRADED_A(["✅ Auto-upgrades\nwhen plan limits hit"])
-        SYS_LIMITS_A{"Within limits\nafter upgrade?"}
-        SYS_OK_A(["✅ Subs processed\nAll good"])
-        SYS_STOP_A(["⛔ RevRec stopped\nUpgrade prompt"])
+        SYS_HIST_A["Historical data processing starts immediately"]
+        SYS_REVREC_A["RevRec active Subs processed at plan limits Pro: 1,000/mo · Premium: 5,000/mo"]
+        SYS_OK_NO_HIST(["✅ Within plan limits Subs processed - all good"])
+        SYS_STOP_LIMITS_A(["⛔ RevRec stopped Exceeds plan limits Data processed internally not returned to Sync Reports blurred · Upgrade prompt"])
+        SYS_AUTO_A{"Auto-upgrade enabled?"}
+        SYS_UPGRADED_A(["✅ Auto-upgrades when plan limits hit"])
+        SYS_LIMITS_A{"Within limits after upgrade?"}
+        SYS_OK_A(["✅ Subs processed All good"])
+        SYS_STOP_A(["⛔ RevRec stopped Upgrade prompt"])
 
-        SYS_HIST_B["Historical data processing\nstarts immediately"]
-        SYS_TRIAL_B["RevRec trial active\nOngoing subs processed free\nTied to main trial end"]
-        SYS_BOTH_B["Main plan + RevRec active\nOngoing billing starts"]
+        SYS_HIST_B["Historical data processing starts immediately"]
+        SYS_TRIAL_B["RevRec trial active Ongoing subs processed free Tied to main trial end"]
+        SYS_BOTH_B["Main plan + RevRec active Ongoing billing starts"]
         SYS_AUTO_B{"Auto-upgrade?"}
-        SYS_UPGRADED_B(["✅ Auto-upgrades\nwhen limits hit"])
+        SYS_UPGRADED_B(["✅ Auto-upgrades when limits hit"])
         SYS_LIMITS_B{"Within limits?"}
         SYS_OK_B(["✅ All good"])
-        SYS_STOP_B(["⛔ RevRec stopped\nUpgrade prompt"])
+        SYS_STOP_B(["⛔ RevRec stopped Upgrade prompt"])
 
-        SYS_SYNC_ONLY_PRO["RevRec at plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
+        SYS_SYNC_ONLY_PRO["RevRec at plan limits Pro: 1,000/mo · Premium: 5,000/mo"]
         SYS_LIMITS_B2{"Within limits?"}
         SYS_OK_B2(["✅ All good"])
-        SYS_STOP_B2(["⛔ RevRec stopped\nUpgrade prompt"])
+        SYS_STOP_B2(["⛔ RevRec stopped Upgrade prompt"])
 
-        SYS_ESSENTIAL(["⚠️ Essential plan\nnot eligible for RevRec\nMust create new org\nRevRec cannot be disabled\nafter enablement"])
+        SYS_ESSENTIAL(["⚠️ Essential plan not eligible for RevRec Must create new org RevRec cannot be disabled after enablement"])
 
-        SYS_NOTHING["No purchase\nTrial ends"]
-        SYS_SYNC_KEPT(["Sync data: kept as-is\nalready synced to books"])
-        SYS_RR_ROLLBACK(["🔄 RevRec data: ROLLED BACK\nHistorical unlimited during trial\nRollback prevents free data exploit"])
+        SYS_NOTHING["No purchase Trial ends"]
+        SYS_SYNC_KEPT(["Sync data: kept as-is already synced to books"])
+        SYS_RR_ROLLBACK(["🔄 RevRec data: ROLLED BACK Historical unlimited during trial Rollback prevents free data exploit"])
     end
 
     C_START --> C_MAIN_CALL
