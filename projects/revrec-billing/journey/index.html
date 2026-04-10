@@ -13,7 +13,6 @@
         .back-link { font-size: 0.85rem; color: #94a3b8; text-decoration: none; display: inline-block; margin-bottom: 1.5rem; }
         .back-link:hover { color: #3b82f6; }
 
-        /* Legend */
         .legend { display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 0.75rem; }
         .legend-section h3 { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.4rem; }
         .legend-items { display: flex; flex-wrap: wrap; gap: 0.6rem; }
@@ -23,62 +22,69 @@
         .sw-sales { background: #fdf4ff; border-color: #a855f7; }
         .sw-csm { background: #f0fdf4; border-color: #22c55e; }
         .sw-system { background: #fff7ed; border-color: #f97316; }
-        .legend-shape { font-size: 0.85rem; }
         .scroll-hint { font-size: 0.75rem; color: #94a3b8; margin-bottom: 1.25rem; }
 
-        /* Diagram container */
-        .diagram-wrapper { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04); padding: 2rem; background: #fafbfc; }
-        .diagram-inner { min-width: 3200px; }
+        .callout { background: #fef9c3; border: 1px solid #fbbf24; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: #713f12; }
+        .callout strong { font-weight: 600; }
 
-        footer { text-align: center; color: #94a3b8; font-size: 0.8rem; margin-top: 2.5rem; }
+        .diagram-wrapper { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04); padding: 2rem; background: #fafbfc; }
+        .diagram-inner { min-width: 3800px; }
+        .mermaid svg { max-width: none !important; }
     </style>
 </head>
 <body>
-    <a href="../" class="back-link">← Back to RevRec Billing</a>
+    <a href="../" class="back-link">← RevRec Billing</a>
     <h1>RevRec Customer Journey</h1>
-    <p class="subtitle">BPMN-style swimlane diagram — sales, onboarding, trial, and billing flows</p>
+    <p class="subtitle">BPMN-style swimlane diagram — all paths from initial interest through ongoing billing</p>
+
+    <div class="callout">
+        <strong>⚠️ Open question for sales &amp; success call:</strong> Historical data import is invoiced <strong>manually by CSM</strong>. Should customers be able to self-subscribe to RevRec (and pay for historical data themselves), or should the plan always be enabled manually so CSM controls the historical data payment?
+    </div>
 
     <div class="legend">
         <div class="legend-section">
             <h3>Swimlanes</h3>
             <div class="legend-items">
-                <div class="legend-item"><span class="legend-swatch sw-customer"></span> Customer</div>
-                <div class="legend-item"><span class="legend-swatch sw-sales"></span> Sales Rep</div>
-                <div class="legend-item"><span class="legend-swatch sw-csm"></span> CSM</div>
-                <div class="legend-item"><span class="legend-swatch sw-system"></span> System</div>
+                <div class="legend-item"><div class="legend-swatch sw-customer"></div>Customer</div>
+                <div class="legend-item"><div class="legend-swatch sw-sales"></div>Sales Rep</div>
+                <div class="legend-item"><div class="legend-swatch sw-csm"></div>CSM</div>
+                <div class="legend-item"><div class="legend-swatch sw-system"></div>Synder / RevRec</div>
             </div>
         </div>
         <div class="legend-section">
             <h3>Shapes</h3>
             <div class="legend-items">
-                <div class="legend-item"><span class="legend-shape">◇</span> Decision</div>
-                <div class="legend-item"><span class="legend-shape">⬭</span> Start / End</div>
-                <div class="legend-item"><span class="legend-shape">▭</span> Process</div>
-                <div class="legend-item"><span class="legend-shape">✅</span> Good</div>
-                <div class="legend-item"><span class="legend-shape">⛔</span> Stopped</div>
-                <div class="legend-item"><span class="legend-shape">⚠️</span> Warning</div>
+                <div class="legend-item">◇ Decision gateway</div>
+                <div class="legend-item">( ) Start / End</div>
+                <div class="legend-item">[ ] Process step</div>
+                <div class="legend-item">✅ Healthy state</div>
+                <div class="legend-item">⛔ RevRec stopped</div>
+                <div class="legend-item">⚠️ Action required</div>
+                <div class="legend-item">🔄 Rollback</div>
             </div>
         </div>
     </div>
-    <p class="scroll-hint">↔ Scroll horizontally to explore the full journey</p>
+    <p class="scroll-hint">↔ Scroll horizontally to see the full diagram</p>
 
     <div class="diagram-wrapper">
         <div class="diagram-inner">
-            <pre class="mermaid">
+            <div class="mermaid">
 flowchart LR
     subgraph CUSTOMER ["👤 CUSTOMER"]
         direction LR
         C_START(["User interested in\nSynder Pro/Premium"])
         C_CALL["Reviews pricing\non sales call"]
         C_AGREE{"Comfortable\nwith pricing?"}
-        C_PAID["On paid Pro/Premium\nUses main product"]
-        C_INAPP["Sees RevRec CTA in-app\nSchedules call"]
-        C_AGREE_A{"Agrees to\ntry RevRec?"}
-        C_BUY_A{"Purchase decision\n(up to 15 days)"}
+
+        C_PAID["On paid Pro/Premium\nRevRec included at plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
+        C_HIST{"Wants historical\ndata import?"}
+        C_AGREES_HIST["Reviews historical quote\nAgrees to proceed"]
+        C_BUY_A{"Exceeds plan\nlimits?"}
+
         C_TRIAL["On main plan trial\nTests Synder Sync"]
         C_REVREC_B["Gets interested\nin RevRec"]
         C_AGREE_B{"Agrees to\ntry RevRec?"}
-        C_BUY_B{"Purchase decision\n(up to 7 days)"}
+        C_BUY_B{"Purchase decision\nat trial end"}
     end
 
     subgraph SALES ["💼 SALES REP"]
@@ -90,41 +96,45 @@ flowchart LR
     subgraph CSM ["🧑‍💼 CSM"]
         direction LR
         CSM_SETUP["Goes through needs\nConfigures Synder"]
-        CSM_CALL_A["Explains RevRec\nQuotes historical import\nCustomer agrees"]
-        CSM_TRIAL_A["Enables RevRec trial\n15 days"]
-        CSM_PURCHASE_A["Enables ongoing plan\nInvoices historical data"]
+        CSM_HIST_CALL["Explains historical import\nRuns Stripe sub lookup\nQuotes price manually"]
+        CSM_INVOICE_HIST["Sends manual invoice\nfor historical data import"]
         CSM_CALL_B["Explains RevRec\nQuotes historical import\nCustomer agrees"]
         CSM_TRIAL_B["Enables RevRec trial\nTied to main trial\ne.g. 7 days"]
+        CSM_INVOICE_B["Sends manual invoice\nfor historical data import"]
     end
 
     subgraph SYSTEM ["⚙️ SYNDER / REVREC"]
         direction LR
         SYS_MAIN_PLAN["Main plan activated\nBilling period set"]
-        SYS_TRIAL_A["RevRec trial active\nAll subs processed free\n15 days"]
+
+        SYS_HIST_IMPORT["Historical import runs\nBackground processing"]
         SYS_AUTO_A{"Auto-upgrade\nenabled?"}
-        SYS_UPGRADED_A(["✅ Auto-upgrades\nwhen limits hit"])
+        SYS_UPGRADED_A(["✅ Auto-upgrades\nwhen plan limits hit"])
         SYS_LIMITS_A{"Within plan\nlimits?"}
         SYS_OK_A(["✅ Subs processed\nAll good"])
-        SYS_STOP_A(["⛔ RevRec stopped\nData processed internally\nnot returned to Sync\nReports blurred"])
-        SYS_DEFAULTS_A["Defaults to plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
-        SYS_LIMITS_A2{"Within plan\nlimits?"}
-        SYS_OK_A2(["✅ Subs processed\nAll good"])
-        SYS_STOP_A2(["⛔ RevRec stopped\nSame behavior"])
-        SYS_TRIAL_B["RevRec trial active\nTied to main trial\ne.g. 7 days"]
-        SYS_BOTH_B["Main plan + RevRec\nHistorical invoiced\nOngoing billing starts"]
+        SYS_STOP_A(["⛔ RevRec stopped\nData processed internally\nbut not returned to Sync\nReports blurred · Upgrade prompt"])
+
+        SYS_OK_NO_HIST(["✅ Subs processed\nWithin plan limits"])
+        SYS_STOP_NO_HIST(["⛔ RevRec stopped\nExceeds plan limits\nUpgrade prompt shown"])
+
+        SYS_TRIAL_B["RevRec trial active\nAll subs processed free\nTied to main trial end"]
+        SYS_BOTH_B["Main plan purchased\n+ RevRec ongoing plan\nHistorical import starts"]
         SYS_AUTO_B{"Auto-upgrade?"}
         SYS_UPGRADED_B(["✅ Auto-upgrades\nwhen limits hit"])
         SYS_LIMITS_B{"Within limits?"}
         SYS_OK_B(["✅ All good"])
-        SYS_STOP_B(["⛔ RevRec stopped"])
-        SYS_SYNC_ONLY["No RevRec add-on\nDefaults to plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
+        SYS_STOP_B(["⛔ RevRec stopped\nUpgrade prompt shown"])
+
+        SYS_SYNC_ONLY_PRO["No RevRec add-on\nDefaults to plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
         SYS_LIMITS_B2{"Within limits?"}
         SYS_OK_B2(["✅ All good"])
-        SYS_STOP_B2(["⛔ RevRec stopped"])
-        SYS_ESSENTIAL(["⚠️ Essential plan not eligible\nMust create new org\nRevRec cannot be disabled\nafter enablement"])
+        SYS_STOP_B2(["⛔ RevRec stopped\nUpgrade prompt shown"])
+
+        SYS_ESSENTIAL(["⚠️ Essential plan\nnot eligible for RevRec\nMust create new org\nRevRec cannot be disabled\nafter enablement"])
+
         SYS_NOTHING["No purchase"]
         SYS_SYNC_KEPT(["Sync data: kept as-is\nalready synced to books"])
-        SYS_RR_ROLLBACK(["🔄 RevRec data: ROLLED BACK\nPrevents free data exploit\nHistorical unlimited during trial"])
+        SYS_RR_ROLLBACK(["🔄 RevRec data: ROLLED BACK\nHistorical unlimited during trial\nRollback prevents free data exploit"])
     end
 
     C_START --> S_CALL
@@ -134,26 +144,24 @@ flowchart LR
     C_AGREE -->|"Yes"| S_HANDOFF
     S_HANDOFF --> CSM_SETUP
     CSM_SETUP --> SYS_MAIN_PLAN
-    SYS_MAIN_PLAN -->|"Branch A: Purchases plan"| C_PAID
-    SYS_MAIN_PLAN -->|"Branch B: Stays on trial"| C_TRIAL
 
-    C_PAID --> C_INAPP
-    C_INAPP --> CSM_CALL_A
-    CSM_CALL_A --> C_AGREE_A
-    C_AGREE_A -->|"No"| C_INAPP
-    C_AGREE_A -->|"Yes"| CSM_TRIAL_A
-    CSM_TRIAL_A --> SYS_TRIAL_A
-    SYS_TRIAL_A --> C_BUY_A
-    C_BUY_A -->|"A1: Purchases RevRec"| CSM_PURCHASE_A
-    CSM_PURCHASE_A --> SYS_AUTO_A
+    SYS_MAIN_PLAN -->|"Branch A\nPurchases plan"| C_PAID
+    SYS_MAIN_PLAN -->|"Branch B\nStays on trial"| C_TRIAL
+
+    C_PAID --> C_HIST
+    C_HIST -->|"Yes — schedules\nCSM call"| CSM_HIST_CALL
+    CSM_HIST_CALL --> C_AGREES_HIST
+    C_AGREES_HIST --> CSM_INVOICE_HIST
+    CSM_INVOICE_HIST --> SYS_HIST_IMPORT
+    SYS_HIST_IMPORT --> SYS_AUTO_A
     SYS_AUTO_A -->|"ON (default)"| SYS_UPGRADED_A
     SYS_AUTO_A -->|"OFF"| SYS_LIMITS_A
     SYS_LIMITS_A -->|"Within limits"| SYS_OK_A
     SYS_LIMITS_A -->|"Exceeds significantly"| SYS_STOP_A
-    C_BUY_A -->|"A2: Ignores RevRec"| SYS_DEFAULTS_A
-    SYS_DEFAULTS_A --> SYS_LIMITS_A2
-    SYS_LIMITS_A2 -->|"Within limits"| SYS_OK_A2
-    SYS_LIMITS_A2 -->|"Exceeds significantly"| SYS_STOP_A2
+
+    C_HIST -->|"No — uses RevRec\nwithin plan limits"| C_BUY_A
+    C_BUY_A -->|"No"| SYS_OK_NO_HIST
+    C_BUY_A -->|"Yes"| SYS_STOP_NO_HIST
 
     C_TRIAL --> C_REVREC_B
     C_REVREC_B --> CSM_CALL_B
@@ -162,50 +170,66 @@ flowchart LR
     C_AGREE_B -->|"Yes"| CSM_TRIAL_B
     CSM_TRIAL_B --> SYS_TRIAL_B
     SYS_TRIAL_B --> C_BUY_B
-    C_BUY_B -->|"B1: Sync + RevRec"| SYS_BOTH_B
+
+    C_BUY_B -->|"B1: Sync + RevRec"| CSM_INVOICE_B
+    CSM_INVOICE_B --> SYS_BOTH_B
     SYS_BOTH_B --> SYS_AUTO_B
     SYS_AUTO_B -->|"ON"| SYS_UPGRADED_B
     SYS_AUTO_B -->|"OFF"| SYS_LIMITS_B
     SYS_LIMITS_B -->|"Within"| SYS_OK_B
     SYS_LIMITS_B -->|"Exceeds"| SYS_STOP_B
-    C_BUY_B -->|"B2: Sync only, Pro/Premium"| SYS_SYNC_ONLY
-    SYS_SYNC_ONLY --> SYS_LIMITS_B2
+
+    C_BUY_B -->|"B2: Sync only\nPro/Premium"| SYS_SYNC_ONLY_PRO
+    SYS_SYNC_ONLY_PRO --> SYS_LIMITS_B2
     SYS_LIMITS_B2 -->|"Within"| SYS_OK_B2
     SYS_LIMITS_B2 -->|"Exceeds"| SYS_STOP_B2
-    C_BUY_B -->|"B3: Sync only, Essential"| SYS_ESSENTIAL
+
+    C_BUY_B -->|"B3: Sync only\nEssential plan"| SYS_ESSENTIAL
+
     C_BUY_B -->|"B4: No purchase"| SYS_NOTHING
     SYS_NOTHING --> SYS_SYNC_KEPT
     SYS_NOTHING --> SYS_RR_ROLLBACK
 
     style SYS_UPGRADED_A fill:#bbf7d0,stroke:#15803d
     style SYS_OK_A fill:#bbf7d0,stroke:#15803d
-    style SYS_OK_A2 fill:#bbf7d0,stroke:#15803d
+    style SYS_OK_NO_HIST fill:#bbf7d0,stroke:#15803d
     style SYS_UPGRADED_B fill:#bbf7d0,stroke:#15803d
     style SYS_OK_B fill:#bbf7d0,stroke:#15803d
     style SYS_OK_B2 fill:#bbf7d0,stroke:#15803d
     style SYS_STOP_A fill:#fecaca,stroke:#dc2626
-    style SYS_STOP_A2 fill:#fecaca,stroke:#dc2626
+    style SYS_STOP_NO_HIST fill:#fecaca,stroke:#dc2626
     style SYS_STOP_B fill:#fecaca,stroke:#dc2626
     style SYS_STOP_B2 fill:#fecaca,stroke:#dc2626
     style SYS_RR_ROLLBACK fill:#fecaca,stroke:#dc2626
     style SYS_ESSENTIAL fill:#fef08a,stroke:#ca8a04
     style SYS_SYNC_KEPT fill:#f1f5f9,stroke:#94a3b8
+    style CSM_INVOICE_HIST fill:#fef08a,stroke:#ca8a04
+    style CSM_INVOICE_B fill:#fef08a,stroke:#ca8a04
     style CUSTOMER fill:#eff6ff,stroke:#3b82f6,color:#1e3a5f
     style SALES fill:#fdf4ff,stroke:#a855f7,color:#3b0764
     style CSM fill:#f0fdf4,stroke:#22c55e,color:#14532d
     style SYSTEM fill:#fff7ed,stroke:#f97316,color:#431407
-            </pre>
+            </div>
         </div>
     </div>
-
-    <footer>Synder Product • Built with 🦁 by Tyrion</footer>
 
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <script>
         mermaid.initialize({
             startOnLoad: true,
             theme: 'default',
-            flowchart: { useMaxWidth: false }
+            flowchart: {
+                useMaxWidth: false,
+                htmlLabels: true,
+                rankSpacing: 60,
+                nodeSpacing: 40,
+                padding: 15,
+                wrappingWidth: 180
+            },
+            themeVariables: {
+                fontSize: '14px',
+                fontFamily: 'Inter, sans-serif'
+            }
         });
     </script>
 </body>
