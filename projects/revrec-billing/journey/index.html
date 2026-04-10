@@ -91,6 +91,8 @@ flowchart LR
         S_MAIN_HANDOFF["Hands off to CSM\nafter main plan purchase"]
         S_REVREC_CALL["RevRec quote\nRuns Stripe sub lookup\nactive subs → tier → × months\nExplains ongoing pricing"]
         S_REVREC_HANDOFF["Hands off to CSM\nto enable RevRec"]
+        S_REVREC_CALL_B["RevRec quote\nRuns Stripe sub lookup\nactive subs → tier → × months\nExplains ongoing pricing"]
+        S_REVREC_HANDOFF_B["Hands off to CSM\nto enable RevRec"]
     end
 
     subgraph CSM ["🧑‍💼 CSM"]
@@ -141,8 +143,8 @@ flowchart LR
     C_START --> C_MAIN_CALL
     C_MAIN_CALL --> S_MAIN_CALL
     S_MAIN_CALL --> C_MAIN_AGREE
-    C_MAIN_AGREE -->|"No — stays\non trial"| C_TRIAL
-    C_MAIN_AGREE -->|"Yes — purchases\nPro/Premium"| S_MAIN_HANDOFF
+    C_MAIN_AGREE -->|"No - stays on trial"| C_TRIAL
+    C_MAIN_AGREE -->|"Yes - purchases Pro/Premium"| S_MAIN_HANDOFF
     S_MAIN_HANDOFF --> CSM_SETUP
     CSM_SETUP --> SYS_MAIN_PLAN
     SYS_MAIN_PLAN --> C_PAID
@@ -159,22 +161,24 @@ flowchart LR
     SYS_REVREC_A --> C_LIMITS_A
     C_LIMITS_A -->|"No"| SYS_OK_NO_HIST
     C_LIMITS_A -->|"Yes"| SYS_STOP_LIMITS_A
-    C_LIMITS_A -->|"Wants ongoing\nadd-on upgrade"| SYS_AUTO_A
+    C_LIMITS_A -->|"Wants ongoing add-on upgrade"| SYS_AUTO_A
     SYS_AUTO_A -->|"ON (default)"| SYS_UPGRADED_A
     SYS_AUTO_A -->|"OFF"| SYS_LIMITS_A
     SYS_LIMITS_A -->|"Within"| SYS_OK_A
     SYS_LIMITS_A -->|"Exceeds"| SYS_STOP_A
 
     C_TRIAL --> C_REVREC_B
-    C_REVREC_B --> S_REVREC_CALL
+    C_REVREC_B --> S_REVREC_CALL_B
+    S_REVREC_CALL_B --> C_REVREC_AGREE_B
     C_REVREC_AGREE_B -->|"No"| C_TRIAL
-    C_REVREC_AGREE_B -->|"Yes"| CSM_ENABLE_B
+    C_REVREC_AGREE_B -->|"Yes"| S_REVREC_HANDOFF_B
+    S_REVREC_HANDOFF_B --> CSM_ENABLE_B
     CSM_ENABLE_B --> SYS_HIST_B
     CSM_ENABLE_B --> CSM_INVOICE_B
     SYS_HIST_B --> SYS_TRIAL_B
     SYS_TRIAL_B --> C_BUY_B
 
-    C_BUY_B -->|"B1: Purchases\nSync + RevRec"| CSM_PURCHASE_B
+    C_BUY_B -->|"B1: Purchases Sync + RevRec"| CSM_PURCHASE_B
     CSM_PURCHASE_B --> SYS_BOTH_B
     SYS_BOTH_B --> SYS_AUTO_B
     SYS_AUTO_B -->|"ON"| SYS_UPGRADED_B
@@ -182,12 +186,12 @@ flowchart LR
     SYS_LIMITS_B -->|"Within"| SYS_OK_B
     SYS_LIMITS_B -->|"Exceeds"| SYS_STOP_B
 
-    C_BUY_B -->|"B2: Sync only\nPro/Premium"| SYS_SYNC_ONLY_PRO
+    C_BUY_B -->|"B2: Sync only Pro/Premium"| SYS_SYNC_ONLY_PRO
     SYS_SYNC_ONLY_PRO --> SYS_LIMITS_B2
     SYS_LIMITS_B2 -->|"Within"| SYS_OK_B2
     SYS_LIMITS_B2 -->|"Exceeds"| SYS_STOP_B2
 
-    C_BUY_B -->|"B3: Sync only\nEssential plan"| SYS_ESSENTIAL
+    C_BUY_B -->|"B3: Sync only Essential plan"| SYS_ESSENTIAL
 
     C_BUY_B -->|"B4: No purchase"| SYS_NOTHING
     SYS_NOTHING --> SYS_SYNC_KEPT
