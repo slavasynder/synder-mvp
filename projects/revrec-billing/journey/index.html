@@ -73,22 +73,26 @@ flowchart LR
     subgraph CUSTOMER ["👤 CUSTOMER"]
         direction LR
         C_START(["User interested in\nSynder Pro/Premium"])
-        C_CALL["Reviews pricing\non sales call"]
-        C_AGREE{"Comfortable\nwith pricing?"}
+        C_MAIN_CALL["Scheduled call\nwith Sales — main plan"]  
+        C_MAIN_AGREE{"Purchases\nmain plan?"}
 
         C_PAID["On paid Pro/Premium\nUses main product"]
-        C_LIMITS_A{"Exceeds plan\nlimits?"}
+        C_REVREC_CTA["Gets interested in RevRec\nSchedules call via in-app CTA"]
+        C_REVREC_AGREE{"Agrees to\nenable RevRec?"}
+        C_LIMITS_A{"Sub count\nexceeds plan limits?"}
 
         C_TRIAL["On main plan trial\nTests Synder Sync"]
         C_REVREC_B["Gets interested\nin RevRec"]
-        C_AGREE_B{"Agrees to\ntry RevRec?"}
+        C_REVREC_AGREE_B{"Agrees to\nenable RevRec?"}
         C_BUY_B{"Purchase decision\nat trial end"}
     end
 
     subgraph SALES ["💼 SALES REP"]
         direction LR
-        S_CALL["RevRec quote only\nRuns Stripe sub lookup\nactive subs → tier → × months\nExplains ongoing pricing"]
-        S_HANDOFF["Hands off to CSM\nCustomer agrees to proceed"]
+        S_MAIN_CALL["Presents Synder\nmain plan pricing"]
+        S_MAIN_HANDOFF["Hands off to CSM\nafter main plan purchase"]
+        S_REVREC_CALL["RevRec quote\nRuns Stripe sub lookup\nactive subs → tier → × months\nExplains ongoing pricing"]
+        S_REVREC_HANDOFF["Hands off to CSM\nto enable RevRec"]
     end
 
     subgraph CSM ["🧑‍💼 CSM"]
@@ -96,81 +100,89 @@ flowchart LR
         CSM_SETUP["Goes through needs\nConfigures Synder"]
 
         CSM_ENABLE_A["Enables & configures\nRevRec on account"]
-        CSM_INVOICE_HIST["Runs Stripe sub lookup\nQuotes & invoices historical data\nactive subs → tier → × months\nManual invoice — must be paid"]
+        CSM_INVOICE_A["Runs Stripe sub lookup\nQuotes & invoices historical data\nactive subs → tier → × months\nManual invoice — must be paid"]
 
-        CSM_ENABLE_B["Enables & configures\nRevRec on account\nTrial tied to main plan end"]
+        CSM_ENABLE_B["Enables & configures\nRevRec on account"]
         CSM_INVOICE_B["Runs Stripe sub lookup\nQuotes & invoices historical data\nManual invoice — must be paid"]
+        CSM_PURCHASE_B["Enables ongoing plan\nConfirms plan selection"]
     end
 
     subgraph SYSTEM ["⚙️ SYNDER / REVREC"]
         direction LR
         SYS_MAIN_PLAN["Main plan activated\nBilling period set"]
 
-        SYS_HIST_A["Historical data processing starts\nimmediately on enablement"]
-        SYS_REVREC_A["RevRec active\nSubs within plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
+        SYS_HIST_A["Historical data processing\nstarts immediately"]
+        SYS_REVREC_A["RevRec active\nSubs processed at plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
+        SYS_OK_NO_HIST(["✅ Within plan limits\nSubs processed — all good"])
+        SYS_STOP_LIMITS_A(["⛔ RevRec stopped\nExceeds plan limits\nData processed internally\nnot returned to Sync\nReports blurred · Upgrade prompt"])
         SYS_AUTO_A{"Auto-upgrade\nenabled?"}
         SYS_UPGRADED_A(["✅ Auto-upgrades\nwhen plan limits hit"])
-        SYS_LIMITS_A{"Within plan\nlimits?"}
+        SYS_LIMITS_A{"Within limits\nafter upgrade?"}
         SYS_OK_A(["✅ Subs processed\nAll good"])
-        SYS_STOP_A(["⛔ RevRec stopped\nData processed internally\nbut not returned to Sync\nReports blurred · Upgrade prompt"])
+        SYS_STOP_A(["⛔ RevRec stopped\nUpgrade prompt"])
 
-        SYS_OK_NO_HIST(["✅ Subs processed\nWithin plan limits"])
-        SYS_STOP_NO_HIST(["⛔ RevRec stopped\nExceeds plan limits\nUpgrade prompt shown"])
-
-        SYS_TRIAL_B["RevRec trial active\nAll subs processed free\nTied to main trial end"]
-        SYS_BOTH_B["Main plan purchased\n+ RevRec ongoing plan\nHistorical import starts"]
+        SYS_HIST_B["Historical data processing\nstarts immediately"]
+        SYS_TRIAL_B["RevRec trial active\nOngoing subs processed free\nTied to main trial end"]
+        SYS_BOTH_B["Main plan + RevRec active\nOngoing billing starts"]
         SYS_AUTO_B{"Auto-upgrade?"}
         SYS_UPGRADED_B(["✅ Auto-upgrades\nwhen limits hit"])
         SYS_LIMITS_B{"Within limits?"}
         SYS_OK_B(["✅ All good"])
-        SYS_STOP_B(["⛔ RevRec stopped\nUpgrade prompt shown"])
+        SYS_STOP_B(["⛔ RevRec stopped\nUpgrade prompt"])
 
-        SYS_SYNC_ONLY_PRO["No RevRec add-on\nDefaults to plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
+        SYS_SYNC_ONLY_PRO["RevRec at plan limits\nPro: 1,000/mo · Premium: 5,000/mo"]
         SYS_LIMITS_B2{"Within limits?"}
         SYS_OK_B2(["✅ All good"])
-        SYS_STOP_B2(["⛔ RevRec stopped\nUpgrade prompt shown"])
+        SYS_STOP_B2(["⛔ RevRec stopped\nUpgrade prompt"])
 
         SYS_ESSENTIAL(["⚠️ Essential plan\nnot eligible for RevRec\nMust create new org\nRevRec cannot be disabled\nafter enablement"])
 
-        SYS_NOTHING["No purchase"]
+        SYS_NOTHING["No purchase\nTrial ends"]
         SYS_SYNC_KEPT(["Sync data: kept as-is\nalready synced to books"])
         SYS_RR_ROLLBACK(["🔄 RevRec data: ROLLED BACK\nHistorical unlimited during trial\nRollback prevents free data exploit"])
     end
 
-    C_START --> S_CALL
-    S_CALL --> C_CALL
-    C_CALL --> C_AGREE
-    C_AGREE -->|"No — negotiate"| C_CALL
-    C_AGREE -->|"Yes"| S_HANDOFF
-    S_HANDOFF --> CSM_SETUP
+    %% ── Entry: main plan sale ──
+    C_START --> C_MAIN_CALL
+    C_MAIN_CALL --> S_MAIN_CALL
+    S_MAIN_CALL --> C_MAIN_AGREE
+    C_MAIN_AGREE -->|"No — stays\non trial"| C_TRIAL
+    C_MAIN_AGREE -->|"Yes — purchases\nPro/Premium"| S_MAIN_HANDOFF
+    S_MAIN_HANDOFF --> CSM_SETUP
     CSM_SETUP --> SYS_MAIN_PLAN
+    SYS_MAIN_PLAN --> C_PAID
 
-    SYS_MAIN_PLAN -->|"Branch A\nPurchases plan"| C_PAID
-    SYS_MAIN_PLAN -->|"Branch B\nStays on trial"| C_TRIAL
-
-    C_PAID --> CSM_ENABLE_A
+    %% ── Branch A: paid user, RevRec interest later ──
+    C_PAID --> C_REVREC_CTA
+    C_REVREC_CTA --> S_REVREC_CALL
+    S_REVREC_CALL --> C_REVREC_AGREE
+    C_REVREC_AGREE -->|"No"| C_PAID
+    C_REVREC_AGREE -->|"Yes"| S_REVREC_HANDOFF
+    S_REVREC_HANDOFF --> CSM_ENABLE_A
     CSM_ENABLE_A --> SYS_HIST_A
-    CSM_ENABLE_A --> CSM_INVOICE_HIST
+    CSM_ENABLE_A --> CSM_INVOICE_A
     SYS_HIST_A --> SYS_REVREC_A
     SYS_REVREC_A --> C_LIMITS_A
-    C_LIMITS_A -->|"No — within limits"| SYS_OK_NO_HIST
-    C_LIMITS_A -->|"Yes — exceeds"| SYS_STOP_NO_HIST
-    C_LIMITS_A -->|"Wants ongoing\nadd-on"| SYS_AUTO_A
+    C_LIMITS_A -->|"No"| SYS_OK_NO_HIST
+    C_LIMITS_A -->|"Yes"| SYS_STOP_LIMITS_A
+    C_LIMITS_A -->|"Wants ongoing\nadd-on upgrade"| SYS_AUTO_A
     SYS_AUTO_A -->|"ON (default)"| SYS_UPGRADED_A
     SYS_AUTO_A -->|"OFF"| SYS_LIMITS_A
-    SYS_LIMITS_A -->|"Within limits"| SYS_OK_A
-    SYS_LIMITS_A -->|"Exceeds significantly"| SYS_STOP_A
+    SYS_LIMITS_A -->|"Within"| SYS_OK_A
+    SYS_LIMITS_A -->|"Exceeds"| SYS_STOP_A
 
+    %% ── Branch B: trial user, RevRec during trial ──
     C_TRIAL --> C_REVREC_B
-    C_REVREC_B --> CSM_ENABLE_B
-    CSM_ENABLE_B --> SYS_TRIAL_B
+    C_REVREC_B --> S_REVREC_CALL
+    C_REVREC_AGREE_B -->|"No"| C_TRIAL
+    C_REVREC_AGREE_B -->|"Yes"| CSM_ENABLE_B
+    CSM_ENABLE_B --> SYS_HIST_B
     CSM_ENABLE_B --> CSM_INVOICE_B
-    SYS_TRIAL_B --> C_AGREE_B
-    C_AGREE_B -->|"No — trial expires"| SYS_NOTHING
-    C_AGREE_B -->|"Yes"| C_BUY_B
+    SYS_HIST_B --> SYS_TRIAL_B
+    SYS_TRIAL_B --> C_BUY_B
 
-    C_BUY_B -->|"B1: Sync + RevRec"| CSM_INVOICE_B
-    CSM_INVOICE_B --> SYS_BOTH_B
+    C_BUY_B -->|"B1: Purchases\nSync + RevRec"| CSM_PURCHASE_B
+    CSM_PURCHASE_B --> SYS_BOTH_B
     SYS_BOTH_B --> SYS_AUTO_B
     SYS_AUTO_B -->|"ON"| SYS_UPGRADED_B
     SYS_AUTO_B -->|"OFF"| SYS_LIMITS_B
@@ -194,8 +206,8 @@ flowchart LR
     style SYS_UPGRADED_B fill:#bbf7d0,stroke:#15803d
     style SYS_OK_B fill:#bbf7d0,stroke:#15803d
     style SYS_OK_B2 fill:#bbf7d0,stroke:#15803d
+    style SYS_STOP_LIMITS_A fill:#fecaca,stroke:#dc2626
     style SYS_STOP_A fill:#fecaca,stroke:#dc2626
-    style SYS_STOP_NO_HIST fill:#fecaca,stroke:#dc2626
     style SYS_STOP_B fill:#fecaca,stroke:#dc2626
     style SYS_STOP_B2 fill:#fecaca,stroke:#dc2626
     style SYS_RR_ROLLBACK fill:#fecaca,stroke:#dc2626
@@ -203,9 +215,10 @@ flowchart LR
     style SYS_SYNC_KEPT fill:#f1f5f9,stroke:#94a3b8
     style CSM_ENABLE_A fill:#dbeafe,stroke:#2563eb
     style CSM_ENABLE_B fill:#dbeafe,stroke:#2563eb
-    style CSM_INVOICE_HIST fill:#fef08a,stroke:#ca8a04
+    style CSM_INVOICE_A fill:#fef08a,stroke:#ca8a04
     style CSM_INVOICE_B fill:#fef08a,stroke:#ca8a04
     style SYS_HIST_A fill:#fed7aa,stroke:#ea580c
+    style SYS_HIST_B fill:#fed7aa,stroke:#ea580c
     style CUSTOMER fill:#eff6ff,stroke:#3b82f6,color:#1e3a5f
     style SALES fill:#fdf4ff,stroke:#a855f7,color:#3b0764
     style CSM fill:#f0fdf4,stroke:#22c55e,color:#14532d
