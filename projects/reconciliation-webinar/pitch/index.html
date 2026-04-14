@@ -275,7 +275,7 @@ tailwind.config = {
           <div style="display:flex; flex-direction:column; gap:8px;">
             <div class="check-item">
               <span class="success check-icon" style="font-size:14px;">✓</span>
-              <span style="font-size:13px; color:#d1d5db;">Compares individual transactions between integration and QBO</span>
+              <span style="font-size:13px; color:#d1d5db;">Compares individual transactions between integration and accounting</span>
             </div>
             <div class="check-item">
               <span class="success check-icon" style="font-size:14px;">✓</span>
@@ -283,11 +283,11 @@ tailwind.config = {
             </div>
             <div class="check-item">
               <span class="success check-icon" style="font-size:14px;">✓</span>
-              <span style="font-size:13px; color:#d1d5db;">Create entries directly from mismatches</span>
+              <span style="font-size:13px; color:#d1d5db;">Ignore, investigate, and export mismatches</span>
             </div>
           </div>
           <hr class="h-divider" />
-          <div style="font-size:12px; color:#6b7280;">Best for: month-end close, auditing sync accuracy, catching gaps</div>
+          <div style="font-size:12px; color:#6b7280;">PT mode: QBO, Xero, QBD · Summary mode: any accounting</div>
         </div>
 
         <div class="card" style="border:2px solid rgba(167,139,250,0.4); background:rgba(167,139,250,0.04);">
@@ -320,7 +320,7 @@ tailwind.config = {
       <div class="highlight-box">
         <div style="display:flex; align-items:center; gap:8px;">
           <span style="font-size:16px;">✅</span>
-          <span style="font-size:13px; color:#93c5fd;"><strong>Both work with Per Transaction mode AND Summary mode.</strong> No matter how you sync, reconciliation has you covered.</span>
+          <span style="font-size:13px; color:#93c5fd;"><strong>Transaction Recon:</strong> Per Transaction mode supports QBO, Xero & QBD. Summary mode works with <strong>any</strong> accounting system — matching happens on Synder's internal data. <strong>Deferred Revenue Recon:</strong> works wherever RevRec is enabled.</span>
         </div>
       </div>
     </div>
@@ -348,7 +348,7 @@ tailwind.config = {
           <div style="background:#3b82f6; color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0;">2</div>
           <div style="flex:1;">
             <div style="font-weight:700; color:#f9fafb;">Synder matches against QuickBooks</div>
-            <div style="font-size:13px; color:#9ca3af;">Automatic matching by transaction ID, amount, and date</div>
+            <div style="font-size:13px; color:#9ca3af;">Automatic matching by transaction ID, amount, and date. On Summary mode, matching happens on Synder's internal data before aggregation.</div>
           </div>
         </div>
 
@@ -366,7 +366,7 @@ tailwind.config = {
               </div>
               <div class="card-sm" style="text-align:center; border-top:3px solid #ef4444;">
                 <div style="font-size:1.5rem; margin-bottom:4px;">❌</div>
-                <div style="font-weight:700; color:#ef4444; font-size:14px;">Missing in QBO</div>
+                <div style="font-weight:700; color:#ef4444; font-size:14px;">Missing in Accounting</div>
                 <div style="font-size:12px; color:#9ca3af; margin-top:4px;">In integration, not in books</div>
                 <div style="font-size:1.2rem; font-weight:800; color:#f9fafb; margin-top:8px; font-family:'Courier New',monospace;">23</div>
               </div>
@@ -395,18 +395,18 @@ tailwind.config = {
     <div class="slide-inner">
       <div class="section-label">Transaction Reconciliation</div>
       <h1 class="slide-title" style="margin-bottom:4px;">What You Can Do With Results</h1>
-      <p class="slide-subtitle" style="margin-bottom:28px;">Don't just find problems — fix them on the spot</p>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Find the gap → investigate → fix at the source</p>
 
       <div class="grid-2" style="margin-bottom:16px;">
         <div class="card">
           <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Actions on Mismatches</div>
 
-          <div class="card-sm" style="margin-bottom:10px; border-left:3px solid #22c55e;">
+          <div class="card-sm" style="margin-bottom:10px; border-left:3px solid #3b82f6;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
-              <span style="font-size:16px;">📝</span>
-              <span style="font-weight:700; color:#f9fafb; font-size:13px;">Create Entry</span>
+              <span style="font-size:16px;">🔍</span>
+              <span style="font-weight:700; color:#f9fafb; font-size:13px;">Investigate & Re-sync</span>
             </div>
-            <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Create a Deposit, Expense, Journal Entry, or Transfer directly from the unmatched transaction. Data is pre-filled from the source.</p>
+            <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Jump to the transactions tab, find the unsynced item, check its status, re-sync if needed, then refresh the reconciliation to confirm.</p>
           </div>
 
           <div class="card-sm" style="margin-bottom:10px; border-left:3px solid #6b7280;">
@@ -414,52 +414,49 @@ tailwind.config = {
               <span style="font-size:16px;">🚫</span>
               <span style="font-weight:700; color:#f9fafb; font-size:13px;">Ignore Row</span>
             </div>
-            <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Mark a mismatch as intentional. It won't clutter your results next time. Useful for known exceptions.</p>
+            <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Mark a mismatch as intentional. It won't clutter your results next time. Useful for test transactions, write-offs, or known exceptions.</p>
           </div>
 
-          <div class="card-sm" style="border-left:3px solid #3b82f6;">
+          <div class="card-sm" style="border-left:3px solid #22c55e;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
               <span style="font-size:16px;">📤</span>
               <span style="font-weight:700; color:#f9fafb; font-size:13px;">Export Results</span>
             </div>
-            <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Download the full reconciliation report as a file. Share with your team, attach to audit working papers.</p>
+            <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Download the full reconciliation report as a file. Share with your team, attach to audit working papers, or send to clients.</p>
           </div>
         </div>
 
-        <div class="card" style="background:rgba(34,197,94,0.04); border-color:rgba(34,197,94,0.25);">
-          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Example: Creating a Deposit</div>
-          <div style="font-size:12px; color:#6b7280; margin-bottom:12px;">A $1,250.00 Stripe payment is missing in QBO. Click "Create Entry" →</div>
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <div style="display:flex; justify-content:space-between; font-size:13px;">
-              <span style="color:#9ca3af;">Type</span>
-              <span style="color:#d1d5db; font-weight:600;">Deposit</span>
+        <div class="card" style="background:rgba(59,130,246,0.04); border-color:rgba(59,130,246,0.25);">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Typical Investigation Workflow</div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="card-sm" style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#3b82f6; color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">1</span>
+              <span style="font-size:13px; color:#d1d5db;">Spot a "Missing in Accounting" item — e.g. $1,250 Stripe charge</span>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:13px;">
-              <span style="color:#9ca3af;">Amount</span>
-              <span class="success" style="font-weight:700; font-family:'Courier New',monospace;">$1,250.00</span>
+            <div class="card-sm" style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#3b82f6; color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">2</span>
+              <span style="font-size:13px; color:#d1d5db;">Go to Transactions tab → filter by date range</span>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:13px;">
-              <span style="color:#9ca3af;">Date</span>
-              <span style="color:#d1d5db;">Mar 15, 2026</span>
+            <div class="card-sm" style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#3b82f6; color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">3</span>
+              <span style="font-size:13px; color:#d1d5db;">Find the transaction — check if status is something other than "Synced"</span>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:13px;">
-              <span style="color:#9ca3af;">Source</span>
-              <span style="color:#d1d5db;">Stripe • pi_3QxR...</span>
+            <div class="card-sm" style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#3b82f6; color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">4</span>
+              <span style="font-size:13px; color:#d1d5db;">Re-sync the transaction or fix the underlying issue</span>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:13px;">
-              <span style="color:#9ca3af;">Account</span>
-              <span style="color:#d1d5db;">Undeposited Funds</span>
+            <div class="card-sm" style="display:flex; align-items:center; gap:10px;">
+              <span style="background:#22c55e; color:white; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0;">5</span>
+              <span style="font-size:13px; color:#d1d5db;">Refresh reconciliation → item moves to Matched ✅</span>
             </div>
           </div>
-          <hr class="h-divider" />
-          <div style="font-size:12px; color:#4ade80;">✨ All fields pre-filled. Review, adjust if needed, and create — done in seconds.</div>
         </div>
       </div>
 
       <div class="highlight-box">
         <div style="display:flex; align-items:center; gap:8px;">
           <span style="font-size:16px;">🎯</span>
-          <span style="font-size:13px; color:#93c5fd;"><strong>Key benefit:</strong> You don't need to leave Synder. Find the gap, create the entry, and move on. No tab-switching, no manual data entry.</span>
+          <span style="font-size:13px; color:#93c5fd;"><strong>Key benefit:</strong> Reconciliation pinpoints exactly where the gaps are so you know what to fix — no more hunting through spreadsheets.</span>
         </div>
       </div>
     </div>
@@ -487,11 +484,11 @@ tailwind.config = {
           </div>
           <div class="card-sm" style="display:flex; align-items:center; gap:12px;">
             <span style="color:#3b82f6; font-weight:700; font-size:14px; width:20px; text-align:center;">3</span>
-            <span style="font-size:14px; color:#d1d5db;">Create an entry from a Not Matched item</span>
+            <span style="font-size:14px; color:#d1d5db;">Investigate & re-sync a Not Matched item</span>
           </div>
           <div class="card-sm" style="display:flex; align-items:center; gap:12px;">
             <span style="color:#3b82f6; font-weight:700; font-size:14px; width:20px; text-align:center;">4</span>
-            <span style="font-size:14px; color:#d1d5db;">Explore filters & export options</span>
+            <span style="font-size:14px; color:#d1d5db;">Explore filters, ignore & export options</span>
           </div>
         </div>
       </div>
@@ -685,7 +682,7 @@ tailwind.config = {
             <span style="font-size:20px;">↔️</span>
             <div style="font-weight:700; color:#f9fafb;">Check Both Sides</div>
           </div>
-          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">Transaction reconciliation shows "Missing in QBO" AND "Missing in Integration." Both directions matter for complete accuracy.</p>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">Transaction reconciliation shows "Missing in Accounting" AND "Missing in Integration." Both directions matter for complete accuracy.</p>
         </div>
 
         <div class="card" style="border-left:4px solid #ef4444;">
@@ -699,9 +696,9 @@ tailwind.config = {
         <div class="card" style="border-left:4px solid #6b7280;">
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
             <span style="font-size:20px;">✅</span>
-            <div style="font-weight:700; color:#f9fafb;">Works on PT & Summary</div>
+            <div style="font-weight:700; color:#f9fafb;">Broad Compatibility</div>
           </div>
-          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">Both reconciliation tools work regardless of your sync mode — Per Transaction or Summary. No configuration changes needed.</p>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">Per Transaction mode: QBO, Xero, QuickBooks Desktop. Summary mode: any accounting system. No configuration changes needed.</p>
         </div>
       </div>
     </div>
@@ -730,7 +727,7 @@ tailwind.config = {
             <div style="width:28px; height:28px; background:rgba(34,197,94,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; margin-top:2px;">Q</div>
             <div>
               <div style="font-weight:700; color:#f9fafb; margin-bottom:6px;">Does this work with Summary mode?</div>
-              <div style="font-size:13px; color:#9ca3af; line-height:1.6;">Yes! Both Transaction Reconciliation and Deferred Revenue Reconciliation work with Per Transaction mode AND Summary mode. The reconciliation engine adapts to how your data is synced.</div>
+              <div style="font-size:13px; color:#9ca3af; line-height:1.6;">Yes! On Per Transaction mode, Transaction Reconciliation supports QBO, Xero, and QuickBooks Desktop. On Summary mode, it works with <strong>any</strong> accounting system — because matching happens on Synder's internal data before it gets wrapped into summaries.</div>
             </div>
           </div>
         </div>
