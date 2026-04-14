@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reconciliation Made Simple: Transactions & Deferred Revenue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      colors: {
+        'gray-850': '#18212f',
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #111827; color: #f9fafb; font-family: 'Inter', system-ui, sans-serif; }
+
+  /* Progress bar */
+  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: #3b82f6; transition: width 0.3s ease; z-index: 100; }
+
+  /* Slide wrapper */
+  #slide-deck { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 60px 32px 80px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .slide.active { opacity: 1; pointer-events: all; }
+
+  .slide-inner {
+    width: 100%; max-width: 1100px;
+    display: flex; flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+    max-height: calc(100vh - 140px);
+    scrollbar-width: none;
+  }
+  .slide-inner::-webkit-scrollbar { display: none; }
+
+  /* Navigation dots */
+  #nav-dots { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 100; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #374151; cursor: pointer; transition: background 0.2s, transform 0.2s; }
+  .dot.active { background: #3b82f6; transform: scale(1.4); }
+  .dot:hover:not(.active) { background: #6b7280; }
+
+  /* Slide counter */
+  #slide-counter { position: fixed; bottom: 20px; right: 28px; font-size: 12px; color: #6b7280; font-variant-numeric: tabular-nums; z-index: 100; }
+
+  /* Overview grid */
+  #overview {
+    position: fixed; inset: 0; background: rgba(17,24,39,0.97);
+    display: none; z-index: 200;
+    overflow-y: auto; padding: 40px 32px;
+  }
+  #overview.visible { display: block; }
+  #overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; max-width: 1200px; margin: 0 auto; }
+  #overview h2 { text-align: center; font-size: 1.2rem; color: #9ca3af; margin-bottom: 24px; letter-spacing: 0.05em; text-transform: uppercase; font-size: 12px; }
+  .thumb {
+    background: #1f2937; border: 2px solid #374151; border-radius: 10px;
+    padding: 12px; cursor: pointer; transition: border-color 0.15s, transform 0.15s;
+    aspect-ratio: 16/9; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; overflow: hidden;
+  }
+  .thumb:hover { border-color: #3b82f6; transform: scale(1.03); }
+  .thumb.active-thumb { border-color: #3b82f6; }
+  .thumb-num { font-size: 10px; color: #6b7280; margin-bottom: 4px; }
+  .thumb-title { font-size: 11px; font-weight: 600; color: #d1d5db; line-height: 1.3; }
+  #overview-close { position: fixed; top: 24px; right: 32px; color: #6b7280; cursor: pointer; font-size: 24px; z-index: 210; }
+  #overview-close:hover { color: #f9fafb; }
+
+  /* Utility classes */
+  .card { background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 20px 24px; }
+  .card-sm { background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 14px 18px; }
+  .accent { color: #3b82f6; }
+  .success { color: #22c55e; }
+  .warning { color: #f59e0b; }
+  .danger { color: #ef4444; }
+  .violet { color: #a78bfa; font-family: 'Courier New', monospace; }
+  .muted { color: #9ca3af; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .tag-violet { background: rgba(167,139,250,0.15); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.3); }
+
+  .slide-title { font-size: 2.2rem; font-weight: 800; line-height: 1.15; color: #f9fafb; }
+  .slide-subtitle { font-size: 1rem; color: #9ca3af; font-weight: 400; margin-top: 6px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+
+  .check-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .check-icon { flex-shrink: 0; margin-top: 1px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  .h-divider { border: none; border-top: 1px solid #374151; margin: 14px 0; }
+
+  /* Highlight box */
+  .highlight-box { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: 10px; padding: 14px 18px; }
+  .warning-box { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 14px 18px; }
+  .danger-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 14px 18px; }
+  .success-box { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 14px 18px; }
+
+  /* Keyboard hint */
+  #keyboard-hint { position: fixed; bottom: 20px; left: 28px; font-size: 11px; color: #4b5563; z-index: 100; }
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.4s ease both; }
+
+  /* Demo slide special */
+  .demo-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59,130,246,0.15); border: 2px solid rgba(59,130,246,0.4);
+    border-radius: 12px; padding: 12px 28px; font-size: 1.8rem; font-weight: 800;
+    color: #60a5fa; letter-spacing: 0.05em;
+  }
+  .demo-badge .pulse-dot {
+    width: 12px; height: 12px; background: #ef4444; border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+  /* Fullscreen fix */
+  :fullscreen body, :-webkit-full-screen body { background: #111827; }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div id="progress-bar"></div>
+
+<!-- Slide Deck -->
+<div id="slide-deck">
+
+  <!-- ─────────────────── SLIDE 1: TITLE ─────────────────── -->
+  <div class="slide" data-slide="1">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-blue" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Synder Webinar — April 2026</div>
+        <h1 style="font-size:3rem; font-weight:800; line-height:1.1; color:#f9fafb; margin-bottom:16px;">
+          Reconciliation Made Simple:<br/>
+          <span class="accent">Transactions & Deferred Revenue</span>
+        </h1>
+        <p style="font-size:1.25rem; color:#9ca3af; margin-bottom:12px; font-weight:400;">Two powerful tools to keep your books accurate</p>
+        <p style="font-size:1rem; color:#6b7280; margin-bottom:48px;">30 min • Walkthrough + Live Demo + Q&A</p>
+        <div style="width:60px; height:2px; background:#374151; margin:0 auto 48px;"></div>
+        <p style="font-size:13px; color:#6b7280; letter-spacing:0.08em; text-transform:uppercase;">Hosted by Slava &nbsp;•&nbsp; Product Manager</p>
+        <p style="font-size:12px; color:#4b5563; margin-top:8px;">For bookkeepers, accountants & business owners using Synder</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 2: AGENDA ─────────────────── -->
+  <div class="slide" data-slide="2">
+    <div class="slide-inner">
+      <div class="section-label">Overview</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">What We'll Cover Today</h1>
+      <p class="slide-subtitle" style="margin-bottom:32px;">30 minutes — packed with practical value</p>
+
+      <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
+        <div class="card" style="border-left:4px solid #3b82f6; display:flex; align-items:center; gap:20px;">
+          <div style="width:44px; height:44px; background:rgba(59,130,246,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">📋</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">The Reconciliation Problem</div>
+            <div style="font-size:13px; color:#9ca3af;">Why reconciliation matters and common pain points</div>
+          </div>
+          <div class="tag tag-blue">5 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #22c55e; display:flex; align-items:center; gap:20px;">
+          <div style="width:44px; height:44px; background:rgba(34,197,94,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">🔍</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Transaction Reconciliation</div>
+            <div style="font-size:13px; color:#9ca3af;">How it works + Live Demo</div>
+          </div>
+          <div class="tag tag-green">10 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #a78bfa; display:flex; align-items:center; gap:20px;">
+          <div style="width:44px; height:44px; background:rgba(167,139,250,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">📊</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Deferred Revenue Reconciliation</div>
+            <div style="font-size:13px; color:#9ca3af;">How it works + Live Demo</div>
+          </div>
+          <div class="tag tag-violet">10 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #f59e0b; display:flex; align-items:center; gap:20px;">
+          <div style="width:44px; height:44px; background:rgba(245,158,11,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">💡</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Tips & Q&A</div>
+            <div style="font-size:13px; color:#9ca3af;">Best practices and your questions answered</div>
+          </div>
+          <div class="tag tag-amber">5 min</div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">💬</span>
+          <span style="font-size:13px; color:#93c5fd;">Drop your questions in the chat anytime — we'll cover them at the end!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 3: THE RECONCILIATION PROBLEM ─────────────────── -->
+  <div class="slide" data-slide="3">
+    <div class="slide-inner">
+      <div class="section-label">The Challenge</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Why Reconciliation Matters</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Common pain points that cost you time and accuracy</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card" style="border-top:3px solid #ef4444;">
+          <div style="font-size:2rem; margin-bottom:12px;">🔎</div>
+          <div style="font-size:1rem; font-weight:700; color:#f9fafb; margin-bottom:8px;">Missing Transactions</div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">A sale happened in Stripe or Shopify but never made it to QuickBooks. Without reconciliation, you won't notice until the books don't balance.</p>
+        </div>
+        <div class="card" style="border-top:3px solid #f59e0b;">
+          <div style="font-size:2rem; margin-bottom:12px;">💰</div>
+          <div style="font-size:1rem; font-weight:700; color:#f9fafb; margin-bottom:8px;">Amount Mismatches</div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">The transaction exists in both systems, but the amounts don't match — refunds, fees, or currency conversions can cause discrepancies.</p>
+        </div>
+        <div class="card" style="border-top:3px solid #6b7280;">
+          <div style="font-size:2rem; margin-bottom:12px;">⏰</div>
+          <div style="font-size:1rem; font-weight:700; color:#f9fafb; margin-bottom:8px;">Timing Issues</div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">Transactions recorded on different dates across systems. Month-end close becomes a guessing game of which period a sale belongs to.</p>
+        </div>
+        <div class="card" style="border-top:3px solid #a78bfa;">
+          <div style="font-size:2rem; margin-bottom:12px;">📉</div>
+          <div style="font-size:1rem; font-weight:700; color:#f9fafb; margin-bottom:8px;">Deferred Revenue Drift</div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">Your RevRec engine calculates expected balances, but the GL account tells a different story. The gap grows silently over time.</p>
+        </div>
+      </div>
+
+      <div class="danger-box">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:18px;">⚠️</span>
+          <span style="font-size:13px; color:#fca5a5;"><strong>The manual approach:</strong> Export data from both systems → paste into spreadsheets → compare line by line → investigate differences. Tedious, error-prone, and doesn't scale.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 4: TWO TYPES OF RECONCILIATION ─────────────────── -->
+  <div class="slide" data-slide="4">
+    <div class="slide-inner">
+      <div class="section-label">Synder's Solution</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Two Types of Reconciliation</h1>
+      <p class="slide-subtitle" style="margin-bottom:32px;">Different problems, purpose-built tools for each</p>
+
+      <div class="grid-2" style="margin-bottom:20px;">
+        <div class="card" style="border:2px solid rgba(34,197,94,0.4); background:rgba(34,197,94,0.04);">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <div style="width:44px; height:44px; background:rgba(34,197,94,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px;">🔍</div>
+            <div>
+              <div class="tag tag-green" style="margin-bottom:4px;">Individual Transactions</div>
+              <div style="font-weight:800; color:#f9fafb; font-size:1.15rem;">Transaction Reconciliation</div>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="check-item">
+              <span class="success check-icon" style="font-size:14px;">✓</span>
+              <span style="font-size:13px; color:#d1d5db;">Compares individual transactions between integration and QBO</span>
+            </div>
+            <div class="check-item">
+              <span class="success check-icon" style="font-size:14px;">✓</span>
+              <span style="font-size:13px; color:#d1d5db;">Finds what's matched, what's missing, what's different</span>
+            </div>
+            <div class="check-item">
+              <span class="success check-icon" style="font-size:14px;">✓</span>
+              <span style="font-size:13px; color:#d1d5db;">Create entries directly from mismatches</span>
+            </div>
+          </div>
+          <hr class="h-divider" />
+          <div style="font-size:12px; color:#6b7280;">Best for: month-end close, auditing sync accuracy, catching gaps</div>
+        </div>
+
+        <div class="card" style="border:2px solid rgba(167,139,250,0.4); background:rgba(167,139,250,0.04);">
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+            <div style="width:44px; height:44px; background:rgba(167,139,250,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px;">📊</div>
+            <div>
+              <div class="tag tag-violet" style="margin-bottom:4px;">Account Balances</div>
+              <div style="font-weight:800; color:#f9fafb; font-size:1.15rem;">Deferred Revenue Reconciliation</div>
+            </div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="check-item">
+              <span style="color:#c4b5fd;" class="check-icon" style="font-size:14px;">✓</span>
+              <span style="font-size:13px; color:#d1d5db;">Compares expected RevRec balance vs actual GL balance</span>
+            </div>
+            <div class="check-item">
+              <span style="color:#c4b5fd;" class="check-icon" style="font-size:14px;">✓</span>
+              <span style="font-size:13px; color:#d1d5db;">Shows the difference and lets you drill into details</span>
+            </div>
+            <div class="check-item">
+              <span style="color:#c4b5fd;" class="check-icon" style="font-size:14px;">✓</span>
+              <span style="font-size:13px; color:#d1d5db;">Investigate which items cause the mismatch</span>
+            </div>
+          </div>
+          <hr class="h-divider" />
+          <div style="font-size:12px; color:#6b7280;">Best for: period-end validation, audit prep, revenue accuracy</div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">✅</span>
+          <span style="font-size:13px; color:#93c5fd;"><strong>Both work with Per Transaction mode AND Summary mode.</strong> No matter how you sync, reconciliation has you covered.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 5: TXN RECONCILIATION — HOW IT WORKS ─────────────────── -->
+  <div class="slide" data-slide="5">
+    <div class="slide-inner">
+      <div class="section-label">Transaction Reconciliation</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">How It Works</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Pick a date range, pick an integration — Synder does the rest</p>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+        <!-- Step 1 -->
+        <div class="card" style="display:flex; align-items:center; gap:16px;">
+          <div style="background:#3b82f6; color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0;">1</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Select date range & integration</div>
+            <div style="font-size:13px; color:#9ca3af;">e.g. "March 1–31, Stripe" — Synder pulls transactions from both sides</div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="card" style="display:flex; align-items:center; gap:16px;">
+          <div style="background:#3b82f6; color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0;">2</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Synder matches against QuickBooks</div>
+            <div style="font-size:13px; color:#9ca3af;">Automatic matching by transaction ID, amount, and date</div>
+          </div>
+        </div>
+
+        <!-- Step 3 - Buckets -->
+        <div class="card" style="display:flex; align-items:flex-start; gap:16px;">
+          <div style="background:#3b82f6; color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0;">3</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:12px;">Results sorted into three buckets</div>
+            <div class="grid-3">
+              <div class="card-sm" style="text-align:center; border-top:3px solid #22c55e;">
+                <div style="font-size:1.5rem; margin-bottom:4px;">✅</div>
+                <div style="font-weight:700; color:#22c55e; font-size:14px;">Matched</div>
+                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">Found in both systems</div>
+                <div style="font-size:1.2rem; font-weight:800; color:#f9fafb; margin-top:8px; font-family:'Courier New',monospace;">847</div>
+              </div>
+              <div class="card-sm" style="text-align:center; border-top:3px solid #ef4444;">
+                <div style="font-size:1.5rem; margin-bottom:4px;">❌</div>
+                <div style="font-weight:700; color:#ef4444; font-size:14px;">Missing in QBO</div>
+                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">In integration, not in books</div>
+                <div style="font-size:1.2rem; font-weight:800; color:#f9fafb; margin-top:8px; font-family:'Courier New',monospace;">23</div>
+              </div>
+              <div class="card-sm" style="text-align:center; border-top:3px solid #f59e0b;">
+                <div style="font-size:1.5rem; margin-bottom:4px;">⚠️</div>
+                <div style="font-weight:700; color:#f59e0b; font-size:14px;">Missing in Integration</div>
+                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">In QBO, not in integration</div>
+                <div style="font-size:1.2rem; font-weight:800; color:#f9fafb; margin-top:8px; font-family:'Courier New',monospace;">5</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">💡</span>
+          <span style="font-size:13px; color:#fcd34d;"><strong>Bonus:</strong> Synder also detects <strong>amount discrepancies</strong> — transactions that exist in both systems but with different amounts (e.g. partial refunds, fee differences).</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 6: TXN RECONCILIATION — WHAT YOU CAN DO ─────────────────── -->
+  <div class="slide" data-slide="6">
+    <div class="slide-inner">
+      <div class="section-label">Transaction Reconciliation</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">What You Can Do With Results</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Don't just find problems — fix them on the spot</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Actions on Mismatches</div>
+
+          <div class="card-sm" style="margin-bottom:10px; border-left:3px solid #22c55e;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <span style="font-size:16px;">📝</span>
+              <span style="font-weight:700; color:#f9fafb; font-size:13px;">Create Entry</span>
+            </div>
+            <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Create a Deposit, Expense, Journal Entry, or Transfer directly from the unmatched transaction. Data is pre-filled from the source.</p>
+          </div>
+
+          <div class="card-sm" style="margin-bottom:10px; border-left:3px solid #6b7280;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <span style="font-size:16px;">🚫</span>
+              <span style="font-weight:700; color:#f9fafb; font-size:13px;">Ignore Row</span>
+            </div>
+            <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Mark a mismatch as intentional. It won't clutter your results next time. Useful for known exceptions.</p>
+          </div>
+
+          <div class="card-sm" style="border-left:3px solid #3b82f6;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <span style="font-size:16px;">📤</span>
+              <span style="font-weight:700; color:#f9fafb; font-size:13px;">Export Results</span>
+            </div>
+            <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Download the full reconciliation report as a file. Share with your team, attach to audit working papers.</p>
+          </div>
+        </div>
+
+        <div class="card" style="background:rgba(34,197,94,0.04); border-color:rgba(34,197,94,0.25);">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">Example: Creating a Deposit</div>
+          <div style="font-size:12px; color:#6b7280; margin-bottom:12px;">A $1,250.00 Stripe payment is missing in QBO. Click "Create Entry" →</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; font-size:13px;">
+              <span style="color:#9ca3af;">Type</span>
+              <span style="color:#d1d5db; font-weight:600;">Deposit</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:13px;">
+              <span style="color:#9ca3af;">Amount</span>
+              <span class="success" style="font-weight:700; font-family:'Courier New',monospace;">$1,250.00</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:13px;">
+              <span style="color:#9ca3af;">Date</span>
+              <span style="color:#d1d5db;">Mar 15, 2026</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:13px;">
+              <span style="color:#9ca3af;">Source</span>
+              <span style="color:#d1d5db;">Stripe • pi_3QxR...</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:13px;">
+              <span style="color:#9ca3af;">Account</span>
+              <span style="color:#d1d5db;">Undeposited Funds</span>
+            </div>
+          </div>
+          <hr class="h-divider" />
+          <div style="font-size:12px; color:#4ade80;">✨ All fields pre-filled. Review, adjust if needed, and create — done in seconds.</div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">🎯</span>
+          <span style="font-size:13px; color:#93c5fd;"><strong>Key benefit:</strong> You don't need to leave Synder. Find the gap, create the entry, and move on. No tab-switching, no manual data entry.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 7: TXN RECONCILIATION — LIVE DEMO ─────────────────── -->
+  <div class="slide" data-slide="7">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="section-label" style="margin-bottom:16px;">Transaction Reconciliation</div>
+        <div class="demo-badge" style="margin-bottom:32px;">
+          <div class="pulse-dot"></div>
+          LIVE DEMO
+        </div>
+        <h2 style="font-size:1.4rem; font-weight:600; color:#d1d5db; margin-bottom:32px;">Let's see it in action</h2>
+
+        <div style="display:flex; flex-direction:column; gap:12px; max-width:500px; margin:0 auto; text-align:left;">
+          <div class="card-sm" style="display:flex; align-items:center; gap:12px;">
+            <span style="color:#3b82f6; font-weight:700; font-size:14px; width:20px; text-align:center;">1</span>
+            <span style="font-size:14px; color:#d1d5db;">Run reconciliation for a date range</span>
+          </div>
+          <div class="card-sm" style="display:flex; align-items:center; gap:12px;">
+            <span style="color:#3b82f6; font-weight:700; font-size:14px; width:20px; text-align:center;">2</span>
+            <span style="font-size:14px; color:#d1d5db;">Review Matched vs Not Matched results</span>
+          </div>
+          <div class="card-sm" style="display:flex; align-items:center; gap:12px;">
+            <span style="color:#3b82f6; font-weight:700; font-size:14px; width:20px; text-align:center;">3</span>
+            <span style="font-size:14px; color:#d1d5db;">Create an entry from a Not Matched item</span>
+          </div>
+          <div class="card-sm" style="display:flex; align-items:center; gap:12px;">
+            <span style="color:#3b82f6; font-weight:700; font-size:14px; width:20px; text-align:center;">4</span>
+            <span style="font-size:14px; color:#d1d5db;">Explore filters & export options</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 8: DEFERRED REVENUE — THE CHALLENGE ─────────────────── -->
+  <div class="slide" data-slide="8">
+    <div class="slide-inner">
+      <div class="section-label">Deferred Revenue</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">The Deferred Revenue Challenge</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Money received ≠ money earned — and your GL needs to reflect that</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">What Is Deferred Revenue?</div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">💵</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">Customer pays $1,200 upfront for a 12-month subscription</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">📅</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">You <strong>earn</strong> $100/month as the service is delivered</span>
+          </div>
+          <div class="check-item">
+            <span style="font-size:14px;" class="check-icon">📊</span>
+            <span style="font-size:13px; color:#d1d5db; line-height:1.5;">The unearned portion sits in a <strong>Deferred Revenue</strong> liability account</span>
+          </div>
+          <hr class="h-divider" />
+          <div style="font-size:12px; color:#9ca3af; line-height:1.5;">Synder's RevRec engine handles this automatically — calculating expected balances based on your recognition schedule.</div>
+        </div>
+
+        <div class="card" style="border-top:3px solid #ef4444;">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">The Verification Problem</div>
+          <div style="font-size:14px; font-weight:600; color:#fca5a5; margin-bottom:12px;">How do you know the GL account actually matches what RevRec expects?</div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="card-sm" style="border-left:3px solid #ef4444;">
+              <span style="font-size:12px; color:#9ca3af;">Traditional method:</span>
+              <div style="font-size:13px; color:#d1d5db; margin-top:4px;">Export RevRec schedule → Export GL trial balance → Paste into spreadsheet → Compare manually → Investigate row by row</div>
+            </div>
+          </div>
+          <div class="danger-box" style="margin-top:12px; padding:10px 14px;">
+            <span style="font-size:12px; color:#fca5a5;">⏱️ This takes <strong>hours per period</strong> and mistakes are easy to miss. The more subscriptions you have, the worse it gets.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-box">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:18px;">🎯</span>
+          <span style="font-size:13px; color:#86efac;"><strong>Synder's Deferred Revenue Reconciliation</strong> eliminates the spreadsheet step entirely. One click to compare expected vs actual.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 9: DEFERRED REVENUE RECONCILIATION — HOW IT WORKS ─────────────────── -->
+  <div class="slide" data-slide="9">
+    <div class="slide-inner">
+      <div class="section-label">Deferred Revenue Reconciliation</div>
+      <h1 class="slide-title" style="margin-bottom:4px;">How It Works</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Select a period, get the full picture in seconds</p>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+        <!-- Step 1 -->
+        <div class="card" style="display:flex; align-items:center; gap:16px;">
+          <div style="background:#a78bfa; color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0;">1</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Select the reconciliation period</div>
+            <div style="font-size:13px; color:#9ca3af;">Choose a month or custom date range</div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="card" style="display:flex; align-items:center; gap:16px;">
+          <div style="background:#a78bfa; color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0;">2</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Synder calculates the expected balance</div>
+            <div style="font-size:13px; color:#9ca3af;">Based on your RevRec recognition schedules for all active subscriptions</div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="card" style="display:flex; align-items:center; gap:16px;">
+          <div style="background:#a78bfa; color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0;">3</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Pulls actual balance from accounting</div>
+            <div style="font-size:13px; color:#9ca3af;">Reads the Deferred Revenue account balance from QuickBooks</div>
+          </div>
+        </div>
+
+        <!-- Step 4 - Results -->
+        <div class="card" style="display:flex; align-items:flex-start; gap:16px;">
+          <div style="background:#a78bfa; color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0;">4</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:12px;">Compare & investigate</div>
+            <div class="grid-3">
+              <div class="card-sm" style="text-align:center; background:rgba(167,139,250,0.06);">
+                <div style="font-size:11px; color:#6b7280; margin-bottom:4px;">Expected (RevRec)</div>
+                <div style="font-size:1.2rem; font-weight:800; color:#c4b5fd; font-family:'Courier New',monospace;">$48,750</div>
+              </div>
+              <div class="card-sm" style="text-align:center; background:rgba(59,130,246,0.06);">
+                <div style="font-size:11px; color:#6b7280; margin-bottom:4px;">Actual (GL)</div>
+                <div style="font-size:1.2rem; font-weight:800; color:#93c5fd; font-family:'Courier New',monospace;">$47,200</div>
+              </div>
+              <div class="card-sm" style="text-align:center; background:rgba(239,68,68,0.06);">
+                <div style="font-size:11px; color:#6b7280; margin-bottom:4px;">Difference</div>
+                <div style="font-size:1.2rem; font-weight:800; color:#f87171; font-family:'Courier New',monospace;">–$1,550</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:16px;">🔎</span>
+          <span style="font-size:13px; color:#93c5fd;"><strong>Drill down:</strong> Click into the difference to see exactly which subscriptions or items are causing the mismatch. No more guessing.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 10: DEFERRED REVENUE — LIVE DEMO ─────────────────── -->
+  <div class="slide" data-slide="10">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="section-label" style="margin-bottom:16px;">Deferred Revenue Reconciliation</div>
+        <div class="demo-badge" style="margin-bottom:32px; border-color:rgba(167,139,250,0.4); background:rgba(167,139,250,0.15); color:#c4b5fd;">
+          <div class="pulse-dot" style="background:#a78bfa;"></div>
+          LIVE DEMO
+        </div>
+        <h2 style="font-size:1.4rem; font-weight:600; color:#d1d5db; margin-bottom:32px;">Expected vs Actual — in one click</h2>
+
+        <div style="display:flex; flex-direction:column; gap:12px; max-width:500px; margin:0 auto; text-align:left;">
+          <div class="card-sm" style="display:flex; align-items:center; gap:12px;">
+            <span style="color:#a78bfa; font-weight:700; font-size:14px; width:20px; text-align:center;">1</span>
+            <span style="font-size:14px; color:#d1d5db;">Run deferred revenue reconciliation</span>
+          </div>
+          <div class="card-sm" style="display:flex; align-items:center; gap:12px;">
+            <span style="color:#a78bfa; font-weight:700; font-size:14px; width:20px; text-align:center;">2</span>
+            <span style="font-size:14px; color:#d1d5db;">Review results overview: expected vs actual</span>
+          </div>
+          <div class="card-sm" style="display:flex; align-items:center; gap:12px;">
+            <span style="color:#a78bfa; font-weight:700; font-size:14px; width:20px; text-align:center;">3</span>
+            <span style="font-size:14px; color:#d1d5db;">Drill into the details view</span>
+          </div>
+          <div class="card-sm" style="display:flex; align-items:center; gap:12px;">
+            <span style="color:#a78bfa; font-weight:700; font-size:14px; width:20px; text-align:center;">4</span>
+            <span style="font-size:14px; color:#d1d5db;">Investigate specific mismatches</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 11: TIPS & BEST PRACTICES ─────────────────── -->
+  <div class="slide" data-slide="11">
+    <div class="slide-inner">
+      <div class="section-label">Pro Tips</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Tips & Best Practices</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Get the most out of reconciliation</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card" style="border-left:4px solid #22c55e;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:20px;">🔄</span>
+            <div style="font-weight:700; color:#f9fafb;">Run Regularly</div>
+          </div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">Don't wait until year-end. Weekly or bi-weekly reconciliation catches issues early when they're easy to fix.</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #3b82f6;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:20px;">🔍</span>
+            <div style="font-weight:700; color:#f9fafb;">Investigate Early</div>
+          </div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">A small discrepancy now becomes a big problem later. If something looks off, dig in right away while the context is fresh.</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #f59e0b;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:20px;">📤</span>
+            <div style="font-weight:700; color:#f9fafb;">Use Export</div>
+          </div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">Export reconciliation results for your records. Great for audit trails and sharing with clients or team members.</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #a78bfa;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:20px;">↔️</span>
+            <div style="font-weight:700; color:#f9fafb;">Check Both Sides</div>
+          </div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">Transaction reconciliation shows "Missing in QBO" AND "Missing in Integration." Both directions matter for complete accuracy.</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:20px;">📅</span>
+            <div style="font-weight:700; color:#f9fafb;">Reconcile Before Closing</div>
+          </div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">For deferred revenue — always run reconciliation before closing a period. Ensures your revenue recognition is accurate in the GL.</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #6b7280;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:20px;">✅</span>
+            <div style="font-weight:700; color:#f9fafb;">Works on PT & Summary</div>
+          </div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.6;">Both reconciliation tools work regardless of your sync mode — Per Transaction or Summary. No configuration changes needed.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 12: Q&A ─────────────────── -->
+  <div class="slide" data-slide="12">
+    <div class="slide-inner">
+      <div class="section-label">Q&A</div>
+      <h1 class="slide-title" style="margin-bottom:8px; text-align:center;">Questions? 🙋</h1>
+      <p class="slide-subtitle" style="margin-bottom:32px; text-align:center;">Let's answer what's on your mind. Here are some common ones:</p>
+
+      <div style="display:flex; flex-direction:column; gap:14px; max-width:900px; margin:0 auto;">
+        <div class="card" style="border-left:4px solid #3b82f6;">
+          <div style="display:flex; align-items:flex-start; gap:12px;">
+            <div style="width:28px; height:28px; background:rgba(59,130,246,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; margin-top:2px;">Q</div>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; margin-bottom:6px;">Can I reconcile multiple integrations at once?</div>
+              <div style="font-size:13px; color:#9ca3af; line-height:1.6;">Transaction reconciliation runs per integration — you select which one to reconcile (e.g., Stripe, Shopify, PayPal). You can run separate reconciliations for each and compare results. Deferred Revenue reconciliation looks at the overall expected vs actual balance across all sources.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #22c55e;">
+          <div style="display:flex; align-items:flex-start; gap:12px;">
+            <div style="width:28px; height:28px; background:rgba(34,197,94,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; margin-top:2px;">Q</div>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; margin-bottom:6px;">Does this work with Summary mode?</div>
+              <div style="font-size:13px; color:#9ca3af; line-height:1.6;">Yes! Both Transaction Reconciliation and Deferred Revenue Reconciliation work with Per Transaction mode AND Summary mode. The reconciliation engine adapts to how your data is synced.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #a78bfa;">
+          <div style="display:flex; align-items:flex-start; gap:12px;">
+            <div style="width:28px; height:28px; background:rgba(167,139,250,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; margin-top:2px;">Q</div>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; margin-bottom:6px;">What happens if I change a RevRec schedule mid-period?</div>
+              <div style="font-size:13px; color:#9ca3af; line-height:1.6;">Synder recalculates the expected balance based on the updated schedule. The next time you run Deferred Revenue Reconciliation, it will use the new expected values. Any previous reconciliation reports remain as snapshots of that point in time.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 13: THANK YOU / CTA ─────────────────── -->
+  <div class="slide" data-slide="13">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div style="font-size:4rem; margin-bottom:24px;">🎉</div>
+        <h1 style="font-size:2.8rem; font-weight:800; line-height:1.1; color:#f9fafb; margin-bottom:16px;">
+          Thank You!
+        </h1>
+        <p style="font-size:1.25rem; color:#9ca3af; margin-bottom:32px; font-weight:400;">
+          Keep your books accurate with less effort
+        </p>
+
+        <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:40px;">
+          <div class="card-sm" style="text-align:center; min-width:180px;">
+            <div style="font-size:1.5rem; margin-bottom:6px;">🔍</div>
+            <div style="font-size:13px; font-weight:600; color:#d1d5db;">Try Transaction Reconciliation</div>
+            <div style="font-size:12px; color:#6b7280; margin-top:4px;">Available in your Synder account now</div>
+          </div>
+          <div class="card-sm" style="text-align:center; min-width:180px;">
+            <div style="font-size:1.5rem; margin-bottom:6px;">📊</div>
+            <div style="font-size:13px; font-weight:600; color:#d1d5db;">Try Deferred Revenue Recon</div>
+            <div style="font-size:12px; color:#6b7280; margin-top:4px;">If you have RevRec enabled</div>
+          </div>
+        </div>
+
+        <div style="width:60px; height:2px; background:#374151; margin:0 auto 32px;"></div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:center;">
+          <p style="font-size:14px; color:#9ca3af;">📧 <strong style="color:#d1d5db;">support@synder.com</strong> — for any questions</p>
+          <p style="font-size:14px; color:#9ca3af;">📚 <strong style="color:#d1d5db;">synder.com/help</strong> — knowledge base & guides</p>
+          <p style="font-size:14px; color:#9ca3af;">💬 <strong style="color:#d1d5db;">In-app chat</strong> — real-time support</p>
+        </div>
+
+        <div style="margin-top:40px;">
+          <p style="font-size:12px; color:#4b5563; letter-spacing:0.08em; text-transform:uppercase;">Synder &nbsp;•&nbsp; April 2026</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Navigation Dots -->
+<div id="nav-dots"></div>
+
+<!-- Slide Counter -->
+<div id="slide-counter">1 / 13</div>
+
+<!-- Keyboard hint -->
+<div id="keyboard-hint">← → navigate &nbsp;·&nbsp; Esc overview &nbsp;·&nbsp; F fullscreen</div>
+
+<!-- Overview Grid -->
+<div id="overview">
+  <div style="max-width:1200px; margin:0 auto;">
+    <h2>SLIDE OVERVIEW</h2>
+    <div id="overview-grid"></div>
+  </div>
+  <div id="overview-close" title="Close overview">✕</div>
+</div>
+
+<script>
+const TOTAL = 13;
+const TITLES = [
+  "Reconciliation Made Simple",
+  "What We'll Cover Today",
+  "Why Reconciliation Matters",
+  "Two Types of Reconciliation",
+  "Transaction Reconciliation — How It Works",
+  "Transaction Reconciliation — What You Can Do",
+  "Transaction Reconciliation — Live Demo",
+  "The Deferred Revenue Challenge",
+  "Deferred Revenue Recon — How It Works",
+  "Deferred Revenue Recon — Live Demo",
+  "Tips & Best Practices",
+  "Q&A",
+  "Thank You"
+];
+
+let current = 1;
+
+// Build dots
+const dotsEl = document.getElementById('nav-dots');
+for (let i = 1; i <= TOTAL; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.dataset.slide = i;
+  d.title = TITLES[i-1];
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+// Build overview grid
+const grid = document.getElementById('overview-grid');
+for (let i = 1; i <= TOTAL; i++) {
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb' + (i === 1 ? ' active-thumb' : '');
+  thumb.dataset.slide = i;
+  thumb.innerHTML = `<div class="thumb-num">Slide ${i}</div><div class="thumb-title">${TITLES[i-1]}</div>`;
+  thumb.addEventListener('click', () => { goTo(i); hideOverview(); });
+  grid.appendChild(thumb);
+}
+
+function goTo(n) {
+  if (n < 1 || n > TOTAL) return;
+  const prev = document.querySelector('.slide.active');
+  if (prev) prev.classList.remove('active');
+  const prevDot = document.querySelector('.dot.active');
+  if (prevDot) prevDot.classList.remove('active');
+  const prevThumb = document.querySelector('.thumb.active-thumb');
+  if (prevThumb) prevThumb.classList.remove('active-thumb');
+
+  current = n;
+  const next = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (next) next.classList.add('active');
+  const dots = document.querySelectorAll('.dot');
+  if (dots[n-1]) dots[n-1].classList.add('active');
+  const thumbs = document.querySelectorAll('.thumb');
+  if (thumbs[n-1]) thumbs[n-1].classList.add('active-thumb');
+
+  document.getElementById('slide-counter').textContent = `${n} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = ((n / TOTAL) * 100) + '%';
+}
+
+goTo(1);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current - 1);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    const ov = document.getElementById('overview');
+    if (ov.classList.contains('visible')) hideOverview();
+    else showOverview();
+  } else if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault();
+    toggleFullscreen();
+  }
+});
+
+function showOverview() { document.getElementById('overview').classList.add('visible'); }
+function hideOverview() { document.getElementById('overview').classList.remove('visible'); }
+document.getElementById('overview-close').addEventListener('click', hideOverview);
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+  else document.exitFullscreen().catch(() => {});
+}
+
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    if (dx < 0) goTo(current + 1);
+    else goTo(current - 1);
+  }
+}, { passive: true });
+</script>
+</body>
+</html>
