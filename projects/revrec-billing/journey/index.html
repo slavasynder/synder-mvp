@@ -3,585 +3,768 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RevRec Customer Journey</title>
+<title>RevRec System Flow</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', sans-serif; background: #fff; color: #1e293b; padding: 2rem; }
-h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.25rem; }
-.subtitle { color: #64748b; font-size: 0.95rem; margin-bottom: 1rem; }
-.back-link { font-size: 0.85rem; color: #94a3b8; text-decoration: none; display: inline-block; margin-bottom: 1rem; }
-.back-link:hover { color: #3b82f6; }
-.callout { background: #fef9c3; border: 1px solid #eab308; border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.85rem; color: #713f12; margin-bottom: 1.25rem; max-width: 820px; }
-.callout strong { color: #92400e; }
-.legend { display: flex; flex-wrap: wrap; gap: 2rem; margin-bottom: 0.5rem; }
-.legend-section h3 { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.35rem; }
-.legend-items { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-.legend-item { display: flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; color: #475569; }
-.swatch { width: 13px; height: 13px; border-radius: 2px; border: 1.5px solid #94a3b8; }
-.scroll-hint { font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.75rem; }
-.diagram-wrap { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
-svg text { font-family: 'Inter', sans-serif; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',sans-serif; background:#fff; padding:1.5rem; }
+h1 { font-size:1.5rem; font-weight:700; margin-bottom:0.2rem; }
+.sub { color:#64748b; font-size:0.88rem; margin-bottom:0.4rem; }
+.hint { font-size:0.75rem; color:#94a3b8; margin-bottom:0.75rem; }
+.wrap { overflow-x:auto; border:1px solid #e2e8f0; border-radius:8px; background:#fff; }
+svg text { font-family:'Inter',sans-serif; }
 </style>
 </head>
 <body>
-<a href="../" class="back-link">← RevRec Billing</a>
-<h1>RevRec Customer Journey</h1>
-<p class="subtitle">Swimlane diagram — all paths from initial interest through ongoing billing</p>
-
-<div class="callout">
-  <strong>⚠ Open question for sales &amp; success call:</strong> Historical data import is invoiced <strong>manually by CSM</strong>. Should customers be able to self-subscribe to RevRec (and pay for historical data themselves), or should the plan always be enabled manually so CSM controls the historical data payment?
-</div>
-
-<div class="legend">
-  <div class="legend-section">
-    <h3>Swimlanes</h3>
-    <div class="legend-items">
-      <div class="legend-item"><div class="swatch" style="background:#eff6ff;border-color:#3b82f6"></div> Customer</div>
-      <div class="legend-item"><div class="swatch" style="background:#fdf4ff;border-color:#a855f7"></div> Sales Rep</div>
-      <div class="legend-item"><div class="swatch" style="background:#f0fdf4;border-color:#22c55e"></div> CSM</div>
-      <div class="legend-item"><div class="swatch" style="background:#fff7ed;border-color:#f97316"></div> Synder / RevRec</div>
-    </div>
-  </div>
-  <div class="legend-section">
-    <h3>Shapes</h3>
-    <div class="legend-items">
-      <div class="legend-item">◇ Decision gateway</div>
-      <div class="legend-item">( ) Start / End</div>
-      <div class="legend-item">[ ] Process step</div>
-      <div class="legend-item"><div class="swatch" style="background:#bbf7d0;border-color:#15803d"></div> Healthy state</div>
-      <div class="legend-item"><div class="swatch" style="background:#fecaca;border-color:#dc2626"></div> RevRec stopped</div>
-      <div class="legend-item"><div class="swatch" style="background:#fef08a;border-color:#ca8a04"></div> Action required</div>
-      <div class="legend-item"><div class="swatch" style="background:#fed7aa;border-color:#ea580c"></div> Rollback</div>
-    </div>
-  </div>
-</div>
-<p class="scroll-hint">↔ Scroll horizontally to see the full diagram</p>
-
-<div class="diagram-wrap">
-<svg id="diagram" xmlns="http://www.w3.org/2000/svg" width="5200" height="1480" viewBox="0 0 5200 1480">
+<h1>RevRec System Flow</h1>
+<p class="sub">System-level flow for RevRec trial, purchase, billing, and lifecycle events</p>
+<p class="hint">↔ Scroll horizontally to see the full diagram</p>
+<div class="wrap">
+<svg xmlns="http://www.w3.org/2000/svg" width="5100" height="1950" viewBox="0 0 5100 1950">
 <defs>
-  <marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="3.5" orient="auto">
-    <path d="M0,0 L0,7 L8,3.5 Z" fill="#64748b"/>
-  </marker>
-  <marker id="arr-green" markerWidth="8" markerHeight="8" refX="7" refY="3.5" orient="auto">
-    <path d="M0,0 L0,7 L8,3.5 Z" fill="#15803d"/>
-  </marker>
-  <marker id="arr-red" markerWidth="8" markerHeight="8" refX="7" refY="3.5" orient="auto">
-    <path d="M0,0 L0,7 L8,3.5 Z" fill="#dc2626"/>
+  <marker id="a" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+    <path d="M0,0 L0,7 L7,3.5Z" fill="#64748b"/>
   </marker>
 </defs>
 
-<!-- ══════════════════════════════════════════════════════════
-     SWIMLANE BACKGROUNDS
-     ══════════════════════════════════════════════════════════ -->
-<!-- Customer: y=0, h=440 -->
-<rect x="0" y="0" width="5200" height="440" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
-<rect x="0" y="0" width="120" height="440" fill="#3b82f6" opacity="0.15"/>
-<text x="60" y="220" text-anchor="middle" font-size="13" font-weight="600" fill="#1e40af" transform="rotate(-90,60,220)">CUSTOMER</text>
-
-<!-- Sales Rep: y=440, h=180 -->
-<rect x="0" y="440" width="5200" height="180" fill="#fdf4ff" stroke="#e9d5ff" stroke-width="1"/>
-<rect x="0" y="440" width="120" height="180" fill="#a855f7" opacity="0.15"/>
-<text x="60" y="530" text-anchor="middle" font-size="13" font-weight="600" fill="#6b21a8" transform="rotate(-90,60,530)">SALES REP</text>
-
-<!-- CSM: y=620, h=220 -->
-<rect x="0" y="620" width="5200" height="220" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
-<rect x="0" y="620" width="120" height="220" fill="#22c55e" opacity="0.15"/>
-<text x="60" y="730" text-anchor="middle" font-size="13" font-weight="600" fill="#14532d" transform="rotate(-90,60,730)">CSM</text>
-
-<!-- System: y=840, h=640 -->
-<rect x="0" y="840" width="5200" height="640" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
-<rect x="0" y="840" width="120" height="640" fill="#f97316" opacity="0.15"/>
-<text x="60" y="1160" text-anchor="middle" font-size="13" font-weight="600" fill="#7c2d12" transform="rotate(-90,60,1160)">SYNDER / REVREC</text>
-
-<!-- Branch A / B divider in CUSTOMER lane -->
-<line x1="120" y1="220" x2="5200" y2="220" stroke="#93c5fd" stroke-width="0.5" stroke-dasharray="4,4"/>
-<text x="130" y="215" font-size="10" fill="#93c5fd">Branch A →</text>
-<text x="130" y="432" font-size="10" fill="#93c5fd">Branch B →</text>
-
-<!-- Branch A / B divider in SYSTEM lane -->
-<line x1="120" y1="1100" x2="5200" y2="1100" stroke="#fdba74" stroke-width="0.5" stroke-dasharray="4,4"/>
-<text x="130" y="1095" font-size="10" fill="#fdba74">Branch A →</text>
-<text x="130" y="1112" font-size="10" fill="#fdba74">Branch B →</text>
-
-<!-- ══════════════════════════════════════════════════════════
-     HELPER: JS-free inline SVG node rendering
-     All coordinates are CENTER x, CENTER y
-     ══════════════════════════════════════════════════════════ -->
-
-<!-- ─────────────────────────────────────────
-     ENTRY NODES (shared)
-     ───────────────────────────────────────── -->
-
-<!-- C_START: pill/stadium, cx=200, cy=110 -->
-<rect x="140" y="84" width="180" height="52" rx="26" ry="26" fill="#fff" stroke="#3b82f6" stroke-width="2"/>
-<text x="230" y="105" text-anchor="middle" font-size="11" font-weight="500" fill="#1e40af">User interested in</text>
-<text x="230" y="120" text-anchor="middle" font-size="11" font-weight="500" fill="#1e40af">Synder Pro/Premium</text>
-
-<!-- C_MAIN_CALL: rect, cx=450, cy=110 -->
-<rect x="360" y="84" width="180" height="52" rx="6" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="450" y="105" text-anchor="middle" font-size="11" fill="#1e293b">Scheduled call</text>
-<text x="450" y="120" text-anchor="middle" font-size="11" fill="#1e293b">with Sales</text>
-
-<!-- S_MAIN_CALL: rect in SALES lane, cx=450, cy=530 -->
-<rect x="360" y="504" width="180" height="52" rx="6" fill="#fff" stroke="#a855f7" stroke-width="1.5"/>
-<text x="450" y="525" text-anchor="middle" font-size="11" fill="#581c87">Presents Synder</text>
-<text x="450" y="540" text-anchor="middle" font-size="11" fill="#581c87">main plan pricing</text>
-
-<!-- C_MAIN_AGREE: diamond, cx=680, cy=110 -->
-<polygon points="680,84 740,110 680,136 620,110" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="680" y="106" text-anchor="middle" font-size="10" fill="#1e293b">Purchases</text>
-<text x="680" y="119" text-anchor="middle" font-size="10" fill="#1e293b">main plan?</text>
-
-<!-- ─────────────────────────────────────────
-     BRANCH A (top half: cy in ~90-210 for customer, ~850-1100 for system)
-     ───────────────────────────────────────── -->
-
-<!-- C_PAID: cx=880, cy=110 -->
-<rect x="790" y="84" width="180" height="52" rx="6" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="880" y="102" text-anchor="middle" font-size="11" fill="#1e293b">On paid Pro/Premium</text>
-<text x="880" y="116" text-anchor="middle" font-size="11" fill="#1e293b">using main product</text>
-
-<!-- C_REVREC_CTA: cx=1120, cy=110 -->
-<rect x="1030" y="80" width="180" height="60" rx="6" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="1120" y="100" text-anchor="middle" font-size="10.5" fill="#1e293b">Gets interested in RevRec</text>
-<text x="1120" y="115" text-anchor="middle" font-size="10.5" fill="#1e293b">Clicks CTA in-app</text>
-<text x="1120" y="130" text-anchor="middle" font-size="10" fill="#64748b">→ Scheduled call w/ Sales</text>
-
-<!-- S_REVREC_CALL: cx=1120, cy=530 (Sales lane) -->
-<rect x="1030" y="500" width="180" height="60" rx="6" fill="#fff" stroke="#a855f7" stroke-width="1.5"/>
-<text x="1120" y="519" text-anchor="middle" font-size="10.5" fill="#581c87">RevRec quote</text>
-<text x="1120" y="533" text-anchor="middle" font-size="10.5" fill="#581c87">Stripe sub lookup</text>
-<text x="1120" y="547" text-anchor="middle" font-size="10" fill="#7e22ce">subs → tier × months</text>
-
-<!-- C_REVREC_AGREE: diamond, cx=1360, cy=110 -->
-<polygon points="1360,84 1425,110 1360,136 1295,110" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="1360" y="106" text-anchor="middle" font-size="10" fill="#1e293b">Agrees to</text>
-<text x="1360" y="119" text-anchor="middle" font-size="10" fill="#1e293b">enable RevRec?</text>
-
-<!-- S_REVREC_HANDOFF_A: cx=1560, cy=530 (Sales lane) -->
-<rect x="1470" y="504" width="180" height="52" rx="6" fill="#fff" stroke="#a855f7" stroke-width="1.5"/>
-<text x="1560" y="525" text-anchor="middle" font-size="11" fill="#581c87">Hands off to CSM</text>
-<text x="1560" y="540" text-anchor="middle" font-size="11" fill="#581c87">to enable RevRec</text>
-
-<!-- CSM_ENABLE_A: cx=1760, cy=690 (CSM lane) -->
-<rect x="1670" y="658" width="180" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-<text x="1760" y="678" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1e40af">Enables &amp; configures</text>
-<text x="1760" y="693" text-anchor="middle" font-size="10.5" fill="#1e40af">RevRec on account</text>
-<text x="1760" y="708" text-anchor="middle" font-size="9.5" fill="#3b82f6">Pro: 1k/mo · Premium: 5k/mo</text>
-
-<!-- CSM_INVOICE_A: cx=1760, cy=770 (CSM lane, below enable) -->
-<rect x="1670" y="748" width="180" height="64" rx="6" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
-<text x="1760" y="768" text-anchor="middle" font-size="10" font-weight="600" fill="#713f12">Stripe lookup</text>
-<text x="1760" y="782" text-anchor="middle" font-size="10" fill="#713f12">Quote &amp; invoice hist. data</text>
-<text x="1760" y="796" text-anchor="middle" font-size="9.5" fill="#92400e">Manual invoice — must pay</text>
-
-<!-- SYS_HIST_A: cx=1760, cy=900 (System, Branch A) -->
-<rect x="1670" y="874" width="180" height="52" rx="6" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5"/>
-<text x="1760" y="895" text-anchor="middle" font-size="10.5" font-weight="600" fill="#7c2d12">Historical data</text>
-<text x="1760" y="909" text-anchor="middle" font-size="10.5" fill="#7c2d12">processing starts</text>
-
-<!-- SYS_REVREC_A: cx=2010, cy=900 -->
-<rect x="1920" y="868" width="180" height="64" rx="6" fill="#fff" stroke="#f97316" stroke-width="1.5"/>
-<text x="2010" y="888" text-anchor="middle" font-size="10.5" font-weight="500" fill="#7c2d12">RevRec active</text>
-<text x="2010" y="903" text-anchor="middle" font-size="10" fill="#7c2d12">Subs at plan limits</text>
-<text x="2010" y="917" text-anchor="middle" font-size="9.5" fill="#ea580c">Pro: 1k · Premium: 5k /mo</text>
-
-<!-- C_LIMITS_A: diamond, cx=2250, cy=900 — in SYSTEM lane -->
-<polygon points="2250,868 2320,900 2250,932 2180,900" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="2250" y="896" text-anchor="middle" font-size="9.5" fill="#1e293b">Exceeds plan</text>
-<text x="2250" y="909" text-anchor="middle" font-size="9.5" fill="#1e293b">limits?</text>
-
-<!-- SYS_OK_NO_HIST: cx=2460, cy=860 (upper arm, No) -->
-<rect x="2370" y="834" width="180" height="52" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.5"/>
-<text x="2460" y="854" text-anchor="middle" font-size="10.5" font-weight="500" fill="#14532d">✅ Within plan limits</text>
-<text x="2460" y="869" text-anchor="middle" font-size="10" fill="#14532d">Subs processed</text>
-
-<!-- SYS_STOP_LIMITS_A: cx=2460, cy=950 (lower arm, Yes) -->
-<rect x="2370" y="918" width="180" height="64" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
-<text x="2460" y="938" text-anchor="middle" font-size="10.5" font-weight="500" fill="#7f1d1d">⛔ RevRec stopped</text>
-<text x="2460" y="952" text-anchor="middle" font-size="9.5" fill="#7f1d1d">Data processed internally</text>
-<text x="2460" y="966" text-anchor="middle" font-size="9.5" fill="#7f1d1d">Reports blurred · Upgrade</text>
-
-<!-- Wants add-on upgrade path -->
-<!-- SYS_AUTO_A: diamond, cx=2700, cy=900 -->
-<polygon points="2700,874 2765,900 2700,926 2635,900" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="2700" y="896" text-anchor="middle" font-size="9.5" fill="#1e293b">Auto-upgrade</text>
-<text x="2700" y="909" text-anchor="middle" font-size="9.5" fill="#1e293b">enabled?</text>
-
-<!-- SYS_UPGRADED_A: cx=2920, cy=860 (ON branch) -->
-<rect x="2830" y="834" width="180" height="52" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.5"/>
-<text x="2920" y="854" text-anchor="middle" font-size="10.5" font-weight="500" fill="#14532d">✅ Auto-upgrades</text>
-<text x="2920" y="869" text-anchor="middle" font-size="10" fill="#14532d">when limits hit</text>
-
-<!-- SYS_LIMITS_A: diamond, cx=2920, cy=970 (OFF branch) -->
-<polygon points="2920,944 2985,970 2920,996 2855,970" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="2920" y="966" text-anchor="middle" font-size="9.5" fill="#1e293b">Within limits</text>
-<text x="2920" y="979" text-anchor="middle" font-size="9.5" fill="#1e293b">after upgrade?</text>
-
-<!-- SYS_OK_A: cx=3140, cy=944 -->
-<rect x="3050" y="918" width="180" height="52" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.5"/>
-<text x="3140" y="938" text-anchor="middle" font-size="10.5" font-weight="500" fill="#14532d">✅ Subs processed</text>
-<text x="3140" y="953" text-anchor="middle" font-size="10" fill="#14532d">All good</text>
-
-<!-- SYS_STOP_A: cx=3140, cy=1030 -->
-<rect x="3050" y="1004" width="180" height="52" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
-<text x="3140" y="1024" text-anchor="middle" font-size="10.5" font-weight="500" fill="#7f1d1d">⛔ RevRec stopped</text>
-<text x="3140" y="1039" text-anchor="middle" font-size="10" fill="#7f1d1d">Upgrade prompt</text>
-
-<!-- ─────────────────────────────────────────
-     BRANCH B (bottom half: cy ~330-420 customer, ~1120-1460 system)
-     ───────────────────────────────────────── -->
-
-<!-- C_TRIAL: cx=880, cy=340 -->
-<rect x="790" y="314" width="180" height="52" rx="6" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="880" y="334" text-anchor="middle" font-size="11" fill="#1e293b">On main plan trial</text>
-<text x="880" y="349" text-anchor="middle" font-size="11" fill="#1e293b">testing Synder Sync</text>
-
-<!-- C_REVREC_B: cx=1120, cy=340 -->
-<rect x="1030" y="314" width="180" height="52" rx="6" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="1120" y="334" text-anchor="middle" font-size="11" fill="#1e293b">Gets interested</text>
-<text x="1120" y="349" text-anchor="middle" font-size="11" fill="#1e293b">in RevRec</text>
-
-<!-- S_REVREC_CALL_B: cx=1120, cy=600 (Sales lane, lower) -->
-<!-- Re-use Sales lane y=560 -->
-<rect x="1030" y="574" width="180" height="60" rx="6" fill="#fff" stroke="#a855f7" stroke-width="1.5"/>
-<text x="1120" y="593" text-anchor="middle" font-size="10.5" fill="#581c87">RevRec quote (trial)</text>
-<text x="1120" y="607" text-anchor="middle" font-size="10.5" fill="#581c87">Stripe sub lookup</text>
-<text x="1120" y="621" text-anchor="middle" font-size="10" fill="#7e22ce">subs → tier × months</text>
-
-<!-- C_REVREC_AGREE_B: diamond, cx=1360, cy=340 -->
-<polygon points="1360,314 1425,340 1360,366 1295,340" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="1360" y="336" text-anchor="middle" font-size="10" fill="#1e293b">Agrees to</text>
-<text x="1360" y="349" text-anchor="middle" font-size="10" fill="#1e293b">enable RevRec?</text>
-
-<!-- S_REVREC_HANDOFF_B: cx=1560, cy=590 (Sales lane) -->
-<rect x="1470" y="564" width="180" height="52" rx="6" fill="#fff" stroke="#a855f7" stroke-width="1.5"/>
-<text x="1560" y="585" text-anchor="middle" font-size="11" fill="#581c87">Hands off to CSM</text>
-<text x="1560" y="600" text-anchor="middle" font-size="11" fill="#581c87">to enable RevRec</text>
-
-<!-- CSM_ENABLE_B: cx=1760, cy=770 — shares CSM lane -->
-<!-- We already used 658-722 for CSM_ENABLE_A and 748-812 for CSM_INVOICE_A -->
-<!-- Put CSM_ENABLE_B at a different x range, cx=1960 -->
-<!-- Actually let's place B nodes further right. cx=2200 for CSM B nodes -->
-
-<!-- CSM_ENABLE_B: cx=2000, cy=680 -->
-<rect x="1910" y="650" width="180" height="64" rx="6" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-<text x="2000" y="669" text-anchor="middle" font-size="10.5" font-weight="600" fill="#1e40af">Enables &amp; configures</text>
-<text x="2000" y="683" text-anchor="middle" font-size="10.5" fill="#1e40af">RevRec (trial)</text>
-<text x="2000" y="697" text-anchor="middle" font-size="9.5" fill="#3b82f6">Trial tied to main plan end</text>
-
-<!-- CSM_INVOICE_B: cx=2000, cy=755 -->
-<rect x="1910" y="730" width="180" height="64" rx="6" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
-<text x="2000" y="750" text-anchor="middle" font-size="10" font-weight="600" fill="#713f12">Stripe lookup</text>
-<text x="2000" y="764" text-anchor="middle" font-size="10" fill="#713f12">Quote &amp; invoice hist. data</text>
-<text x="2000" y="778" text-anchor="middle" font-size="9.5" fill="#92400e">Manual invoice — must pay</text>
-
-<!-- SYS_HIST_B: cx=2000, cy=1140 (System Branch B) -->
-<rect x="1910" y="1114" width="180" height="52" rx="6" fill="#fed7aa" stroke="#ea580c" stroke-width="1.5"/>
-<text x="2000" y="1135" text-anchor="middle" font-size="10.5" font-weight="600" fill="#7c2d12">Historical data</text>
-<text x="2000" y="1149" text-anchor="middle" font-size="10.5" fill="#7c2d12">processing starts</text>
-
-<!-- SYS_TRIAL_B: cx=2250, cy=1140 -->
-<rect x="2160" y="1108" width="180" height="64" rx="6" fill="#fff" stroke="#f97316" stroke-width="1.5"/>
-<text x="2250" y="1128" text-anchor="middle" font-size="10.5" font-weight="500" fill="#7c2d12">RevRec trial active</text>
-<text x="2250" y="1143" text-anchor="middle" font-size="10" fill="#7c2d12">Ongoing subs free</text>
-<text x="2250" y="1157" text-anchor="middle" font-size="9.5" fill="#ea580c">Tied to main trial end</text>
-
-<!-- C_BUY_B: diamond in CUSTOMER lane at bottom, cx=2500, cy=375 -->
-<polygon points="2500,345 2590,375 2500,405 2410,375" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="2500" y="369" text-anchor="middle" font-size="10" fill="#1e293b">Purchase decision</text>
-<text x="2500" y="382" text-anchor="middle" font-size="10" fill="#1e293b">at trial end</text>
-
-<!-- CSM_PURCHASE_B: cx=2500, cy=710 -->
-<rect x="2410" y="680" width="180" height="52" rx="6" fill="#fff" stroke="#22c55e" stroke-width="1.5"/>
-<text x="2500" y="700" text-anchor="middle" font-size="10.5" fill="#14532d">Enables ongoing plan</text>
-<text x="2500" y="715" text-anchor="middle" font-size="10.5" fill="#14532d">B1: Sync + RevRec</text>
-
-<!-- SYS_BOTH_B: cx=2700, cy=1200 -->
-<rect x="2610" y="1168" width="180" height="64" rx="6" fill="#fff" stroke="#f97316" stroke-width="1.5"/>
-<text x="2700" y="1188" text-anchor="middle" font-size="10.5" font-weight="500" fill="#7c2d12">Main plan + RevRec</text>
-<text x="2700" y="1203" text-anchor="middle" font-size="10" fill="#7c2d12">Ongoing billing starts</text>
-
-<!-- SYS_AUTO_B: diamond, cx=2920, cy=1200 -->
-<polygon points="2920,1174 2985,1200 2920,1226 2855,1200" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="2920" y="1196" text-anchor="middle" font-size="9.5" fill="#1e293b">Auto-upgrade?</text>
-
-<!-- SYS_UPGRADED_B: cx=3140, cy=1160 -->
-<rect x="3050" y="1134" width="180" height="52" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.5"/>
-<text x="3140" y="1154" text-anchor="middle" font-size="10.5" font-weight="500" fill="#14532d">✅ Auto-upgrades</text>
-<text x="3140" y="1169" text-anchor="middle" font-size="10" fill="#14532d">when limits hit</text>
-
-<!-- SYS_LIMITS_B: diamond, cx=3140, cy=1260 -->
-<polygon points="3140,1234 3205,1260 3140,1286 3075,1260" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="3140" y="1256" text-anchor="middle" font-size="9.5" fill="#1e293b">Within limits?</text>
-
-<!-- SYS_OK_B: cx=3360, cy=1234 -->
-<rect x="3270" y="1208" width="180" height="52" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.5"/>
-<text x="3360" y="1228" text-anchor="middle" font-size="10.5" font-weight="500" fill="#14532d">✅ All good</text>
-<text x="3360" y="1243" text-anchor="middle" font-size="10" fill="#14532d">Subs processed</text>
-
-<!-- SYS_STOP_B: cx=3360, cy=1310 -->
-<rect x="3270" y="1284" width="180" height="52" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
-<text x="3360" y="1304" text-anchor="middle" font-size="10.5" font-weight="500" fill="#7f1d1d">⛔ RevRec stopped</text>
-<text x="3360" y="1319" text-anchor="middle" font-size="10" fill="#7f1d1d">Upgrade prompt</text>
-
-<!-- B2: Sync only Pro/Premium -->
-<!-- SYS_SYNC_ONLY: cx=2700, cy=1310 -->
-<rect x="2610" y="1284" width="180" height="64" rx="6" fill="#fff" stroke="#f97316" stroke-width="1.5"/>
-<text x="2700" y="1303" text-anchor="middle" font-size="10" font-weight="500" fill="#7c2d12">RevRec at plan limits</text>
-<text x="2700" y="1317" text-anchor="middle" font-size="9.5" fill="#7c2d12">Pro: 1k · Premium: 5k</text>
-<text x="2700" y="1331" text-anchor="middle" font-size="9.5" fill="#94a3b8">B2: Sync only Pro/Prem</text>
-
-<!-- SYS_LIMITS_B2: diamond, cx=2920, cy=1340 -->
-<polygon points="2920,1314 2985,1340 2920,1366 2855,1340" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="2920" y="1336" text-anchor="middle" font-size="9.5" fill="#1e293b">Within limits?</text>
-
-<!-- SYS_OK_B2: cx=3140, cy=1314 -->
-<rect x="3050" y="1288" width="180" height="52" rx="6" fill="#bbf7d0" stroke="#15803d" stroke-width="1.5"/>
-<text x="3140" y="1308" text-anchor="middle" font-size="10.5" font-weight="500" fill="#14532d">✅ All good</text>
-<text x="3140" y="1323" text-anchor="middle" font-size="10" fill="#14532d">Subs processed</text>
-
-<!-- SYS_STOP_B2: cx=3140, cy=1390 -->
-<rect x="3050" y="1364" width="180" height="52" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
-<text x="3140" y="1384" text-anchor="middle" font-size="10.5" font-weight="500" fill="#7f1d1d">⛔ RevRec stopped</text>
-<text x="3140" y="1399" text-anchor="middle" font-size="10" fill="#7f1d1d">Upgrade prompt</text>
-
-<!-- B3: Essential -->
-<!-- SYS_ESSENTIAL: cx=2700, cy=1415 -->
-<rect x="2610" y="1390" width="180" height="64" rx="6" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
-<text x="2700" y="1409" text-anchor="middle" font-size="10" font-weight="600" fill="#713f12">⚠️ Essential plan</text>
-<text x="2700" y="1423" text-anchor="middle" font-size="9.5" fill="#713f12">Not eligible for RevRec</text>
-<text x="2700" y="1437" text-anchor="middle" font-size="9.5" fill="#92400e">Must create new org</text>
-
-<!-- B4: No purchase -->
-<!-- SYS_NOTHING: cx=2460, cy=1415 (Trial ends) -->
-<rect x="2370" y="1395" width="140" height="44" rx="6" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
-<text x="2440" y="1414" text-anchor="middle" font-size="10.5" fill="#1e293b">Trial ends</text>
-<text x="2440" y="1429" text-anchor="middle" font-size="9.5" fill="#64748b">No purchase</text>
-
-<!-- SYS_SYNC_KEPT: cx=2640, cy=1460 area — actually place further right -->
-<!-- Let's use cx=2700 area but lower -->
-<!-- SYS_SYNC_KEPT: cx=2920, cy=1415 -->
-<rect x="2560" y="1453" width="180" height="52" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
-<text x="2650" y="1473" text-anchor="middle" font-size="10" fill="#475569">Sync data: kept</text>
-<text x="2650" y="1487" text-anchor="middle" font-size="9.5" fill="#94a3b8">Already synced to books</text>
-
-<!-- SYS_RR_ROLLBACK: cx=2840, cy=1453 -->
-<rect x="2760" y="1453" width="200" height="52" rx="6" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
-<text x="2860" y="1470" text-anchor="middle" font-size="10" font-weight="600" fill="#7f1d1d">🔄 RevRec ROLLED BACK</text>
-<text x="2860" y="1484" text-anchor="middle" font-size="9" fill="#7f1d1d">Trial was unlimited — rollback</text>
-<text x="2860" y="1496" text-anchor="middle" font-size="9" fill="#7f1d1d">prevents free data exploit</text>
-
-<!-- ══════════════════════════════════════════════════════════
-     EDGES / ARROWS
-     ══════════════════════════════════════════════════════════ -->
-
-<!-- C_START → C_MAIN_CALL -->
-<line x1="320" y1="110" x2="358" y2="110" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- C_MAIN_CALL → S_MAIN_CALL (down to Sales lane) -->
-<line x1="450" y1="136" x2="450" y2="502" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- S_MAIN_CALL → C_MAIN_AGREE (up to Customer, then right) -->
-<line x1="540" y1="530" x2="620" y2="530" stroke="#64748b" stroke-width="1.5"/>
-<line x1="620" y1="530" x2="620" y2="110" stroke="#64748b" stroke-width="1.5"/>
-<line x1="620" y1="110" x2="618" y2="110" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<!-- Arrow into diamond -->
-<line x1="620" y1="110" x2="618" y2="110" stroke="#64748b" stroke-width="1.5"/>
-
-<!-- C_MAIN_AGREE → C_PAID (YES, Branch A → right) -->
-<line x1="740" y1="110" x2="788" y2="110" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<text x="755" y="104" font-size="10" fill="#15803d" font-weight="500">Yes</text>
-
-<!-- C_MAIN_AGREE → C_TRIAL (NO, Branch B → down) -->
-<line x1="680" y1="136" x2="680" y2="340" stroke="#64748b" stroke-width="1.5"/>
-<line x1="680" y1="340" x2="788" y2="340" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<text x="688" y="180" font-size="10" fill="#dc2626" font-weight="500">No → trial</text>
-
-<!-- C_PAID → C_REVREC_CTA -->
-<line x1="970" y1="110" x2="1028" y2="110" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- C_REVREC_CTA → S_REVREC_CALL (down) -->
-<line x1="1120" y1="140" x2="1120" y2="498" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- S_REVREC_CALL → C_REVREC_AGREE (up) -->
-<line x1="1210" y1="530" x2="1295" y2="530" stroke="#64748b" stroke-width="1.5"/>
-<line x1="1295" y1="530" x2="1295" y2="110" stroke="#64748b" stroke-width="1.5"/>
-<line x1="1295" y1="110" x2="1293" y2="110" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- C_REVREC_AGREE → NO back to C_PAID (loop above) -->
-<line x1="1360" y1="84" x2="1360" y2="52" stroke="#dc2626" stroke-width="1.5"/>
-<line x1="1360" y1="52" x2="880" y2="52" stroke="#dc2626" stroke-width="1.5"/>
-<line x1="880" y1="52" x2="880" y2="82" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-red)"/>
-<text x="1110" y="46" font-size="10" fill="#dc2626">No</text>
-
-<!-- C_REVREC_AGREE → YES → S_REVREC_HANDOFF_A (down) -->
-<line x1="1425" y1="110" x2="1560" y2="110" stroke="#64748b" stroke-width="1.5"/>
-<line x1="1560" y1="110" x2="1560" y2="502" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<text x="1440" y="104" font-size="10" fill="#15803d">Yes</text>
-
-<!-- S_REVREC_HANDOFF_A → CSM_ENABLE_A (down to CSM) -->
-<line x1="1560" y1="556" x2="1560" y2="690" stroke="#64748b" stroke-width="1.5"/>
-<line x1="1560" y1="690" x2="1668" y2="690" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- CSM_ENABLE_A → SYS_HIST_A (down to System) -->
-<line x1="1760" y1="722" x2="1760" y2="872" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- CSM_ENABLE_A → CSM_INVOICE_A (down within CSM) -->
-<line x1="1810" y1="722" x2="1810" y2="746" stroke="#ca8a04" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- SYS_HIST_A → SYS_REVREC_A -->
-<line x1="1850" y1="900" x2="1918" y2="900" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- SYS_REVREC_A → C_LIMITS_A -->
-<line x1="2100" y1="900" x2="2178" y2="900" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- C_LIMITS_A → SYS_OK_NO_HIST (No, upward) -->
-<line x1="2250" y1="868" x2="2250" y2="860" stroke="#15803d" stroke-width="1.5"/>
-<line x1="2250" y1="860" x2="2368" y2="860" stroke="#15803d" stroke-width="1.5" marker-end="url(#arr-green)"/>
-<text x="2270" y="854" font-size="10" fill="#15803d">No</text>
-
-<!-- C_LIMITS_A → SYS_STOP_LIMITS_A (Yes, downward) -->
-<line x1="2250" y1="932" x2="2250" y2="950" stroke="#dc2626" stroke-width="1.5"/>
-<line x1="2250" y1="950" x2="2368" y2="950" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-red)"/>
-<text x="2258" y="944" font-size="10" fill="#dc2626">Yes</text>
-
-<!-- C_LIMITS_A → SYS_AUTO_A (add-on, right) -->
-<line x1="2320" y1="900" x2="2633" y2="900" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<text x="2350" y="894" font-size="9.5" fill="#64748b">Wants add-on</text>
-
-<!-- SYS_AUTO_A → SYS_UPGRADED_A (ON, upward) -->
-<line x1="2700" y1="874" x2="2700" y2="860" stroke="#15803d" stroke-width="1.5"/>
-<line x1="2700" y1="860" x2="2828" y2="860" stroke="#15803d" stroke-width="1.5" marker-end="url(#arr-green)"/>
-<text x="2716" y="854" font-size="10" fill="#15803d">ON</text>
-
-<!-- SYS_AUTO_A → SYS_LIMITS_A (OFF, downward) -->
-<line x1="2700" y1="926" x2="2700" y2="970" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2700" y1="970" x2="2853" y2="970" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<text x="2708" y="952" font-size="10" fill="#64748b">OFF</text>
-
-<!-- SYS_LIMITS_A → SYS_OK_A (Yes) -->
-<line x1="2985" y1="970" x2="3048" y2="970" stroke="#15803d" stroke-width="1.5" marker-end="url(#arr-green)"/>
-<text x="2996" y="964" font-size="10" fill="#15803d">Yes</text>
-
-<!-- SYS_LIMITS_A → SYS_STOP_A (No, downward) -->
-<line x1="2920" y1="996" x2="2920" y2="1030" stroke="#dc2626" stroke-width="1.5"/>
-<line x1="2920" y1="1030" x2="3048" y2="1030" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-red)"/>
-<text x="2928" y="1016" font-size="10" fill="#dc2626">No</text>
-
-<!-- ─── Branch B Arrows ─── -->
-
-<!-- C_TRIAL → C_REVREC_B -->
-<line x1="970" y1="340" x2="1028" y2="340" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- C_REVREC_B → S_REVREC_CALL_B (down to Sales) -->
-<line x1="1120" y1="366" x2="1120" y2="572" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- S_REVREC_CALL_B → C_REVREC_AGREE_B (up to Customer) -->
-<line x1="1210" y1="604" x2="1296" y2="604" stroke="#64748b" stroke-width="1.5"/>
-<line x1="1296" y1="604" x2="1296" y2="340" stroke="#64748b" stroke-width="1.5"/>
-<line x1="1296" y1="340" x2="1293" y2="340" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- C_REVREC_AGREE_B → No → back to C_TRIAL (loop above) -->
-<line x1="1360" y1="314" x2="1360" y2="290" stroke="#dc2626" stroke-width="1.5"/>
-<line x1="1360" y1="290" x2="880" y2="290" stroke="#dc2626" stroke-width="1.5"/>
-<line x1="880" y1="290" x2="880" y2="312" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-red)"/>
-<text x="1110" y="284" font-size="10" fill="#dc2626">No</text>
-
-<!-- C_REVREC_AGREE_B → Yes → S_REVREC_HANDOFF_B (down to Sales) -->
-<line x1="1425" y1="340" x2="1560" y2="340" stroke="#64748b" stroke-width="1.5"/>
-<line x1="1560" y1="340" x2="1560" y2="562" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<text x="1440" y="334" font-size="10" fill="#15803d">Yes</text>
-
-<!-- S_REVREC_HANDOFF_B → CSM_ENABLE_B (down to CSM) -->
-<line x1="1560" y1="616" x2="1560" y2="682" stroke="#64748b" stroke-width="1.5"/>
-<line x1="1560" y1="682" x2="1908" y2="682" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- CSM_ENABLE_B → CSM_INVOICE_B (down within CSM) -->
-<line x1="2050" y1="714" x2="2050" y2="728" stroke="#ca8a04" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- CSM_ENABLE_B → SYS_HIST_B (down to System) -->
-<line x1="2000" y1="714" x2="2000" y2="1112" stroke="#ea580c" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- SYS_HIST_B → SYS_TRIAL_B -->
-<line x1="2090" y1="1140" x2="2158" y2="1140" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- SYS_TRIAL_B → C_BUY_B (up to Customer) -->
-<line x1="2340" y1="1140" x2="2500" y2="1140" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2500" y1="1140" x2="2500" y2="407" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- C_BUY_B → B1: CSM_PURCHASE_B (down to CSM) -->
-<line x1="2590" y1="375" x2="2640" y2="375" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2640" y1="375" x2="2640" y2="706" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2640" y1="706" x2="2608" y2="706" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<text x="2596" y="369" font-size="9.5" fill="#15803d">B1</text>
-
-<!-- CSM_PURCHASE_B → SYS_BOTH_B (down to System) -->
-<line x1="2500" y1="732" x2="2500" y2="1200" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2500" y1="1200" x2="2608" y2="1200" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- SYS_BOTH_B → SYS_AUTO_B -->
-<line x1="2790" y1="1200" x2="2853" y2="1200" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- SYS_AUTO_B → SYS_UPGRADED_B (ON, up) -->
-<line x1="2920" y1="1174" x2="2920" y2="1160" stroke="#15803d" stroke-width="1.5"/>
-<line x1="2920" y1="1160" x2="3048" y2="1160" stroke="#15803d" stroke-width="1.5" marker-end="url(#arr-green)"/>
-<text x="2928" y="1154" font-size="10" fill="#15803d">ON</text>
-
-<!-- SYS_AUTO_B → SYS_LIMITS_B (OFF, down) -->
-<line x1="2920" y1="1226" x2="2920" y2="1260" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2920" y1="1260" x2="3073" y2="1260" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<text x="2928" y="1246" font-size="10" fill="#64748b">OFF</text>
-
-<!-- SYS_LIMITS_B → SYS_OK_B (Yes) -->
-<line x1="3205" y1="1260" x2="3268" y2="1260" stroke="#15803d" stroke-width="1.5" marker-end="url(#arr-green)"/>
-<text x="3210" y="1254" font-size="10" fill="#15803d">Yes</text>
-
-<!-- SYS_LIMITS_B → SYS_STOP_B (No) -->
-<line x1="3140" y1="1286" x2="3140" y2="1310" stroke="#dc2626" stroke-width="1.5"/>
-<line x1="3140" y1="1310" x2="3268" y2="1310" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-red)"/>
-<text x="3148" y="1300" font-size="10" fill="#dc2626">No</text>
-
-<!-- C_BUY_B → B2: SYS_SYNC_ONLY (down to system) -->
-<line x1="2500" y1="405" x2="2500" y2="438" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2500" y1="438" x2="2700" y2="438" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2700" y1="438" x2="2700" y2="1282" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<text x="2510" y="432" font-size="9.5" fill="#64748b">B2</text>
-
-<!-- SYS_SYNC_ONLY → SYS_LIMITS_B2 -->
-<line x1="2790" y1="1316" x2="2853" y2="1340" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- SYS_LIMITS_B2 → SYS_OK_B2 (Yes) -->
-<line x1="2985" y1="1340" x2="3048" y2="1340" stroke="#15803d" stroke-width="1.5" marker-end="url(#arr-green)"/>
-<text x="2990" y="1334" font-size="10" fill="#15803d">Yes</text>
-
-<!-- SYS_LIMITS_B2 → SYS_STOP_B2 (No) -->
-<line x1="2920" y1="1366" x2="2920" y2="1390" stroke="#dc2626" stroke-width="1.5"/>
-<line x1="2920" y1="1390" x2="3048" y2="1390" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-red)"/>
-<text x="2928" y="1382" font-size="10" fill="#dc2626">No</text>
-
-<!-- C_BUY_B → B3: SYS_ESSENTIAL -->
-<line x1="2410" y1="375" x2="2380" y2="375" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2380" y1="375" x2="2380" y2="1422" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2380" y1="1422" x2="2608" y2="1422" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<text x="2384" y="370" font-size="9.5" fill="#ca8a04">B3</text>
-
-<!-- C_BUY_B → B4: SYS_NOTHING -->
-<line x1="2500" y1="345" x2="2500" y2="310" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2500" y1="310" x2="2440" y2="310" stroke="#64748b" stroke-width="1.5"/>
-<line x1="2440" y1="310" x2="2440" y2="1393" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-<text x="2444" y="305" font-size="9.5" fill="#dc2626">B4: No purchase</text>
-
-<!-- SYS_NOTHING → SYS_SYNC_KEPT -->
-<line x1="2510" y1="1417" x2="2558" y2="1460" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
-
-<!-- SYS_NOTHING → SYS_RR_ROLLBACK -->
-<line x1="2510" y1="1417" x2="2760" y2="1460" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-red)"/>
+<!-- ═══════════════════════════════════════════
+     HELPERS: macros via use/symbol not available
+     All shapes drawn inline
+     ═══════════════════════════════════════════ -->
+
+<!-- SECTION BOX HELPER: light grey bg, dark border -->
+<!-- Colors:
+     section box: fill=#f8fafc stroke=#64748b
+     decision diamond: fill=#fef9c3 stroke=#ca8a04
+     rect node: fill=#fff stroke=#94a3b8
+     purple rect: fill=#f3e8ff stroke=#7c3aed
+     green sticky: fill=#dcfce7 stroke=#16a34a
+     merge circle: fill=#e2e8f0 stroke=#94a3b8
+-->
+
+<!-- ══════════════════════ TRIAL SECTION BOX ══════════════════════ -->
+<rect x="168" y="18" width="848" height="530" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+<text x="176" y="34" font-size="10" font-weight="700" fill="#475569" text-decoration="none" letter-spacing="0.05em">TRIAL</text>
+
+<!-- D: RevRec configured? -->
+<polygon points="340,110 395,140 340,170 285,140" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="340" y="136" text-anchor="middle" font-size="9" fill="#713f12">RevRec</text>
+<text x="340" y="148" text-anchor="middle" font-size="9" fill="#713f12">configured?</text>
+
+<!-- No → trial screen extended -->
+<rect x="216" y="200" width="168" height="50" rx="5" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="300" y="218" text-anchor="middle" font-size="9" fill="#334155">RevRec trial screen</text>
+<text x="300" y="230" text-anchor="middle" font-size="9" fill="#334155">with notification to</text>
+<text x="300" y="242" text-anchor="middle" font-size="9" fill="#334155">extend base trial</text>
+<!-- arrow D→no→R -->
+<line x1="340" y1="170" x2="340" y2="195" stroke="#64748b" stroke-width="1.5"/>
+<line x1="340" y1="195" x2="302" y2="195" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="347" y="187" font-size="8" fill="#64748b">No</text>
+
+<!-- Yes arrow from D_T_CFG1 right -->
+<line x1="395" y1="140" x2="460" y2="140" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="408" y="134" font-size="8" fill="#64748b">Yes</text>
+
+<!-- D: Base trial expired? -->
+<polygon points="510,115 575,140 510,165 445,140" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="510" y="136" text-anchor="middle" font-size="9" fill="#713f12">Base trial</text>
+<text x="510" y="148" text-anchor="middle" font-size="9" fill="#713f12">expired?</text>
+
+<!-- Yes branch up -->
+<line x1="510" y1="115" x2="510" y2="70" stroke="#64748b" stroke-width="1.5"/>
+<line x1="510" y1="70" x2="620" y2="70" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="514" y="95" font-size="8" fill="#64748b">Yes</text>
+
+<!-- D: RevRec configured? (upper, yes-branch) -->
+<polygon points="670,50 725,70 670,90 615,70" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="670" y="66" text-anchor="middle" font-size="9" fill="#713f12">RevRec</text>
+<text x="670" y="78" text-anchor="middle" font-size="9" fill="#713f12">configured?</text>
+
+<!-- No → trial screen stack (upper) -->
+<line x1="670" y1="90" x2="670" y2="110" stroke="#64748b" stroke-width="1.5"/>
+<rect x="620" y="110" width="100" height="34" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="670" y="124" text-anchor="middle" font-size="8.5" fill="#334155">RevRec trial screen</text>
+<rect x="620" y="152" width="100" height="34" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="670" y="166" text-anchor="middle" font-size="8.5" fill="#334155">RevRec config screen</text>
+<rect x="620" y="194" width="100" height="34" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="670" y="208" text-anchor="middle" font-size="8.5" fill="#334155">RevRec enabled</text>
+<line x1="670" y1="144" x2="670" y2="152" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<line x1="670" y1="186" x2="670" y2="194" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<!-- → merge -->
+<line x1="720" y1="211" x2="782" y2="270" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="680" y="86" font-size="8" fill="#64748b">No</text>
+
+<!-- Yes from upper configured? → merge -->
+<line x1="725" y1="70" x2="800" y2="70" stroke="#64748b" stroke-width="1.5"/>
+<line x1="800" y1="70" x2="800" y2="258" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="728" y="64" font-size="8" fill="#64748b">Yes</text>
+
+<!-- No branch down from Base trial expired? -->
+<line x1="510" y1="165" x2="510" y2="340" stroke="#64748b" stroke-width="1.5"/>
+<line x1="510" y1="340" x2="620" y2="340" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="514" y="260" font-size="8" fill="#64748b">No</text>
+
+<!-- D: RevRec configured? (lower, no-branch) -->
+<polygon points="670,320 725,340 670,360 615,340" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="670" y="336" text-anchor="middle" font-size="9" fill="#713f12">RevRec</text>
+<text x="670" y="348" text-anchor="middle" font-size="9" fill="#713f12">configured?</text>
+
+<!-- No → trial screen stack (lower) -->
+<line x1="670" y1="360" x2="670" y2="380" stroke="#64748b" stroke-width="1.5"/>
+<rect x="620" y="380" width="100" height="34" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="670" y="394" text-anchor="middle" font-size="8.5" fill="#334155">RevRec trial screen</text>
+<rect x="620" y="422" width="100" height="34" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="670" y="436" text-anchor="middle" font-size="8.5" fill="#334155">RevRec config screen</text>
+<rect x="620" y="464" width="100" height="34" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="670" y="478" text-anchor="middle" font-size="8.5" fill="#334155">RevRec enabled</text>
+<line x1="670" y1="414" x2="670" y2="422" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<line x1="670" y1="456" x2="670" y2="464" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="676" y="378" font-size="8" fill="#64748b">No</text>
+<!-- → merge -->
+<line x1="720" y1="481" x2="782" y2="310" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- Yes lower → merge -->
+<line x1="725" y1="340" x2="810" y2="340" stroke="#64748b" stroke-width="1.5"/>
+<line x1="810" y1="340" x2="810" y2="312" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="728" y="334" font-size="8" fill="#64748b">Yes</text>
+
+<!-- MERGE node -->
+<circle cx="800" cy="283" r="12" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="800" y="288" text-anchor="middle" font-size="10" fill="#64748b">×</text>
+
+<!-- FEATURE BLOCK (5 rects) -->
+<line x1="812" y1="283" x2="848" y2="283" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="850" y="60" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="936" y="75" text-anchor="middle" font-size="8.5" fill="#334155">Billing history page</text>
+<text x="936" y="87" text-anchor="middle" font-size="8.5" fill="#334155">shows data as trial</text>
+<rect x="850" y="104" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="936" y="119" text-anchor="middle" font-size="8.5" fill="#334155">Unlimited subscription</text>
+<text x="936" y="131" text-anchor="middle" font-size="8.5" fill="#334155">balance</text>
+<rect x="850" y="148" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="936" y="163" text-anchor="middle" font-size="8.5" fill="#334155">RevRec trial date set</text>
+<text x="936" y="175" text-anchor="middle" font-size="8.5" fill="#334155">to 15 days</text>
+<rect x="850" y="192" width="172" height="48" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="936" y="207" text-anchor="middle" font-size="8.5" fill="#334155">Choose plan page gets</text>
+<text x="936" y="219" text-anchor="middle" font-size="8.5" fill="#334155">RevRec dropdown —</text>
+<text x="936" y="231" text-anchor="middle" font-size="8.5" fill="#334155">Pro, ProMax, Premium</text>
+<rect x="850" y="246" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="936" y="261" text-anchor="middle" font-size="8.5" fill="#334155">Enable auto-import</text>
+<text x="936" y="273" text-anchor="middle" font-size="8.5" fill="#334155">and lock the setting</text>
+
+<!-- connector from merge to feature block -->
+<line x1="850" y1="283" x2="850" y2="265" stroke="#64748b" stroke-width="1.5"/>
+<line x1="850" y1="265" x2="848" y2="265" stroke="#64748b" stroke-width="1.5"/>
+<!-- vertical connector along feature block -->
+<line x1="848" y1="80" x2="848" y2="490" stroke="#64748b" stroke-width="1"/>
+<line x1="848" y1="80" x2="850" y2="80" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- D: RevRec trial expired? -->
+<polygon points="1000,265 1055,283 1000,301 945,283" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="1000" y="279" text-anchor="middle" font-size="9" fill="#713f12">RevRec trial</text>
+<text x="1000" y="291" text-anchor="middle" font-size="9" fill="#713f12">expired?</text>
+
+<line x1="1022" y1="284" x2="1022" y2="284" stroke="none"/>
+<!-- connect feature block to trial expired diamond -->
+<line x1="1022" y1="283" x2="943" y2="283" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- Yes → processing stopped -->
+<line x1="1000" y1="301" x2="1000" y2="340" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="1006" y="323" font-size="8" fill="#64748b">Yes</text>
+<rect x="918" y="342" width="168" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1002" y="357" text-anchor="middle" font-size="8.5" fill="#334155">RevRec processing</text>
+<text x="1002" y="369" text-anchor="middle" font-size="8.5" fill="#334155">stopped</text>
+
+<!-- No → right to purchase -->
+<line x1="1055" y1="283" x2="1100" y2="283" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="1058" y="277" font-size="8" fill="#64748b">No</text>
+
+<!-- ══════════════════════ PRO SECTION BOX ══════════════════════ -->
+<rect x="168" y="568" width="848" height="320" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+<text x="176" y="584" font-size="10" font-weight="700" fill="#475569" letter-spacing="0.05em">PRO / PRO MAX / PREMIUM</text>
+
+<!-- D: RevRec configured? -->
+<polygon points="390,660 450,680 390,700 330,680" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="390" y="676" text-anchor="middle" font-size="9" fill="#713f12">RevRec</text>
+<text x="390" y="688" text-anchor="middle" font-size="9" fill="#713f12">configured?</text>
+
+<!-- Disabled → trial/config/enabled -->
+<line x1="390" y1="700" x2="390" y2="730" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="394" y="718" font-size="8" fill="#64748b">Disabled</text>
+<rect x="314" y="730" width="152" height="34" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="390" y="744" text-anchor="middle" font-size="8.5" fill="#334155">RevRec trial screen</text>
+<rect x="314" y="770" width="152" height="34" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="390" y="784" text-anchor="middle" font-size="8.5" fill="#334155">RevRec config screen</text>
+<rect x="314" y="810" width="152" height="34" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="390" y="824" text-anchor="middle" font-size="8.5" fill="#334155">RevRec enabled</text>
+<line x1="390" y1="764" x2="390" y2="770" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<line x1="390" y1="804" x2="390" y2="810" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<!-- → merge P -->
+<line x1="466" y1="827" x2="682" y2="760" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- Enabled → merge P -->
+<line x1="450" y1="680" x2="700" y2="680" stroke="#64748b" stroke-width="1.5"/>
+<line x1="700" y1="680" x2="700" y2="748" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="453" y="674" font-size="8" fill="#64748b">Enabled</text>
+
+<!-- MERGE P -->
+<circle cx="700" cy="760" r="12" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="700" y="765" text-anchor="middle" font-size="10" fill="#64748b">×</text>
+
+<!-- Feature block P (5 rects) -->
+<line x1="712" y1="760" x2="748" y2="760" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="750" y="610" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="836" y="625" text-anchor="middle" font-size="8.5" fill="#334155">Billing history page</text>
+<text x="836" y="637" text-anchor="middle" font-size="8.5" fill="#334155">shows data as trial</text>
+<rect x="750" y="654" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="836" y="669" text-anchor="middle" font-size="8.5" fill="#334155">Unlimited subscription</text>
+<text x="836" y="681" text-anchor="middle" font-size="8.5" fill="#334155">balance</text>
+<rect x="750" y="698" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="836" y="713" text-anchor="middle" font-size="8.5" fill="#334155">RevRec trial date set</text>
+<text x="836" y="725" text-anchor="middle" font-size="8.5" fill="#334155">to 15 days</text>
+<rect x="750" y="742" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="836" y="757" text-anchor="middle" font-size="8.5" fill="#334155">Choose plan — Pro,</text>
+<text x="836" y="769" text-anchor="middle" font-size="8.5" fill="#334155">ProMax, Premium only</text>
+<rect x="750" y="786" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="836" y="801" text-anchor="middle" font-size="8.5" fill="#334155">Enable auto-import</text>
+<text x="836" y="813" text-anchor="middle" font-size="8.5" fill="#334155">and lock the setting</text>
+<line x1="748" y1="760" x2="748" y2="820" stroke="#64748b" stroke-width="1"/>
+<line x1="748" y1="760" x2="748" y2="700" stroke="#64748b" stroke-width="1"/>
+
+<!-- D: RevRec trial expired? P -->
+<polygon points="1000,750 1055,768 1000,786 945,768" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="1000" y="764" text-anchor="middle" font-size="9" fill="#713f12">RevRec trial</text>
+<text x="1000" y="776" text-anchor="middle" font-size="9" fill="#713f12">expired?</text>
+<line x1="922" y1="768" x2="943" y2="768" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- Yes P → stopped -->
+<line x1="1000" y1="786" x2="1000" y2="820" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="1006" y="806" font-size="8" fill="#64748b">Yes</text>
+<rect x="918" y="822" width="168" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1002" y="837" text-anchor="middle" font-size="8.5" fill="#334155">RevRec processing</text>
+<text x="1002" y="849" text-anchor="middle" font-size="8.5" fill="#334155">stopped</text>
+
+<!-- No P → purchase -->
+<line x1="1055" y1="768" x2="1100" y2="768" stroke="#64748b" stroke-width="1.5"/>
+<line x1="1100" y1="768" x2="1100" y2="500" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="1058" y="762" font-size="8" fill="#64748b">No</text>
+
+<!-- ══════════════════════ ENTRY DIAMOND ══════════════════════ -->
+<polygon points="90,500 150,530 90,560 30,530" fill="#fef9c3" stroke="#ca8a04" stroke-width="2"/>
+<text x="90" y="523" text-anchor="middle" font-size="9" fill="#713f12">Trial / Pro-</text>
+<text x="90" y="535" text-anchor="middle" font-size="9" fill="#713f12">ProMax-</text>
+<text x="90" y="547" text-anchor="middle" font-size="9" fill="#713f12">Premium?</text>
+
+<!-- Entry → Trial (up) -->
+<line x1="90" y1="500" x2="90" y2="283" stroke="#64748b" stroke-width="1.5"/>
+<line x1="90" y1="283" x2="283" y2="283" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="94" y="460" font-size="8" fill="#64748b">Trial</text>
+
+<!-- Entry → Pro (down) -->
+<line x1="90" y1="560" x2="90" y2="680" stroke="#64748b" stroke-width="1.5"/>
+<line x1="90" y1="680" x2="328" y2="680" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="94" y="620" font-size="8" fill="#64748b">Pro-ProMax-</text>
+<text x="94" y="632" font-size="8" fill="#64748b">Premium</text>
+
+<!-- ══════════════════════ PURCHASE DECISION ══════════════════════ -->
+<!-- Both Trial-No and Pro-No arrive at x=1100 -->
+<line x1="1100" y1="500" x2="1145" y2="500" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- D: Customer decides to purchase? -->
+<polygon points="1200,476 1272,500 1200,524 1128,500" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="1200" y="494" text-anchor="middle" font-size="9" fill="#713f12">Customer decides</text>
+<text x="1200" y="506" text-anchor="middle" font-size="9" fill="#713f12">to purchase?</text>
+
+<!-- No → end -->
+<line x1="1200" y1="524" x2="1200" y2="570" stroke="#64748b" stroke-width="1.5"/>
+<circle cx="1200" cy="580" r="10" fill="#fecaca" stroke="#dc2626" stroke-width="1.5"/>
+<text x="1200" y="584" text-anchor="middle" font-size="9" fill="#7f1d1d">✕</text>
+<text x="1210" y="578" font-size="8" fill="#64748b">No</text>
+
+<!-- Yes → Subscribe -->
+<line x1="1272" y1="500" x2="1330" y2="500" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="1274" y="494" font-size="8" fill="#64748b">Yes</text>
+
+<rect x="1332" y="476" width="140" height="48" rx="5" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1402" y="496" text-anchor="middle" font-size="9" fill="#334155">Subscribe</text>
+<text x="1402" y="508" text-anchor="middle" font-size="9" fill="#334155">Pro / Premium</text>
+
+<!-- D: Purchase successful? -->
+<line x1="1472" y1="500" x2="1520" y2="500" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<polygon points="1580,476 1640,500 1580,524 1520,500" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="1580" y="494" text-anchor="middle" font-size="9" fill="#713f12">Purchase</text>
+<text x="1580" y="506" text-anchor="middle" font-size="9" fill="#713f12">successful?</text>
+
+<!-- No → loop back -->
+<line x1="1580" y1="524" x2="1580" y2="560" stroke="#64748b" stroke-width="1.5"/>
+<line x1="1580" y1="560" x2="1402" y2="560" stroke="#64748b" stroke-width="1.5"/>
+<line x1="1402" y1="560" x2="1402" y2="526" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="1584" y="544" font-size="8" fill="#64748b">No</text>
+
+<!-- Yes → Thank you page -->
+<line x1="1640" y1="500" x2="1700" y2="500" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="1643" y="494" font-size="8" fill="#64748b">Yes</text>
+<rect x="1702" y="468" width="162" height="64" rx="5" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1783" y="488" text-anchor="middle" font-size="9" fill="#334155">Thank you page with</text>
+<text x="1783" y="500" text-anchor="middle" font-size="9" fill="#334155">2 auto-upgrade toggles</text>
+<text x="1783" y="512" text-anchor="middle" font-size="9" fill="#334155">enabled</text>
+
+<!-- Green sticky: No recommendation -->
+<rect x="1140" y="430" width="200" height="38" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1" transform="rotate(-1,1240,449)"/>
+<text x="1145" y="444" font-size="8" fill="#14532d">No RevRec plan recommended</text>
+<text x="1145" y="456" font-size="8" fill="#14532d">at this stage — no calculations yet</text>
+
+<!-- ══════════════════════ SETUP BLOCK ══════════════════════ -->
+<line x1="1864" y1="500" x2="1910" y2="500" stroke="#64748b" stroke-width="1.5"/>
+<line x1="1910" y1="500" x2="1910" y2="70" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+<rect x="1912" y="40" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1998" y="55" text-anchor="middle" font-size="8.5" fill="#334155">RevRec addon billing</text>
+<text x="1998" y="67" text-anchor="middle" font-size="8.5" fill="#334155">dates linked to main plan</text>
+<rect x="1912" y="84" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1998" y="99" text-anchor="middle" font-size="8.5" fill="#334155">Subscription balance</text>
+<text x="1998" y="111" text-anchor="middle" font-size="8.5" fill="#334155">bound to 1k / 2k / 5k</text>
+<rect x="1912" y="128" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1998" y="143" text-anchor="middle" font-size="8.5" fill="#334155">Manage subscription</text>
+<text x="1998" y="155" text-anchor="middle" font-size="8.5" fill="#334155">page gets RevRec card</text>
+<rect x="1912" y="172" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1998" y="187" text-anchor="middle" font-size="8.5" fill="#334155">Manage subscription</text>
+<text x="1998" y="199" text-anchor="middle" font-size="8.5" fill="#334155">auto-upgrade toggle enabled</text>
+<rect x="1912" y="216" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1998" y="231" text-anchor="middle" font-size="8.5" fill="#334155">Historical data</text>
+<text x="1998" y="243" text-anchor="middle" font-size="8.5" fill="#334155">is paid for</text>
+<rect x="1912" y="260" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1998" y="275" text-anchor="middle" font-size="8.5" fill="#334155">Billing history shows</text>
+<text x="1998" y="287" text-anchor="middle" font-size="8.5" fill="#334155">historical / ongoing</text>
+<rect x="1912" y="304" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1998" y="319" text-anchor="middle" font-size="8.5" fill="#334155">Subscriptions page</text>
+<text x="1998" y="331" text-anchor="middle" font-size="8.5" fill="#334155">gets a balance number</text>
+<rect x="1912" y="348" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1998" y="363" text-anchor="middle" font-size="8.5" fill="#334155">Subscription page gets</text>
+<text x="1998" y="375" text-anchor="middle" font-size="8.5" fill="#334155">estimated charge on the 1st</text>
+<rect x="1912" y="392" width="172" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="1998" y="407" text-anchor="middle" font-size="8.5" fill="#334155">Enable auto-import</text>
+<text x="1998" y="419" text-anchor="middle" font-size="8.5" fill="#334155">and lock the setting</text>
+
+<!-- vertical connector along setup block -->
+<line x1="1910" y1="70" x2="1910" y2="430" stroke="#64748b" stroke-width="1"/>
+
+<!-- Green sticky: Historical/Ongoing data definition -->
+<rect x="1912" y="448" width="220" height="48" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1" transform="rotate(0.5,2022,472)"/>
+<text x="1918" y="462" font-size="8" fill="#14532d">Historical data: RevRec start date</text>
+<text x="1918" y="474" font-size="8" fill="#14532d">to billing month start date</text>
+<text x="1918" y="486" font-size="8" fill="#14532d">Ongoing: billing month start to end</text>
+
+<!-- ══════════════════════ BALANCE CHARGE SECTION ══════════════════════ -->
+<rect x="2140" y="18" width="1150" height="600" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+<text x="2148" y="34" font-size="10" font-weight="700" fill="#475569" letter-spacing="0.05em">REVREC BALANCE CHARGE, UPGRADE</text>
+
+<!-- connect setup to balance charge -->
+<line x1="2084" y1="215" x2="2140" y2="215" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- R: RevRec balance charge -->
+<rect x="2158" y="190" width="152" height="38" rx="5" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="2234" y="205" text-anchor="middle" font-size="9" fill="#334155">RevRec balance</text>
+<text x="2234" y="217" text-anchor="middle" font-size="9" fill="#334155">charge</text>
+
+<!-- D: Subscriptions over balance limit? -->
+<line x1="2310" y1="209" x2="2360" y2="209" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<polygon points="2430,185 2500,209 2430,233 2360,209" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="2430" y="204" text-anchor="middle" font-size="9" fill="#713f12">Subscriptions over</text>
+<text x="2430" y="216" text-anchor="middle" font-size="9" fill="#713f12">balance limit?</text>
+
+<!-- No → processing continues -->
+<line x1="2430" y1="233" x2="2430" y2="280" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="2436" y="260" font-size="8" fill="#64748b">No</text>
+<rect x="2348" y="282" width="164" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="2430" y="297" text-anchor="middle" font-size="8.5" fill="#334155">Subscription processing</text>
+<text x="2430" y="309" text-anchor="middle" font-size="8.5" fill="#334155">continues</text>
+
+<!-- Yes → D: Auto-upgrade enabled? -->
+<line x1="2500" y1="209" x2="2570" y2="209" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="2503" y="203" font-size="8" fill="#64748b">Yes</text>
+<polygon points="2640,185 2710,209 2640,233 2570,209" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="2640" y="204" text-anchor="middle" font-size="9" fill="#713f12">Auto-upgrade</text>
+<text x="2640" y="216" text-anchor="middle" font-size="9" fill="#713f12">enabled?</text>
+
+<!-- Yes → auto-upgraded -->
+<line x1="2640" y1="185" x2="2640" y2="140" stroke="#64748b" stroke-width="1.5"/>
+<line x1="2640" y1="140" x2="2780" y2="140" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="2644" y="166" font-size="8" fill="#64748b">Yes</text>
+<rect x="2782" y="116" width="152" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="2858" y="131" text-anchor="middle" font-size="8.5" fill="#334155">Auto-upgraded to</text>
+<text x="2858" y="143" text-anchor="middle" font-size="8.5" fill="#334155">the next tier</text>
+<line x1="2934" y1="135" x2="3000" y2="135" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="3002" y="116" width="152" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3078" y="131" text-anchor="middle" font-size="8.5" fill="#334155">Subscription processing</text>
+<text x="3078" y="143" text-anchor="middle" font-size="8.5" fill="#334155">continues</text>
+
+<!-- Green sticky: no grace for auto-upgrade -->
+<rect x="2792" y="62" width="200" height="44" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1" transform="rotate(-0.5,2892,84)"/>
+<text x="2798" y="76" font-size="8" fill="#14532d">No grace limit here.</text>
+<text x="2798" y="88" font-size="8" fill="#14532d">Upgrade when the limit is hit.</text>
+
+<!-- No → D: Subscriptions over grace limit? -->
+<line x1="2640" y1="233" x2="2640" y2="300" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="2644" y="268" font-size="8" fill="#64748b">No</text>
+<polygon points="2740,280 2820,300 2740,320 2660,300" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="2740" y="296" text-anchor="middle" font-size="9" fill="#713f12">Subscriptions over</text>
+<text x="2740" y="308" text-anchor="middle" font-size="9" fill="#713f12">the grace limit?</text>
+
+<!-- No → continues -->
+<line x1="2740" y1="320" x2="2740" y2="360" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="2746" y="343" font-size="8" fill="#64748b">No</text>
+<rect x="2658" y="362" width="164" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="2740" y="377" text-anchor="middle" font-size="8.5" fill="#334155">Subscription processing</text>
+<text x="2740" y="389" text-anchor="middle" font-size="8.5" fill="#334155">continues</text>
+
+<!-- Yes → subs paused -->
+<line x1="2820" y1="300" x2="2880" y2="300" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="2823" y="294" font-size="8" fill="#64748b">Yes</text>
+<rect x="2882" y="276" width="170" height="48" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="2967" y="293" text-anchor="middle" font-size="8.5" fill="#334155">Subscriptions over grace</text>
+<text x="2967" y="305" text-anchor="middle" font-size="8.5" fill="#334155">limit paused</text>
+
+<!-- D: Manual upgrade? -->
+<line x1="3052" y1="300" x2="3100" y2="300" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<polygon points="3165,278 3230,300 3165,322 3100,300" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="3165" y="296" text-anchor="middle" font-size="9" fill="#713f12">Manual</text>
+<text x="3165" y="308" text-anchor="middle" font-size="9" fill="#713f12">upgrade?</text>
+
+<!-- Yes → D: Upgrade payment successful? -->
+<line x1="3165" y1="278" x2="3165" y2="230" stroke="#64748b" stroke-width="1.5"/>
+<line x1="3165" y1="230" x2="3020" y2="230" stroke="#64748b" stroke-width="1.5"/>
+<!-- wait, need to go further right for the payment check -->
+<line x1="3230" y1="300" x2="3290" y2="300" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="3233" y="294" font-size="8" fill="#64748b">Yes</text>
+<polygon points="3360,278 3430,300 3360,322 3290,300" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="3360" y="294" text-anchor="middle" font-size="9" fill="#713f12">Upgrade payment</text>
+<text x="3360" y="306" text-anchor="middle" font-size="9" fill="#713f12">successful?</text>
+
+<!-- Yes → oldest processed -->
+<line x1="3360" y1="278" x2="3360" y2="220" stroke="#64748b" stroke-width="1.5"/>
+<line x1="3360" y1="220" x2="3200" y2="220" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="3364" y="252" font-size="8" fill="#64748b">Yes</text>
+<!-- reuse continues node — just draw a new one -->
+<rect x="3100" y="198" width="100" height="34" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3150" y="213" text-anchor="middle" font-size="8" fill="#334155">From oldest:</text>
+<text x="3150" y="225" text-anchor="middle" font-size="8" fill="#334155">processed</text>
+<!-- green sticky for backfill -->
+<rect x="3100" y="152" width="200" height="38" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1" transform="rotate(0.5,3200,171)"/>
+<text x="3106" y="166" font-size="7.5" fill="#14532d">If sub paused for several months,</text>
+<text x="3106" y="178" font-size="7.5" fill="#14532d">processed for all those months</text>
+
+<!-- No from upgrade payment → red alert -->
+<line x1="3430" y1="300" x2="3500" y2="300" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="3433" y="294" font-size="8" fill="#64748b">No</text>
+<rect x="3502" y="268" width="172" height="64" rx="4" fill="#fff" stroke="#dc2626" stroke-width="1.5"/>
+<text x="3588" y="286" text-anchor="middle" font-size="8.5" fill="#7f1d1d">Red alert: upgrade</text>
+<text x="3588" y="298" text-anchor="middle" font-size="8.5" fill="#7f1d1d">manually. "Current</text>
+<text x="3588" y="310" text-anchor="middle" font-size="8.5" fill="#7f1d1d">plan now insufficient"</text>
+
+<!-- No from manual upgrade → same red alert -->
+<line x1="3165" y1="322" x2="3165" y2="380" stroke="#64748b" stroke-width="1.5"/>
+<line x1="3165" y1="380" x2="3502" y2="380" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="3169" y="354" font-size="8" fill="#64748b">No</text>
+<rect x="3502" y="358" width="172" height="48" rx="4" fill="#fff" stroke="#dc2626" stroke-width="1.5"/>
+<text x="3588" y="374" text-anchor="middle" font-size="8.5" fill="#7f1d1d">Red alert: "Current</text>
+<text x="3588" y="386" text-anchor="middle" font-size="8.5" fill="#7f1d1d">plan now insufficient"</text>
+
+<!-- Green stickies -->
+<rect x="2660" y="430" width="200" height="58" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1" transform="rotate(-0.5,2760,459)"/>
+<text x="2666" y="444" font-size="8" fill="#14532d" font-weight="600">Grace limit:</text>
+<text x="2666" y="456" font-size="8" fill="#14532d">1k–10k: 200 subscriptions</text>
+<text x="2666" y="468" font-size="8" fill="#14532d">15k–50k: 400 subscriptions</text>
+<text x="2666" y="480" font-size="8" fill="#14532d">100k–200k: 4k subscriptions</text>
+
+<rect x="2900" y="430" width="220" height="48" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1" transform="rotate(0.5,3010,454)"/>
+<text x="2906" y="444" font-size="8" fill="#14532d" font-weight="600">Pause subscription means:</text>
+<text x="2906" y="456" font-size="8" fill="#14532d">RevRec new entries are not synced</text>
+<text x="2906" y="468" font-size="8" fill="#14532d">Reports show warning ▲ on months</text>
+
+<!-- ══════════════════════ DOWNGRADE SECTION ══════════════════════ -->
+<rect x="2140" y="640" width="570" height="220" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+<text x="2148" y="656" font-size="10" font-weight="700" fill="#475569" letter-spacing="0.05em">DOWNGRADE</text>
+
+<rect x="2160" y="668" width="140" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="2230" y="683" text-anchor="middle" font-size="8.5" fill="#334155">Downgrade</text>
+<text x="2230" y="695" text-anchor="middle" font-size="8.5" fill="#334155">motion</text>
+
+<line x1="2300" y1="687" x2="2340" y2="687" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<polygon points="2400,667 2460,687 2400,707 2340,687" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="2400" y="683" text-anchor="middle" font-size="9" fill="#713f12">Any credits</text>
+<text x="2400" y="695" text-anchor="middle" font-size="9" fill="#713f12">used?</text>
+
+<!-- Yes → locked -->
+<line x1="2400" y1="667" x2="2400" y2="660" stroke="#64748b" stroke-width="1.5"/>
+<line x1="2400" y1="660" x2="2530" y2="660" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="2404" y="664" font-size="8" fill="#64748b">Yes</text>
+<rect x="2532" y="646" width="152" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="2608" y="661" text-anchor="middle" font-size="8.5" fill="#334155">Tier &lt; used credits</text>
+<text x="2608" y="673" text-anchor="middle" font-size="8.5" fill="#334155">locked</text>
+<line x1="2684" y1="665" x2="2700" y2="665" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="2702" y="646" width="152" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="2778" y="661" text-anchor="middle" font-size="8.5" fill="#334155">Downgrade to</text>
+<text x="2778" y="673" text-anchor="middle" font-size="8.5" fill="#334155">available tier</text>
+
+<!-- No → any tier -->
+<line x1="2460" y1="687" x2="2532" y2="687" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="2463" y="681" font-size="8" fill="#64748b">No</text>
+<rect x="2534" y="770" width="190" height="48" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="2629" y="787" text-anchor="middle" font-size="8.5" fill="#334155">Any tier downgrade</text>
+<text x="2629" y="799" text-anchor="middle" font-size="8.5" fill="#334155">possible, down to core</text>
+<line x1="2460" y1="707" x2="2460" y2="794" stroke="#64748b" stroke-width="1.5"/>
+<line x1="2460" y1="794" x2="2532" y2="794" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- Green sticky downgrade -->
+<rect x="2160" y="766" width="220" height="58" rx="3" fill="#dcfce7" stroke="#16a34a" stroke-width="1" transform="rotate(-1,2270,795)"/>
+<text x="2166" y="780" font-size="8" fill="#14532d">&gt;&gt; Plan has 5k subscriptions</text>
+<text x="2166" y="792" font-size="8" fill="#14532d">&gt;&gt; Remaining balance 1k</text>
+<text x="2166" y="804" font-size="8" fill="#14532d">&gt;&gt; Downgrade to 4.5k, 4k only</text>
+
+<!-- ══════════════════════ RENEWAL FAILURE SECTION ══════════════════════ -->
+<rect x="2140" y="880" width="490" height="188" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+<text x="2148" y="896" font-size="10" font-weight="700" fill="#475569" letter-spacing="0.05em">RENEWAL PAYMENT FAILURE</text>
+
+<rect x="2158" y="912" width="148" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="2232" y="927" text-anchor="middle" font-size="8.5" fill="#334155">Subscription</text>
+<text x="2232" y="939" text-anchor="middle" font-size="8.5" fill="#334155">payment</text>
+
+<line x1="2306" y1="931" x2="2340" y2="931" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<polygon points="2410,911 2480,931 2410,951 2340,931" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="2410" y="926" text-anchor="middle" font-size="9" fill="#713f12">Renewal payment</text>
+<text x="2410" y="938" text-anchor="middle" font-size="9" fill="#713f12">successful?</text>
+
+<!-- Yes → loop -->
+<line x1="2410" y1="911" x2="2410" y2="885" stroke="#64748b" stroke-width="1.5"/>
+<line x1="2410" y1="885" x2="2232" y2="885" stroke="#64748b" stroke-width="1.5"/>
+<line x1="2232" y1="885" x2="2232" y2="910" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="2414" y="898" font-size="8" fill="#64748b">Yes</text>
+
+<!-- No → stops -->
+<line x1="2480" y1="931" x2="2530" y2="931" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="2483" y="925" font-size="8" fill="#64748b">No</text>
+<rect x="2532" y="906" width="172" height="48" rx="4" fill="#fff" stroke="#dc2626" stroke-width="1.5"/>
+<text x="2618" y="924" text-anchor="middle" font-size="8.5" fill="#7f1d1d">RevRec and Synder</text>
+<text x="2618" y="936" text-anchor="middle" font-size="8.5" fill="#7f1d1d">processing stops</text>
+<text x="2618" y="948" text-anchor="middle" font-size="8.5" fill="#7f1d1d">completely</text>
+
+<!-- ══════════════════════ CANCELLATION SECTION ══════════════════════ -->
+<rect x="3720" y="18" width="570" height="740" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+<text x="3728" y="34" font-size="10" font-weight="700" fill="#475569" letter-spacing="0.05em">CANCELLATION</text>
+
+<rect x="3740" y="50" width="152" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3816" y="65" text-anchor="middle" font-size="8.5" fill="#334155">Cancellation</text>
+<text x="3816" y="77" text-anchor="middle" font-size="8.5" fill="#334155">motion</text>
+<line x1="3816" y1="88" x2="3816" y2="108" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="3740" y="110" width="152" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3816" y="125" text-anchor="middle" font-size="8.5" fill="#334155">Open manage</text>
+<text x="3816" y="137" text-anchor="middle" font-size="8.5" fill="#334155">subscription</text>
+<line x1="3816" y1="148" x2="3816" y2="168" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="3740" y="170" width="152" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3816" y="185" text-anchor="middle" font-size="8.5" fill="#334155">On RevRec card</text>
+<text x="3816" y="197" text-anchor="middle" font-size="8.5" fill="#334155">click on cancel</text>
+<line x1="3816" y1="208" x2="3816" y2="228" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="3740" y="230" width="152" height="58" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3816" y="248" text-anchor="middle" font-size="8" fill="#334155">Notify: cannot remove</text>
+<text x="3816" y="260" text-anchor="middle" font-size="8" fill="#334155">RevRec completely —</text>
+<text x="3816" y="272" text-anchor="middle" font-size="8" fill="#334155">needs new organization</text>
+<line x1="3816" y1="288" x2="3816" y2="310" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- D: Auto-upgrade toggle enabled? -->
+<polygon points="3876,310 3946,332 3876,354 3806,332" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="3876" y="327" text-anchor="middle" font-size="9" fill="#713f12">Auto-upgrade</text>
+<text x="3876" y="339" text-anchor="middle" font-size="9" fill="#713f12">toggle enabled?</text>
+
+<!-- Yes → disable toggle -->
+<line x1="3946" y1="332" x2="4010" y2="332" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="3950" y="326" font-size="8" fill="#64748b">Yes</text>
+<rect x="4012" y="310" width="152" height="44" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="4088" y="327" text-anchor="middle" font-size="8.5" fill="#334155">Disable the auto-</text>
+<text x="4088" y="339" text-anchor="middle" font-size="8.5" fill="#334155">upgrade toggle</text>
+<line x1="4088" y1="354" x2="4088" y2="398" stroke="#64748b" stroke-width="1.5"/>
+<line x1="4088" y1="398" x2="3896" y2="398" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+
+<!-- No → merge -->
+<line x1="3876" y1="354" x2="3876" y2="398" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="3880" y="378" font-size="8" fill="#64748b">No</text>
+
+<!-- Purple: CSM notification -->
+<circle cx="3876" cy="410" r="10" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3876" y="414" text-anchor="middle" font-size="9" fill="#64748b">×</text>
+<line x1="3876" y1="420" x2="3876" y2="440" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="3740" y="442" width="270" height="44" rx="4" fill="#f3e8ff" stroke="#7c3aed" stroke-width="1.5"/>
+<text x="3875" y="459" text-anchor="middle" font-size="8.5" fill="#5b21b6">Notification sent to CSM to</text>
+<text x="3875" y="471" text-anchor="middle" font-size="8.5" fill="#5b21b6">help user offboard RevRec</text>
+<line x1="3875" y1="486" x2="3875" y2="506" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="3740" y="508" width="270" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3875" y="523" text-anchor="middle" font-size="8.5" fill="#334155">Force downgrade the plan</text>
+<text x="3875" y="535" text-anchor="middle" font-size="8.5" fill="#334155">to the core RevRec</text>
+<line x1="3875" y1="546" x2="3875" y2="566" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="3740" y="568" width="270" height="44" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3875" y="584" text-anchor="middle" font-size="8.5" fill="#334155">Pause subscriptions outside</text>
+<text x="3875" y="596" text-anchor="middle" font-size="8.5" fill="#334155">of the grace balance limit</text>
+<line x1="3875" y1="612" x2="3875" y2="632" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="3740" y="634" width="270" height="44" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3875" y="650" text-anchor="middle" font-size="8.5" fill="#334155">Show banner: CSM will</text>
+<text x="3875" y="662" text-anchor="middle" font-size="8.5" fill="#334155">contact them soon to help offboard</text>
+
+<!-- ══════════════════════ BALANCE CHARGE ESTIMATION SECTION ══════════════════════ -->
+<rect x="3720" y="780" width="1300" height="900" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+<text x="3728" y="796" font-size="10" font-weight="700" fill="#475569" letter-spacing="0.05em">BALANCE CHARGE ESTIMATION</text>
+
+<rect x="3740" y="818" width="168" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3824" y="833" text-anchor="middle" font-size="8.5" fill="#334155">RevRec subscription</text>
+<text x="3824" y="845" text-anchor="middle" font-size="8.5" fill="#334155">balance projection shown</text>
+
+<!-- D: >= 80% < 100%? -->
+<line x1="3908" y1="837" x2="3950" y2="837" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<polygon points="4030,815 4110,837 4030,859 3950,837" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="4030" y="831" text-anchor="middle" font-size="8.5" fill="#713f12">Estimated charge</text>
+<text x="4030" y="843" text-anchor="middle" font-size="8.5" fill="#713f12">&gt;=80% &lt;100%?</text>
+
+<!-- Yes → blue notification -->
+<line x1="4030" y1="815" x2="4030" y2="770" stroke="#64748b" stroke-width="1.5"/>
+<line x1="4030" y1="770" x2="4200" y2="770" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4034" y="796" font-size="8" fill="#64748b">Yes</text>
+<rect x="4202" y="748" width="200" height="44" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="4302" y="764" text-anchor="middle" font-size="8.5" fill="#1e40af">🔵 Blue notification:</text>
+<text x="4302" y="776" text-anchor="middle" font-size="8.5" fill="#1e40af">close to limit. Upgrade to be safe</text>
+
+<!-- No → next diamond -->
+<line x1="4110" y1="837" x2="4160" y2="837" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4113" y="831" font-size="8" fill="#64748b">No</text>
+<polygon points="4260,815 4350,837 4260,859 4170,837" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="4260" y="829" text-anchor="middle" font-size="8" fill="#713f12">&gt;=100% &lt;100%+</text>
+<text x="4260" y="841" text-anchor="middle" font-size="8" fill="#713f12">200/400/4k?</text>
+
+<!-- Yes branch mid: D auto-upgrade? -->
+<line x1="4260" y1="815" x2="4260" y2="750" stroke="#64748b" stroke-width="1.5"/>
+<line x1="4260" y1="750" x2="4400" y2="750" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4264" y="786" font-size="8" fill="#64748b">Yes</text>
+<polygon points="4480,730 4550,750 4480,770 4410,750" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="4480" y="745" text-anchor="middle" font-size="9" fill="#713f12">Auto-upgrade</text>
+<text x="4480" y="757" text-anchor="middle" font-size="9" fill="#713f12">enabled?</text>
+
+<!-- Yes → blue auto -->
+<line x1="4480" y1="730" x2="4480" y2="690" stroke="#64748b" stroke-width="1.5"/>
+<line x1="4480" y1="690" x2="4620" y2="690" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4484" y="714" font-size="8" fill="#64748b">Yes</text>
+<rect x="4622" y="668" width="200" height="44" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="4722" y="684" text-anchor="middle" font-size="8.5" fill="#1e40af">🔵 Blue: will be auto-</text>
+<text x="4722" y="696" text-anchor="middle" font-size="8.5" fill="#1e40af">upgraded as per setting</text>
+
+<!-- No → red upgrade asap -->
+<line x1="4550" y1="750" x2="4622" y2="750" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4553" y="744" font-size="8" fill="#64748b">No</text>
+<rect x="4624" y="728" width="200" height="44" rx="4" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+<text x="4724" y="744" text-anchor="middle" font-size="8.5" fill="#7f1d1d">🔴 Red: "Upgrade</text>
+<text x="4724" y="756" text-anchor="middle" font-size="8.5" fill="#7f1d1d">asap"</text>
+
+<!-- D: upgrade page visited? -->
+<line x1="4724" y1="772" x2="4724" y2="800" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<polygon points="4794,800 4864,820 4794,840 4724,820" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="4794" y="815" text-anchor="middle" font-size="9" fill="#713f12">Upgrade page</text>
+<text x="4794" y="827" text-anchor="middle" font-size="9" fill="#713f12">visited?</text>
+<!-- Yes → show recommended -->
+<line x1="4864" y1="820" x2="4912" y2="820" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4866" y="814" font-size="8" fill="#64748b">Yes</text>
+<rect x="4914" y="796" width="160" height="48" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="4994" y="813" text-anchor="middle" font-size="8" fill="#334155">Show recommended</text>
+<text x="4994" y="825" text-anchor="middle" font-size="8" fill="#334155">upgrade tier based on</text>
+<text x="4994" y="837" text-anchor="middle" font-size="8" fill="#334155">projected balance</text>
+<!-- No → end -->
+<line x1="4794" y1="840" x2="4794" y2="870" stroke="#64748b" stroke-width="1.5"/>
+<circle cx="4794" cy="880" r="8" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="4794" y="884" text-anchor="middle" font-size="9" fill="#64748b">–</text>
+<text x="4798" y="854" font-size="8" fill="#64748b">No</text>
+
+<!-- No branch: D >= 100%+? -->
+<line x1="4350" y1="837" x2="4410" y2="837" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4353" y="831" font-size="8" fill="#64748b">No</text>
+<polygon points="4510,815 4590,837 4510,859 4430,837" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="4510" y="830" text-anchor="middle" font-size="8" fill="#713f12">&gt;=100%+</text>
+<text x="4510" y="842" text-anchor="middle" font-size="8" fill="#713f12">200/400/4k?</text>
+
+<!-- Yes → D auto-upgrade? (second) -->
+<line x1="4590" y1="837" x2="4640" y2="837" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4593" y="831" font-size="8" fill="#64748b">Yes</text>
+<polygon points="4720,815 4790,837 4720,859 4650,837" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="4720" y="830" text-anchor="middle" font-size="9" fill="#713f12">Auto-upgrade</text>
+<text x="4720" y="842" text-anchor="middle" font-size="9" fill="#713f12">enabled?</text>
+
+<!-- Yes → blue auto 2 -->
+<line x1="4720" y1="815" x2="4720" y2="780" stroke="#64748b" stroke-width="1.5"/>
+<line x1="4720" y1="780" x2="4850" y2="780" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4724" y="800" font-size="8" fill="#64748b">Yes</text>
+<rect x="4852" y="758" width="200" height="44" rx="4" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+<text x="4952" y="774" text-anchor="middle" font-size="8.5" fill="#1e40af">🔵 Blue: will be auto-</text>
+<text x="4952" y="786" text-anchor="middle" font-size="8.5" fill="#1e40af">upgraded as per setting</text>
+
+<!-- No → super red -->
+<line x1="4790" y1="837" x2="4852" y2="837" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4793" y="831" font-size="8" fill="#64748b">No</text>
+<rect x="4854" y="812" width="200" height="50" rx="4" fill="#fecaca" stroke="#dc2626" stroke-width="2"/>
+<text x="4954" y="829" text-anchor="middle" font-size="9" font-weight="600" fill="#7f1d1d">🔴 SUPER RED:</text>
+<text x="4954" y="841" text-anchor="middle" font-size="8.5" fill="#7f1d1d">"Upgrade NOW, you will</text>
+<text x="4954" y="853" text-anchor="middle" font-size="8.5" fill="#7f1d1d">be over limit"</text>
+
+<!-- D: Upgrade page visited? 2 -->
+<line x1="4954" y1="862" x2="4954" y2="888" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<polygon points="4954,888 5024,908 4954,928 4884,908" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="4954" y="903" text-anchor="middle" font-size="9" fill="#713f12">Upgrade page</text>
+<text x="4954" y="915" text-anchor="middle" font-size="9" fill="#713f12">visited?</text>
+<!-- Yes → show next tier -->
+<line x1="5024" y1="908" x2="5074" y2="908" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="5026" y="902" font-size="8" fill="#64748b">Yes</text>
+<rect x="5076" y="884" width="164" height="48" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="5158" y="901" text-anchor="middle" font-size="8" fill="#334155">Show next tier as</text>
+<text x="5158" y="913" text-anchor="middle" font-size="8" fill="#334155">recommended</text>
+<!-- No → end -->
+<line x1="4954" y1="928" x2="4954" y2="958" stroke="#64748b" stroke-width="1.5"/>
+<circle cx="4954" cy="968" r="8" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="4954" y="972" text-anchor="middle" font-size="9" fill="#64748b">–</text>
+<text x="4958" y="950" font-size="8" fill="#64748b">No</text>
+
+<!-- No from last D: don't show banners -->
+<line x1="4510" y1="859" x2="4510" y2="920" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4514" y="893" font-size="8" fill="#64748b">No</text>
+<rect x="4380" y="922" width="260" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="4510" y="937" text-anchor="middle" font-size="8.5" fill="#334155">Org within limits:</text>
+<text x="4510" y="949" text-anchor="middle" font-size="8.5" fill="#334155">Do not show any banners</text>
+
+<!-- ══════════════════════ STRIPE DISCONNECTED ══════════════════════ -->
+<rect x="3720" y="1730" width="780" height="188" rx="6" fill="#f8fafc" stroke="#64748b" stroke-width="1.5"/>
+<text x="3728" y="1746" font-size="10" font-weight="700" fill="#475569" letter-spacing="0.05em">STRIPE DISCONNECTED</text>
+
+<rect x="3740" y="1762" width="148" height="38" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="3814" y="1777" text-anchor="middle" font-size="8.5" fill="#334155">Stripe</text>
+<text x="3814" y="1789" text-anchor="middle" font-size="8.5" fill="#334155">disconnected</text>
+
+<line x1="3888" y1="1781" x2="3920" y2="1781" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<rect x="3922" y="1757" width="170" height="48" rx="4" fill="#fff" stroke="#dc2626" stroke-width="1.5"/>
+<text x="4007" y="1774" text-anchor="middle" font-size="8.5" fill="#7f1d1d">Show alert: nothing</text>
+<text x="4007" y="1786" text-anchor="middle" font-size="8.5" fill="#7f1d1d">is processing on</text>
+<text x="4007" y="1798" text-anchor="middle" font-size="8.5" fill="#7f1d1d">RevRec pages</text>
+
+<line x1="4092" y1="1781" x2="4140" y2="1781" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<polygon points="4210,1761 4280,1781 4210,1801 4140,1781" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+<text x="4210" y="1776" text-anchor="middle" font-size="9" fill="#713f12">Stripe</text>
+<text x="4210" y="1788" text-anchor="middle" font-size="9" fill="#713f12">reconnected?</text>
+
+<!-- No → loop -->
+<line x1="4210" y1="1801" x2="4210" y2="1840" stroke="#64748b" stroke-width="1.5"/>
+<line x1="4210" y1="1840" x2="3814" y2="1840" stroke="#64748b" stroke-width="1.5"/>
+<line x1="3814" y1="1840" x2="3814" y2="1802" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4214" y="1822" font-size="8" fill="#64748b">No</text>
+
+<!-- Yes → resume -->
+<line x1="4280" y1="1781" x2="4340" y2="1781" stroke="#64748b" stroke-width="1.5" marker-end="url(#a)"/>
+<text x="4283" y="1775" font-size="8" fill="#64748b">Yes</text>
+<rect x="4342" y="1757" width="148" height="48" rx="4" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+<text x="4416" y="1774" text-anchor="middle" font-size="8.5" fill="#334155">Resume RevRec</text>
+<text x="4416" y="1786" text-anchor="middle" font-size="8.5" fill="#334155">processes</text>
 
 </svg>
 </div>
-
 </body>
 </html>
