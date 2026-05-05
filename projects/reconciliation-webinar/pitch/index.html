@@ -318,29 +318,42 @@ tailwind.config = {
         <div class="card" style="display:flex; align-items:flex-start; gap:16px;">
           <div style="background:#3b82f6; color:white; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; flex-shrink:0;">3</div>
           <div style="flex:1;">
-            <div style="font-weight:700; color:#f9fafb; margin-bottom:10px;">Results sorted into three buckets</div>
-            <div class="grid-3">
-              <div class="card-sm" style="text-align:center; border-top:3px solid #22c55e;">
-                <div style="font-size:1.5rem; margin-bottom:4px;">✅</div>
-                <div style="font-weight:700; color:#22c55e; font-size:14px;">Matched</div>
-                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">Found in both systems</div>
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:10px;">Results sorted into four buckets</div>
+            <div class="grid-2">
+              <div class="card-sm" style="border-left:3px solid #22c55e; display:flex; align-items:center; gap:12px;">
+                <div style="font-size:1.4rem; flex-shrink:0;">✅</div>
+                <div>
+                  <div style="font-weight:700; color:#22c55e; font-size:13px;">Matched</div>
+                  <div style="font-size:12px; color:#9ca3af; margin-top:2px;">Found in both systems, amounts align</div>
+                </div>
               </div>
-              <div class="card-sm" style="text-align:center; border-top:3px solid #ef4444;">
-                <div style="font-size:1.5rem; margin-bottom:4px;">❌</div>
-                <div style="font-weight:700; color:#ef4444; font-size:14px;">Missing in Accounting</div>
-                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">In integration, not in books</div>
+              <div class="card-sm" style="border-left:3px solid #f59e0b; display:flex; align-items:center; gap:12px;">
+                <div style="font-size:1.4rem; flex-shrink:0;">🔶</div>
+                <div>
+                  <div style="font-weight:700; color:#f59e0b; font-size:13px;">Discrepancy</div>
+                  <div style="font-size:12px; color:#9ca3af; margin-top:2px;">Matched by ID but amounts differ</div>
+                </div>
               </div>
-              <div class="card-sm" style="text-align:center; border-top:3px solid #f59e0b;">
-                <div style="font-size:1.5rem; margin-bottom:4px;">⚠️</div>
-                <div style="font-weight:700; color:#f59e0b; font-size:14px;">Missing in Integration</div>
-                <div style="font-size:12px; color:#9ca3af; margin-top:4px;">In QBO, not in integration</div>
+              <div class="card-sm" style="border-left:3px solid #ef4444; display:flex; align-items:center; gap:12px;">
+                <div style="font-size:1.4rem; flex-shrink:0;">❌</div>
+                <div>
+                  <div style="font-weight:700; color:#ef4444; font-size:13px;">Not Matched — Missing in Accounting</div>
+                  <div style="font-size:12px; color:#9ca3af; margin-top:2px;">In integration, not in books</div>
+                </div>
+              </div>
+              <div class="card-sm" style="border-left:3px solid #9ca3af; display:flex; align-items:center; gap:12px;">
+                <div style="font-size:1.4rem; flex-shrink:0;">⚠️</div>
+                <div>
+                  <div style="font-weight:700; color:#9ca3af; font-size:13px;">Not Matched — Missing in Integration</div>
+                  <div style="font-size:12px; color:#9ca3af; margin-top:2px;">In QBO, not in integration</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">From the Not Matched view you can:</div>
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">From the results view you can:</div>
       <div class="grid-3" style="margin-bottom:12px;">
         <div class="card-sm" style="border-left:3px solid #6b7280;">
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;"><span style="font-size:14px;">🚫</span><span style="font-weight:700; color:#f9fafb; font-size:13px;">Ignore</span></div>
@@ -353,13 +366,6 @@ tailwind.config = {
         <div class="card-sm" style="border-left:3px solid #22c55e;">
           <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;"><span style="font-size:14px;">📤</span><span style="font-weight:700; color:#f9fafb; font-size:13px;">Export Results</span></div>
           <p style="font-size:12px; color:#9ca3af; line-height:1.4;">Download for audit trails or share with your team</p>
-        </div>
-      </div>
-
-      <div class="warning-box">
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span style="font-size:16px;">💡</span>
-          <span style="font-size:13px; color:#fcd34d;"><strong>Bonus:</strong> Synder also detects <strong>amount discrepancies</strong> — transactions that exist in both systems but with different amounts.</span>
         </div>
       </div>
     </div>
