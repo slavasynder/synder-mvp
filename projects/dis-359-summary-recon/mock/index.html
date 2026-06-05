@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summary Reconciliation — DIS-359 MVP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; color: #1f2937; }
+    .mono { font-family: 'SFMono-Regular', 'Menlo', 'Courier New', monospace; font-size: 12px; }
+    .tab-active { color: #2563eb; border-bottom-color: #2563eb; }
+    .tab-inactive { color: #6b7280; border-bottom-color: transparent; }
+    .chip-green { background: #ecfdf5; color: #047857; }
+    .chip-amber { background: #fffbeb; color: #b45309; }
+    .chip-red   { background: #fef2f2; color: #b91c1c; }
+    .chip-gray  { background: #f3f4f6; color: #4b5563; }
+    .stage-card { transition: box-shadow 200ms ease, border-color 200ms ease; }
+    .stage-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+    .arrow {
+      flex: 0 0 24px;
+      display: flex; align-items: center; justify-content: center;
+      color: #9ca3af;
+    }
+    .arrow.bad { color: #dc2626; }
+    .arrow.warn { color: #d97706; }
+    .row-expand { transition: max-height 240ms ease, opacity 200ms ease; overflow: hidden; }
+    .stage-divergence { border-color: #fecaca !important; background: #fef2f2; }
+    .stage-divergence .stage-amount { color: #b91c1c; }
+    .stage-warn { border-color: #fde68a !important; background: #fffbeb; }
+    .stage-warn .stage-amount { color: #b45309; }
+    details[open] > summary .chev { transform: rotate(90deg); }
+    .chev { transition: transform 180ms ease; }
+    .delta-pill {
+      font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600;
+      background: #fee2e2; color: #b91c1c;
+    }
+    .delta-pill.warn { background: #fef3c7; color: #b45309; }
+    .delta-pill.ok { background: #ecfdf5; color: #047857; }
+  </style>
+</head>
+<body class="bg-white">
+  <!-- Top app bar -->
+  <header class="border-b border-gray-200">
+    <div class="px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button class="text-gray-500 hover:text-gray-700" title="Close">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <span class="text-sm text-gray-700 font-medium">Reconciliation results</span>
+        <span class="chip-gray chip-green text-[11px] font-semibold px-2 py-0.5 rounded">DIS-359 MVP · vision mock</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="text-sm px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 text-gray-700">Copy share link</button>
+        <button class="text-sm px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 text-gray-700">Refresh data</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="px-6 py-6 max-w-[1480px] mx-auto">
+    <!-- Title row -->
+    <div class="flex items-start justify-between gap-6">
+      <div>
+        <div class="flex items-center gap-3">
+          <h1 class="text-2xl font-semibold text-gray-900">Stripe Bank — DealMachine</h1>
+          <span class="chip-green text-xs font-semibold px-2 py-0.5 rounded">Finished</span>
+          <span class="chip-amber text-xs font-semibold px-2 py-0.5 rounded">Not reconciled</span>
+        </div>
+        <p class="text-sm text-gray-500 mt-1">
+          DealMachine (Stripe) → QuickBooks Online · Summary Sync · May 1 – 31, 2026
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="text-sm px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 text-gray-700">Process log</button>
+        <button class="text-sm px-3 py-1.5 border border-gray-300 rounded hover:bg-gray-50 text-gray-700 inline-flex items-center gap-1">
+          Export
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Banner -->
+    <div class="mt-4 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded px-4 py-2.5">
+      <svg class="w-4 h-4 text-amber-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l6.518 11.59c.75 1.334-.213 2.988-1.742 2.988H3.481c-1.53 0-2.493-1.654-1.743-2.988L8.257 3.1zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-2a1 1 0 01-1-1V7a1 1 0 112 0v3a1 1 0 01-1 1z"/></svg>
+      <p class="text-sm text-amber-800">
+        <strong>End-to-end mode (new):</strong> reconciliation now also compares each summary group to the journal entry actually posted in QuickBooks. Resolve discrepancies and unmatched rows to finish reconciliation.
+      </p>
+      <button class="ml-auto text-amber-700 hover:text-amber-900 text-sm">✕</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="mt-6 flex items-center gap-6 border-b border-gray-200">
+      <button data-tab="matched" class="tab-btn tab-active text-sm font-medium pb-3 border-b-2 inline-flex items-center gap-1.5">
+        Matched <span class="chip-green text-[11px] font-semibold px-1.5 py-0.5 rounded">29</span>
+      </button>
+      <button data-tab="discrepancy" class="tab-btn tab-inactive text-sm font-medium pb-3 border-b-2 inline-flex items-center gap-1.5">
+        Discrepancy <span class="chip-red text-[11px] font-semibold px-1.5 py-0.5 rounded">2</span>
+      </button>
+      <button data-tab="notmatched" class="tab-btn tab-inactive text-sm font-medium pb-3 border-b-2 inline-flex items-center gap-1.5">
+        Not matched <span class="chip-amber text-[11px] font-semibold px-1.5 py-0.5 rounded">1</span>
+      </button>
+      <button data-tab="ignored" class="tab-btn tab-inactive text-sm font-medium pb-3 border-b-2 inline-flex items-center gap-1.5">
+        Ignored <span class="chip-gray text-[11px] font-semibold px-1.5 py-0.5 rounded">0</span>
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="mt-5 bg-gray-50 border border-gray-200 rounded p-4 flex flex-wrap items-end gap-4">
+      <div>
+        <label class="text-xs font-medium text-gray-600 block mb-1">Search</label>
+        <input type="text" placeholder="Search…" class="text-sm border border-gray-300 rounded px-2.5 py-1.5 w-56" />
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-600 block mb-1">Date range</label>
+        <div class="flex items-center gap-2">
+          <input type="text" placeholder="From" class="text-sm border border-gray-300 rounded px-2.5 py-1.5 w-32" />
+          <span class="text-gray-400">–</span>
+          <input type="text" placeholder="To" class="text-sm border border-gray-300 rounded px-2.5 py-1.5 w-32" />
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-600 block mb-1">Amount</label>
+        <input type="text" placeholder="Amount" class="text-sm border border-gray-300 rounded px-2.5 py-1.5 w-36" />
+      </div>
+      <button class="text-sm bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded font-medium">Apply</button>
+      <button class="text-sm border border-gray-300 hover:bg-gray-100 text-gray-700 px-3 py-1.5 rounded">Reset filters</button>
+    </div>
+
+    <!-- Column headers -->
+    <div class="mt-4 grid grid-cols-12 gap-3 px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">
+      <div class="col-span-2 flex items-center gap-1">Date <span class="text-gray-300">↓</span></div>
+      <div class="col-span-4">Summary group</div>
+      <div class="col-span-2 text-right">Total amount <span class="text-gray-300">↓</span></div>
+      <div class="col-span-3">End-to-end check</div>
+      <div class="col-span-1 text-right">Rows</div>
+    </div>
+
+    <!-- Rows container -->
+    <div id="rows" class="divide-y divide-gray-100"></div>
+
+    <!-- Legend / footer -->
+    <div class="mt-8 pt-6 border-t border-gray-200 text-xs text-gray-500 flex flex-wrap items-center gap-x-6 gap-y-2">
+      <span class="font-semibold text-gray-700">End-to-end pipeline:</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Integration report</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-indigo-500"></span> Synder datasource</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span> Summary group</span>
+      <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Summary transaction in QBO</span>
+    </div>
+  </main>
+
+  <script>
+    /* ============================================================
+       MOCK DATA — May 2026, DealMachine (Stripe) → QBO Summary Sync
+       Each row is a SUMMARY GROUP. We compare 4 stages end-to-end.
+       Stages: integration → datasource → summary → JE posted to QBO
+       ============================================================ */
+
+    const rows = [
+      // Matched (clean) — daily summaries
+      mk('matched', '2026-05-01', 'Daily summary · Stripe sales · May 1', 24618.42, [24618.42, 24618.42, 24618.42, 24618.42], 142, 'JE #2884 · QBO'),
+      mk('matched', '2026-05-02', 'Daily summary · Stripe sales · May 2', 19204.18, [19204.18, 19204.18, 19204.18, 19204.18], 118, 'JE #2885 · QBO'),
+      mk('matched', '2026-05-03', 'Daily summary · Stripe sales · May 3',  8842.07, [ 8842.07,  8842.07,  8842.07,  8842.07],  62, 'JE #2886 · QBO'),
+      mk('matched', '2026-05-04', 'Daily summary · Stripe sales · May 4', 21091.30, [21091.30, 21091.30, 21091.30, 21091.30], 132, 'JE #2887 · QBO'),
+      mk('matched', '2026-05-05', 'Daily summary · Stripe sales · May 5', 17732.55, [17732.55, 17732.55, 17732.55, 17732.55], 109, 'JE #2888 · QBO'),
+
+      // Discrepancy #1 — Mapping change mid-month: fees got split into a separate JE line,
+      // datasource is fine but summary aggregated $184.27 of fees into a different group.
+      mk('discrepancy', '2026-05-12', 'Daily summary · Stripe sales · May 12',
+        14309.71,
+        [14309.71, 14309.71, 14125.44, 14125.44],
+        96, 'JE #2895 · QBO',
+        {
+          divergeAt: 2, // summary stage diverges from datasource
+          delta: -184.27,
+          reason: 'Fee mapping changed on May 11 — $184.27 of Stripe processing fees were routed to a separate "Stripe fees" summary group, but the integration report still reports them on the gross sales line.'
+        }),
+
+      // Discrepancy #2 — JE posted partially after a QBO sync retry.
+      mk('discrepancy', '2026-05-18', 'Daily summary · Stripe sales · May 18',
+        22806.04,
+        [22806.04, 22806.04, 22806.04, 22506.04],
+        137, 'JE #2901 · QBO (partial)',
+        {
+          divergeAt: 3, // JE stage diverges from summary
+          delta: -300.00,
+          reason: 'JE #2901 posted to QBO with one line ($300.00 refund) missing — likely a transient QBO API failure during retry. Summary group is correct.'
+        }),
+
+      // Matched again
+      mk('matched', '2026-05-22', 'Daily summary · Stripe sales · May 22', 18550.10, [18550.10, 18550.10, 18550.10, 18550.10], 121, 'JE #2906 · QBO'),
+
+      // Not matched — integration row never made it into a summary group
+      mk('notmatched', '2026-05-27', 'Stripe payout · May 27 (unassigned)',
+        842.18,
+        [842.18, null, null, null],
+        4, '—',
+        {
+          divergeAt: 1,
+          delta: null,
+          reason: 'A Stripe payout adjustment ($842.18) is present in the Stripe report but never reached Synder datasource. Likely a webhook gap. No summary, no JE.'
+        }),
+
+      mk('matched', '2026-05-30', 'Daily summary · Stripe sales · May 30', 11204.92, [11204.92, 11204.92, 11204.92, 11204.92],  74, 'JE #2914 · QBO'),
+      mk('matched', '2026-05-31', 'Daily summary · Stripe sales · May 31',  6094.31, [ 6094.31,  6094.31,  6094.31,  6094.31],  41, 'JE #2915 · QBO'),
+    ];
+
+    function mk(kind, date, name, total, stages, count, je, opts = {}) {
+      return { kind, date, name, total, stages, count, je, opts };
+    }
+
+    const $rows = document.getElementById('rows');
+    const tabs = document.querySelectorAll('.tab-btn');
+    let activeTab = 'matched';
+
+    function render() {
+      const filtered = rows.filter(r => {
+        if (activeTab === 'matched') return r.kind === 'matched';
+        if (activeTab === 'discrepancy') return r.kind === 'discrepancy';
+        if (activeTab === 'notmatched') return r.kind === 'notmatched';
+        if (activeTab === 'ignored') return r.kind === 'ignored';
+        return true;
+      });
+
+      $rows.innerHTML = filtered.map((r, i) => rowHtml(r, i)).join('') ||
+        `<div class="px-3 py-12 text-center text-gray-400 text-sm">No rows in this view.</div>`;
+
+      // wire expand buttons
+      $rows.querySelectorAll('details').forEach(d => {
+        d.addEventListener('toggle', () => { /* native details handles it */ });
+      });
+    }
+
+    function fmt(n) {
+      if (n === null || n === undefined) return '—';
+      return n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    }
+
+    function statusChipFor(r) {
+      if (r.kind === 'matched') return `<span class="chip-green text-[11px] font-semibold px-2 py-0.5 rounded">Reconciled end-to-end</span>`;
+      if (r.kind === 'discrepancy') return `<span class="chip-red text-[11px] font-semibold px-2 py-0.5 rounded">Discrepancy at stage ${r.opts.divergeAt + 1}</span>`;
+      if (r.kind === 'notmatched') return `<span class="chip-amber text-[11px] font-semibold px-2 py-0.5 rounded">Not matched</span>`;
+      return `<span class="chip-gray text-[11px] font-semibold px-2 py-0.5 rounded">—</span>`;
+    }
+
+    function rowHtml(r, i) {
+      return `
+      <details class="group">
+        <summary class="grid grid-cols-12 gap-3 px-3 py-3 cursor-pointer hover:bg-gray-50 items-center list-none">
+          <div class="col-span-2 flex items-center gap-2 text-sm text-gray-700">
+            <svg class="chev w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span>${formatDate(r.date)}</span>
+          </div>
+          <div class="col-span-4 text-sm text-gray-900 font-medium truncate">${r.name}</div>
+          <div class="col-span-2 text-sm text-gray-900 text-right tabular-nums font-medium">${fmt(r.total)}</div>
+          <div class="col-span-3">${statusChipFor(r)}</div>
+          <div class="col-span-1 text-sm text-gray-500 text-right">${r.count}</div>
+        </summary>
+        ${expandHtml(r)}
+      </details>`;
+    }
+
+    function expandHtml(r) {
+      const stageMeta = [
+        { key: 'integration', label: 'Integration report', sub: 'Stripe API', color: 'bg-blue-500', tint: 'bg-blue-50 border-blue-200' },
+        { key: 'datasource',  label: 'Synder datasource',  sub: 'Internal transactions', color: 'bg-indigo-500', tint: 'bg-indigo-50 border-indigo-200' },
+        { key: 'summary',     label: 'Summary group',      sub: 'SM aggregation',         color: 'bg-purple-500', tint: 'bg-purple-50 border-purple-200' },
+        { key: 'je',          label: 'Summary transaction',sub: r.je,                     color: 'bg-emerald-500', tint: 'bg-emerald-50 border-emerald-200' },
+      ];
+
+      const divergeAt = r.opts?.divergeAt;
+      const cards = stageMeta.map((s, idx) => {
+        const amount = r.stages[idx];
+        let extraClass = '';
+        let badge = '';
+        if (divergeAt !== undefined && idx >= divergeAt) {
+          if (r.kind === 'discrepancy') extraClass = 'stage-divergence';
+          else if (r.kind === 'notmatched') extraClass = 'stage-warn';
+        }
+        if (idx === divergeAt && r.opts?.delta) {
+          const dcls = r.opts.delta < 0 ? '' : 'warn';
+          badge = `<span class="delta-pill ${dcls}">Δ ${fmt(r.opts.delta)}</span>`;
+        }
+        const amountHtml = amount === null
+          ? `<div class="text-gray-400 italic text-sm mt-1">No record</div>`
+          : `<div class="stage-amount text-base font-semibold mt-1 tabular-nums">${fmt(amount)}</div>`;
+        return `
+          <div class="stage-card border rounded-lg px-3 py-3 flex-1 min-w-0 ${s.tint} ${extraClass}">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full ${s.color}"></span>
+                <span class="text-xs font-semibold text-gray-700">${s.label}</span>
+              </div>
+              ${badge}
+            </div>
+            <div class="text-[11px] text-gray-500 mt-0.5">${s.sub}</div>
+            ${amountHtml}
+          </div>
+        `;
+      });
+
+      const arrows = stageMeta.slice(0, -1).map((_, idx) => {
+        let cls = '';
+        if (divergeAt !== undefined && idx + 1 === divergeAt) {
+          cls = r.kind === 'discrepancy' ? 'bad' : 'warn';
+        }
+        const icon = cls === 'bad'
+          ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`
+          : (cls === 'warn'
+              ? `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l6.518 11.59c.75 1.334-.213 2.988-1.742 2.988H3.481c-1.53 0-2.493-1.654-1.743-2.988L8.257 3.1z"/></svg>`
+              : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>`);
+        return `<div class="arrow ${cls}">${icon}</div>`;
+      });
+
+      // Interleave cards + arrows
+      const flow = cards.map((c, idx) => c + (arrows[idx] || '')).join('');
+
+      const reasonBlock = r.opts?.reason
+        ? `<div class="mt-4 rounded border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700">
+             <span class="font-semibold text-gray-900">Why this diverges:</span> ${r.opts.reason}
+           </div>`
+        : '';
+
+      const actions = r.kind === 'matched'
+        ? `<span class="text-xs text-gray-400">No action needed — all four stages agree.</span>`
+        : `<div class="flex items-center gap-2">
+             <button class="text-xs px-2.5 py-1 border border-gray-300 rounded hover:bg-white text-gray-700">View ${r.je === '—' ? 'integration row' : 'JE in QBO'}</button>
+             <button class="text-xs px-2.5 py-1 border border-gray-300 rounded hover:bg-white text-gray-700">View summary in Synder</button>
+             <button class="text-xs px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded">Investigate</button>
+             <button class="text-xs px-2.5 py-1 border border-gray-300 rounded hover:bg-white text-gray-700">Ignore</button>
+           </div>`;
+
+      return `
+        <div class="px-6 pb-5 pt-1 bg-gray-50/60">
+          <div class="flex items-stretch gap-2 w-full">${flow}</div>
+          ${reasonBlock}
+          <div class="mt-3 flex items-center justify-between">
+            <span class="text-xs text-gray-500">Group ID <span class="mono">grp_${(r.date.replace(/-/g,'')).slice(2)}_${Math.abs(hash(r.name))%9999}</span></span>
+            ${actions}
+          </div>
+        </div>
+      `;
+    }
+
+    function formatDate(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return `${months[m - 1]} ${d}, ${y}`;
+    }
+
+    function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h*31 + s.charCodeAt(i))|0; return h; }
+
+    tabs.forEach(t => t.addEventListener('click', () => {
+      activeTab = t.dataset.tab;
+      tabs.forEach(b => {
+        b.classList.toggle('tab-active', b === t);
+        b.classList.toggle('tab-inactive', b !== t);
+      });
+      render();
+    }));
+
+    render();
+  </script>
+</body>
+</html>
