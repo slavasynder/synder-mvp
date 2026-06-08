@@ -7,77 +7,79 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    body { font-family:'Inter',system-ui,sans-serif; color:#1f2937; background:#f3f4f6; }
-    .mono { font-family:'SFMono-Regular','Menlo','Courier New',monospace; font-size:12px; }
-    .chip { display:inline-flex; align-items:center; border-radius:999px; padding:2px 8px; font-size:12px; font-weight:600; line-height:1.4; }
-    .chip-sq { display:inline-flex; align-items:center; border-radius:4px; padding:1px 6px; font-size:11px; font-weight:600; }
-    .chip-green { background:#d1fae5; color:#065f46; }
-    .chip-amber { background:#fef3c7; color:#92400e; }
-    .chip-red   { background:#fee2e2; color:#991b1b; }
-    .chip-blue  { background:#dbeafe; color:#1e40af; }
-    .chip-gray  { background:#e5e7eb; color:#4b5563; }
-    .tab-btn { cursor:pointer; padding:10px 0; font-size:13px; font-weight:500; border-bottom:2px solid transparent; display:flex; align-items:center; gap:7px; white-space:nowrap; }
-    .tab-active   { color:#2563eb; border-bottom-color:#2563eb; }
+    body { font-family:'Inter',system-ui,sans-serif; color:#1f2937; background:#f3f4f6; font-size:13px; }
+    /* chips */
+    .chip  { display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;line-height:1.4; }
+    .chip-sq { display:inline-flex;align-items:center;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600; }
+    .green  { background:#d1fae5;color:#065f46; }
+    .amber  { background:#fef3c7;color:#92400e; }
+    .red    { background:#fee2e2;color:#991b1b; }
+    .blue   { background:#dbeafe;color:#1e40af; }
+    .gray   { background:#e5e7eb;color:#4b5563; }
+    /* tabs */
+    .tab-btn { cursor:pointer;padding:10px 0;font-size:13px;font-weight:500;border-bottom:2px solid transparent;display:flex;align-items:center;gap:7px;white-space:nowrap; }
+    .tab-active   { color:#2563eb;border-bottom-color:#2563eb; }
     .tab-inactive { color:#6b7280; }
     .tab-inactive:hover { color:#374151; }
-    .tab-badge { font-size:12px; font-weight:600; padding:1px 7px; border-radius:10px; }
-    .tab-active .tab-badge   { background:#dbeafe; color:#1d4ed8; }
-    .tab-inactive .tab-badge { background:#f3f4f6; color:#6b7280; }
+    .tab-badge { font-size:12px;font-weight:600;padding:1px 7px;border-radius:10px; }
+    .tab-active .tab-badge   { background:#dbeafe;color:#1d4ed8; }
+    .tab-inactive .tab-badge { background:#f3f4f6;color:#6b7280; }
+    /* parent rows */
     .recon-row { border-bottom:1px solid #e5e7eb; }
     .recon-row:last-child { border-bottom:none; }
-    .row-head { display:grid; grid-template-columns:26px 120px 1.5fr 130px 1fr 70px; align-items:center; padding:8px 16px; cursor:pointer; user-select:none; font-size:13px; }
+    .row-head { display:grid;grid-template-columns:26px 120px 1.5fr 130px 1fr 70px;align-items:center;padding:8px 16px;cursor:pointer;user-select:none; }
     .row-head:hover { background:#f9fafb; }
     .recon-row.open .row-head { background:#f9fafb; }
-    .chev { transition:transform 150ms ease; color:#9ca3af; }
+    .chev { transition:transform 150ms;color:#9ca3af; }
     .recon-row.open .row-head .chev { transform:rotate(180deg); }
-    .row-detail { display:none; }
+    .row-detail { display:none;background:#fafafa;border-top:1px solid #f3f4f6; }
     .recon-row.open .row-detail { display:block; }
-    .stage-grid { display:grid; grid-template-columns:1fr 24px 1fr 24px 1fr 24px 1fr; gap:0; padding:12px 16px 4px; background:#fafafa; }
-    .stage-panel { border:1px solid #e5e7eb; border-radius:6px; background:white; display:flex; flex-direction:column; min-width:0; }
-    .stage-panel.diverge { border-color:#fca5a5; }
-    .stage-panel.missing { border-color:#fde68a; background:#fffbeb; }
-    .stage-head { padding:8px 10px; border-bottom:1px solid #f3f4f6; background:#f9fafb; display:flex; justify-content:space-between; align-items:flex-start; }
-    .stage-name { font-size:11px; font-weight:600; color:#374151; }
-    .stage-sub  { font-size:10px; color:#9ca3af; margin-top:1px; }
-    .stage-total { font-size:12px; font-weight:700; color:#111827; white-space:nowrap; }
-    .stage-panel.diverge .stage-total { color:#b91c1c; }
-    .stage-panel.missing .stage-total { color:#92400e; }
-    .flow-col { display:flex; align-items:center; justify-content:center; font-size:16px; color:#9ca3af; padding-top:20px; }
-    .flow-col.bad  { color:#ef4444; }
-    .flow-col.warn { color:#f59e0b; }
-    .sub-tbl { width:100%; font-size:11px; }
-    .sub-tbl th { background:#f9fafb; color:#6b7280; font-weight:500; padding:5px 8px; text-align:left; border-bottom:1px solid #f3f4f6; white-space:nowrap; }
-    .sub-tbl td { padding:5px 8px; border-bottom:1px solid #f9fafb; color:#1f2937; }
-    .sub-tbl tr:last-child td { border-bottom:none; }
-    .sub-tbl .id-cell { font-family:'SFMono-Regular','Menlo',monospace; font-size:10.5px; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; }
-    .sub-tbl td.r { text-align:right; }
-    .sub-empty { padding:20px 10px; text-align:center; font-size:11px; color:#9ca3af; font-style:italic; }
-    .delta-pill { font-size:10px; font-weight:700; padding:1px 5px; border-radius:3px; }
-    .delta-red  { background:#fee2e2; color:#991b1b; }
-    .delta-warn { background:#fef3c7; color:#92400e; }
-    .banner-warn { background:#fffbeb; border:1px solid #fde68a; }
-    .inp { border:1px solid #d1d5db; border-radius:4px; padding:5px 10px; font-size:13px; background:white; }
-    .inp:focus { outline:none; border-color:#3b82f6; }
-    .btn { padding:5px 12px; font-size:13px; border-radius:4px; font-weight:500; cursor:pointer; }
-    .btn-p { background:#2563eb; color:white; border:none; }
+    /* lineage table */
+    .ltable { width:100%;border-collapse:collapse;font-size:11.5px; }
+    .ltable thead tr th { background:#f3f4f6;color:#6b7280;font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;padding:7px 10px;text-align:left;border-bottom:2px solid #e5e7eb;white-space:nowrap; }
+    .ltable thead tr th.num { text-align:right; }
+    .ltable thead .stage-hdr { background:#eff6ff;color:#1e40af;font-size:10px;font-weight:700;text-align:center;padding:4px 8px;border-bottom:1px solid #dbeafe; }
+    .ltable thead .stage-hdr-miss { background:#fffbeb;color:#92400e; }
+    .ltable tbody td { padding:6px 10px;border-bottom:1px solid #f3f4f6;vertical-align:top; }
+    .ltable tbody tr:last-child td { border-bottom:none; }
+    .ltable tbody tr:hover td { background:#f9fafb; }
+    .ltable tbody tr.row-disc td { background:#fff5f5; }
+    .ltable tbody tr.row-disc td.cell-bad { background:#fee2e2;color:#991b1b; }
+    .ltable tbody tr.row-disc td.cell-missing { background:#fffbeb;color:#92400e;font-style:italic; }
+    .ltable tbody tr.row-miss td { background:#fffbeb; }
+    .ltable tbody tr.row-miss td.cell-missing { background:#fef3c7;color:#92400e;font-style:italic; }
+    .id-mono { font-family:'SFMono-Regular','Menlo',monospace;font-size:11px;display:block;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .id-sub  { font-family:'SFMono-Regular','Menlo',monospace;font-size:10px;color:#9ca3af;display:block;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px; }
+    .stage-sep { border-left:2px solid #e5e7eb; }
+    .stage-sep-bad { border-left:2px solid #fca5a5; }
+    .tnum { text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap; }
+    /* reason + actions */
+    .reason-box { margin:0 16px 8px;border-radius:5px;padding:9px 12px;font-size:12px;line-height:1.5; }
+    .reason-red  { background:#fef2f2;border:1px solid #fecaca; }
+    .reason-warn { background:#fffbeb;border:1px solid #fde68a; }
+    .action-bar { margin:0 16px 12px;display:flex;gap:8px;align-items:center; }
+    /* inputs / buttons */
+    .inp { border:1px solid #d1d5db;border-radius:4px;padding:5px 10px;font-size:13px;background:white; }
+    .inp:focus { outline:none;border-color:#3b82f6; }
+    .btn { padding:5px 12px;font-size:13px;border-radius:4px;font-weight:500;cursor:pointer;border:none; }
+    .btn-p { background:#2563eb;color:white; }
     .btn-p:hover { background:#1d4ed8; }
-    .btn-o { background:white; color:#374151; border:1px solid #d1d5db; }
+    .btn-o { background:white;color:#374151;border:1px solid #d1d5db; }
     .btn-o:hover { background:#f9fafb; }
-    .reason-box { margin:0 16px 8px; border-radius:5px; padding:10px 12px; font-size:12px; }
-    .reason-red  { background:#fef2f2; border:1px solid #fecaca; }
-    .reason-warn { background:#fffbeb; border:1px solid #fde68a; }
-    .action-bar { margin:0 16px 12px; display:flex; align-items:center; gap:8px; }
+    /* totals row */
+    .total-row td { background:#f3f4f6 !important;font-weight:700;font-size:11px;color:#374151;padding:5px 10px;border-top:2px solid #e5e7eb; }
+    .total-row td.bad { color:#991b1b; }
   </style>
 </head>
 <body>
 
-<!-- Topbar breadcrumb -->
-<div class="bg-white border-b border-gray-200 px-6 py-2 flex items-center gap-2.5 text-sm">
-  <span class="text-gray-400">←</span>
+<!-- Breadcrumb bar -->
+<div class="bg-white border-b border-gray-200 px-6 py-2 flex items-center gap-2.5">
+  <span class="text-gray-400 text-base cursor-pointer hover:text-gray-700">←</span>
   <span class="text-gray-500">Reconciliation</span>
   <span class="text-gray-300">/</span>
   <span class="font-medium text-gray-800">Reconciliation results</span>
-  <span class="ml-2 chip chip-blue text-[10px]">DIS-359 vision · SM end-to-end</span>
+  <span class="ml-2 chip blue text-[10px]">DIS-359 vision · SM end-to-end</span>
   <div class="ml-auto flex items-center gap-2">
     <button class="btn btn-o">Copy share link</button>
     <button class="btn btn-o">Refresh data</button>
@@ -90,54 +92,46 @@
     <div>
       <div class="flex items-center gap-2.5">
         <h1 class="text-[21px] font-bold text-gray-900 leading-tight">Stripe Bank - DealMachine</h1>
-        <span class="chip chip-green">Finished</span>
-        <span class="chip chip-amber">Not reconciled</span>
+        <span class="chip green">Finished</span>
+        <span class="chip amber">Not reconciled</span>
       </div>
       <div class="text-[13px] text-gray-500 mt-0.5">DealMachine (Stripe) / May 1 - 31, 2026</div>
     </div>
-    <div class="flex items-center gap-2 shrink-0">
+    <div class="flex items-center gap-2">
       <button class="btn btn-o">Process log</button>
       <button class="btn btn-p flex items-center gap-1">Export <span class="text-xs">▾</span></button>
     </div>
   </div>
 
-  <!-- Banner -->
-  <div id="warn-banner" class="banner-warn rounded flex items-start gap-2.5 px-4 py-2.5 text-[13px] text-amber-900 mb-3">
+  <div id="warn-banner" class="flex items-start gap-2.5 px-4 py-2.5 rounded mb-3 text-[13px] text-amber-900" style="background:#fffbeb;border:1px solid #fde68a">
     <span class="text-amber-500 text-base leading-none mt-px">⚠</span>
     <div class="flex-1">Resolve all transactions in <strong>Not matched</strong> and <strong>Discrepancy</strong> to finish reconciliation.</div>
     <button onclick="document.getElementById('warn-banner').remove()" class="text-gray-400 hover:text-gray-700 text-xl leading-none ml-2">×</button>
   </div>
 
-  <!-- Tabs -->
   <div class="flex items-center gap-8 -mb-px">
-    <button data-tab="matched"     class="tab-btn tab-active">Matched     <span class="tab-badge" id="tbm">28</span></button>
-    <button data-tab="discrepancy" class="tab-btn tab-inactive">Discrepancy <span class="tab-badge" id="tbd">2</span></button>
-    <button data-tab="notmatched"  class="tab-btn tab-inactive">Not matched <span class="tab-badge" id="tbn">1</span></button>
-    <button data-tab="ignored"     class="tab-btn tab-inactive">Ignored     <span class="tab-badge" id="tbi">0</span></button>
+    <button data-tab="matched"     class="tab-btn tab-active"  >Matched     <span class="tab-badge">28</span></button>
+    <button data-tab="discrepancy" class="tab-btn tab-inactive">Discrepancy <span class="tab-badge">2</span></button>
+    <button data-tab="notmatched"  class="tab-btn tab-inactive">Not matched <span class="tab-badge">1</span></button>
+    <button data-tab="ignored"     class="tab-btn tab-inactive">Ignored     <span class="tab-badge">0</span></button>
   </div>
 </div>
 
 <!-- Filters -->
 <div class="bg-white border-b border-gray-200 px-6 py-3 flex flex-wrap items-end gap-4">
-  <div>
-    <div class="text-xs text-gray-500 font-medium mb-1">Search</div>
-    <input type="text" class="inp w-52" placeholder="Search..." />
-  </div>
+  <div><div class="text-xs text-gray-500 font-medium mb-1">Search</div><input type="text" class="inp w-52" placeholder="Search…" /></div>
   <div>
     <div class="text-xs text-gray-500 font-medium mb-1">Date range</div>
     <div class="flex items-center gap-2">
-      <input type="text" class="inp w-30" placeholder="May 1, 2026" style="width:110px" />
-      <span class="text-gray-400 text-sm">–</span>
-      <input type="text" class="inp w-30" placeholder="May 31, 2026" style="width:110px" />
+      <input type="text" class="inp" style="width:108px" placeholder="May 1, 2026" />
+      <span class="text-gray-400">–</span>
+      <input type="text" class="inp" style="width:108px" placeholder="May 31, 2026" />
     </div>
   </div>
-  <div>
-    <div class="text-xs text-gray-500 font-medium mb-1">Amount</div>
-    <input type="text" class="inp w-28" placeholder="Amount" />
-  </div>
+  <div><div class="text-xs text-gray-500 font-medium mb-1">Amount</div><input type="text" class="inp w-28" placeholder="Amount" /></div>
   <div>
     <div class="text-xs text-gray-500 font-medium mb-1">Diverges at</div>
-    <select class="inp" style="width:168px">
+    <select class="inp" style="width:176px">
       <option>Any stage</option>
       <option>Stage 2 — Datasource</option>
       <option>Stage 3 — Summary group</option>
@@ -149,9 +143,8 @@
 </div>
 
 <!-- Table -->
-<div class="max-w-[1520px] mx-auto px-6 pt-3 pb-10">
+<div class="px-6 pt-3 pb-10">
   <div class="bg-white border border-gray-200 rounded">
-    <!-- Column headers -->
     <div class="grid items-center px-4 py-2.5 border-b border-gray-200 text-[11px] font-semibold text-gray-500 uppercase tracking-wide"
          style="grid-template-columns:26px 120px 1.5fr 130px 1fr 70px">
       <div></div>
@@ -165,7 +158,7 @@
     <div id="empty-state" class="hidden py-16 text-center text-gray-400 text-sm">No rows in this view.</div>
   </div>
   <div class="bg-white border border-t-0 border-gray-200 rounded-b px-4 py-2 text-xs text-gray-500 flex justify-between">
-    <span>Showing <span id="row-n">28</span> rows</span>
+    <span>Showing <span id="row-n">5</span> rows (28 matched · 2 discrepancy · 1 not matched)</span>
     <div class="flex items-center gap-2">
       <button class="btn btn-o text-xs py-1 px-2">‹ Prev</button>
       <span>1 / 1</span>
@@ -175,7 +168,199 @@
 </div>
 
 <script>
-/* ===== helpers ===== */
+/* ================================================================
+   DATA MODEL
+   Each top-level row = one summary group (parent row in the table).
+   lineage[] = one entry per integration-report transaction.
+   Each lineage entry has 4 cells, one per stage:
+     s1: integration report row   (always present)
+     s2: datasource row           (null if not ingested)
+     s3: summary group reference  (null if not summarised)
+     s4: JE / summary txn ref     (null if not posted)
+   status: 'ok' | 'disc' | 'missing'
+================================================================ */
+
+function cell(primary, secondary, type, amount) {
+  return { primary, secondary, type, amount };
+}
+
+function lineageRow(s1, s2, s3, s4, status='ok') {
+  return { s1, s2, s3, s4, status };
+}
+
+/* shared summary group + JE ref for matched rows */
+function matchedLineage(rows_count, total, grpId, jeId) {
+  const lines = [];
+  let rem = total;
+  const n = Math.min(rows_count, 9);
+  for (let i = 0; i < n; i++) {
+    const a = i === n-1 ? +rem.toFixed(2) : +(total / rows_count * (1 + Math.sin(i*1.9)*0.12)).toFixed(2);
+    rem -= a;
+    const isRefund = i % 7 === 0;
+    const isFee    = i % 5 === 0 && !isRefund;
+    const chId = `ch_3Td${(i*7+3).toString(36).toUpperCase()}gBhq${(i*13+1).toString(36)}`;
+    const txId = `txn_3Td${(i*9+1).toString(36).toUpperCase()}gBhq${(i*5+2).toString(36)}`;
+    const dsId = `tx_${(i*11+5).toString(36)}A4P${(i*3+7).toString(36)}`;
+    lines.push(lineageRow(
+      cell(chId,  txId,  isRefund?'Refund':isFee?'Expense;fee':'Payment;charge', a),
+      cell(dsId,  chId,  isRefund?'Refund':isFee?'Fee':'Sales receipt',           a),
+      cell(grpId, 'Daily summary', isFee?'Fee group':'Sales group', null),  // amount is the group total, not per-row
+      cell(jeId,  `doc_QBO_${jeId.replace('JE-','')}`, 'Journal entry', null),
+      'ok'
+    ));
+  }
+  if (rows_count > 9) {
+    lines.push({ more: rows_count - 9, total_rem: +rem.toFixed(2) });
+  }
+  return lines;
+}
+
+const ROWS = [
+  /* ---- MATCHED ---- */
+  {
+    kind:'matched', date:'2026-05-31', id:'grp_20260531_dailySummary',
+    summary:'Daily summary · May 31', total:6094.31, count:41,
+    types:'Payment;charge; Expense;fee; Refund',
+    lineage: matchedLineage(41, 6094.31, 'grp_20260531', 'JE-2914'),
+  },
+  {
+    kind:'matched', date:'2026-05-30', id:'grp_20260530_dailySummary',
+    summary:'Daily summary · May 30', total:11204.92, count:74,
+    types:'Payment;charge; Expense;fee',
+    lineage: matchedLineage(74, 11204.92, 'grp_20260530', 'JE-2913'),
+  },
+  {
+    kind:'matched', date:'2026-05-29', id:'grp_20260529_dailySummary',
+    summary:'Daily summary · May 29', total:9304.88, count:61,
+    types:'Payment;charge; Expense;fee; Refund',
+    lineage: matchedLineage(61, 9304.88, 'grp_20260529', 'JE-2912'),
+  },
+  {
+    kind:'matched', date:'2026-05-28', id:'grp_20260528_dailySummary',
+    summary:'Daily summary · May 28', total:15678.44, count:101,
+    types:'Payment;charge; Expense;fee',
+    lineage: matchedLineage(101, 15678.44, 'grp_20260528', 'JE-2911'),
+  },
+  {
+    kind:'matched', date:'2026-05-26', id:'grp_20260526_dailySummary',
+    summary:'Daily summary · May 26', total:20044.32, count:129,
+    types:'Payment;charge; Expense;fee; Refund',
+    lineage: matchedLineage(129, 20044.32, 'grp_20260526', 'JE-2909'),
+  },
+
+  /* ---- DISCREPANCY: diverges at stage 3 (summary group) ----
+     Fee mapping changed → $184.27 fee rerouted to a separate group.
+     Integration sees gross. Summary group picked up the split.
+     The fee rows show a different summary group ref in s3 and s4.
+  */
+  {
+    kind:'discrepancy', divergeAt:2,
+    date:'2026-05-12', id:'grp_20260512_dailySummary',
+    summary:'Daily summary · May 12', total:14309.71, count:96,
+    types:'Payment;charge; Expense;fee',
+    delta: -184.27,
+    reason:'Fee mapping changed on May 11. $184.27 of Stripe processing fees (2 transactions) now route to a separate "Stripe fees" summary group — the JE reflects this split. The integration report still reports those fees gross on this row.',
+    fix:'Confirm the new fee mapping is intentional. If yes, Ignore — the split is correct. If not, revert the fee mapping and re-sync May 12.',
+    lineage: (() => {
+      const lines = [];
+      // 94 normal rows (matched)
+      const normal_count = 6;
+      let rem = 14125.44;
+      for (let i=0;i<normal_count;i++) {
+        const a = i===normal_count-1 ? +rem.toFixed(2) : +(14125.44/94*(1+Math.sin(i*1.9)*0.12)).toFixed(2);
+        rem -= a;
+        const chId=`ch_3Td${(i*7+3).toString(36).toUpperCase()}gBhq${(i*13+1).toString(36)}`;
+        const txId=`txn_3Td${(i*9+1).toString(36).toUpperCase()}gBhq${(i*5+2).toString(36)}`;
+        const dsId=`tx_${(i*11+5).toString(36)}A4P${(i*3+7).toString(36)}`;
+        lines.push(lineageRow(
+          cell(chId,txId,'Payment;charge',a),
+          cell(dsId,chId,'Sales receipt',a),
+          cell('grp_20260512_dailySummary','Daily summary','Sales group',null),
+          cell('JE-2895','doc_QBO_2895','Journal entry',null),
+          'ok'
+        ));
+      }
+      lines.push({ more: 94 - normal_count, total_rem: 0 });
+      // 2 fee rows — diverge at stage 3 (rerouted to different group → different JE)
+      const feeAmts = [121.14, 63.13];
+      for (let i=0;i<2;i++) {
+        const chId=`txn_1Td${(i*3+8).toString(36).toUpperCase()}WJHG${(i*7+1).toString(36)}`;
+        const dsId=`tx_fee${(i*5+2).toString(36)}K9P${(i*9+1).toString(36)}`;
+        lines.push(lineageRow(
+          cell(chId,'','Expense;fee', feeAmts[i]),
+          cell(dsId,chId,'Fee',        feeAmts[i]),
+          // stage 3: routed to a DIFFERENT group — this is the divergence point
+          cell('grp_20260512_stripeFees','Stripe fees (split group)','Fee group',null),
+          cell('JE-2895-fees','doc_QBO_fees_0512','Journal entry (fee split)',null),
+          'disc'
+        ));
+      }
+      return lines;
+    })(),
+  },
+
+  /* ---- DISCREPANCY: diverges at stage 4 (JE in QBO) ----
+     One $300 refund row is missing from the posted JE.
+  */
+  {
+    kind:'discrepancy', divergeAt:3,
+    date:'2026-05-18', id:'grp_20260518_dailySummary',
+    summary:'Daily summary · May 18', total:22806.04, count:137,
+    types:'Payment;charge; Refund;dispute; Expense;fee',
+    delta: -300.00,
+    reason:'JE #2901 posted to QBO is missing one $300.00 refund line. The integration row and Synder datasource record both exist and are correct. Likely a transient QBO API error during a batch retry.',
+    fix:'Re-post JE #2901 from Synder. The summary group is the source of truth; QBO needs a corrective posting.',
+    lineage: (() => {
+      const lines = [];
+      const normal_count = 7;
+      let rem = 22506.04;
+      for (let i=0;i<normal_count;i++) {
+        const a = i===normal_count-1 ? +rem.toFixed(2) : +(22506.04/136*(1+Math.sin(i*1.9)*0.12)).toFixed(2);
+        rem -= a;
+        const chId=`ch_3Td${(i*7+3).toString(36).toUpperCase()}gBhq${(i*13+1).toString(36)}`;
+        const txId=`txn_3Td${(i*9+1).toString(36).toUpperCase()}gBhq${(i*5+2).toString(36)}`;
+        const dsId=`tx_${(i*11+5).toString(36)}A4P${(i*3+7).toString(36)}`;
+        lines.push(lineageRow(
+          cell(chId,txId,i%6===0?'Refund;dispute':'Payment;charge',a),
+          cell(dsId,chId,i%6===0?'Refund':'Sales receipt',a),
+          cell('grp_20260518_dailySummary','Daily summary','Sales group',null),
+          cell('JE-2901','doc_QBO_2901','Journal entry',null),
+          'ok'
+        ));
+      }
+      lines.push({ more: 136 - normal_count, total_rem: 0 });
+      // The missing refund — present in integration + datasource + summary, absent in JE
+      lines.push(lineageRow(
+        cell('re_3PmKQrLmHgBhqUAd6P0r2XY','ch_3PmKrefund','Refund;dispute', 300.00),
+        cell('tx_refundKQrLm9P2X','re_3PmKQrLmHgBhqUAd6P0r2XY','Refund', 300.00),
+        cell('grp_20260518_dailySummary','Daily summary','Sales group',null),
+        null,  // ← MISSING in QBO
+        'disc'
+      ));
+      return lines;
+    })(),
+  },
+
+  /* ---- NOT MATCHED: never reached datasource ---- */
+  {
+    kind:'notmatched', divergeAt:1,
+    date:'2026-05-27', id:'adj_payout_20260527',
+    summary:'Stripe payout adjustment · May 27', total:842.18, count:4,
+    types:'Payout adjustment',
+    reason:'A Stripe payout adjustment ($842.18, 4 transactions) exists in the integration report but was never ingested into Synder datasource. Likely a webhook delivery gap during the May 27 incident window.',
+    fix:'Trigger a manual import for May 27 from Stripe. Stages 2–4 will populate automatically on the next sync.',
+    lineage: [
+      lineageRow(cell('po_adj_3TdXY1abcd','adj_3TdAB1efgh','Payout adjustment', 412.50), null, null, null, 'miss'),
+      lineageRow(cell('po_adj_3TdXY2abcd','adj_3TdAB2efgh','Payout adjustment', 218.30), null, null, null, 'miss'),
+      lineageRow(cell('po_adj_3TdXY3abcd','adj_3TdAB3efgh','Payout adjustment', 134.20), null, null, null, 'miss'),
+      lineageRow(cell('po_adj_3TdXY4abcd','adj_3TdAB4efgh','Payout adjustment',  77.18), null, null, null, 'miss'),
+    ],
+  },
+];
+
+/* ================================================================ RENDER */
+let activeTab = 'matched';
+
 function fmt(n) {
   if (n === null || n === undefined) return '—';
   return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' USD';
@@ -185,180 +370,101 @@ function fmtDate(iso) {
   return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1]+' '+d+', 2026';
 }
 
-/* ===== row builders ===== */
-function mkStage(name, sub, total, rows, delta) {
-  return {name, sub, total, rows: rows||[], delta: delta||null};
-}
-function stripeRows(total, count) {
-  const n = Math.min(count, 6);
-  const rows = [];
-  let rem = total;
-  for (let i=0;i<n;i++) {
-    const a = i===n-1 ? rem : +(total/count*(1+Math.sin(i*1.7)*0.15)).toFixed(2);
-    rows.push({
-      date:'May ?',
-      id: `ch_3Td${(i*7+3).toString(36).toUpperCase()}gBhqUAd6P${(i*13).toString(36)}`,
-      secondary: `txn_3Td${(i*9+1).toString(36).toUpperCase()}gBhqUAd6P${(i*5).toString(36)}`,
-      type: i%5===0?'Refund;Expense;dispute': i%4===0?'Expense;fee':'Payment;charge',
-      amount: a
-    });
-    rem -= a;
+function stageHeaders(r) {
+  const divAt = r.divergeAt;
+  function hcls(i) {
+    if (divAt === undefined) return 'stage-hdr';
+    if (i < divAt) return 'stage-hdr';
+    return 'stage-hdr stage-hdr-miss';
   }
-  if (count>6) rows.push({date:'…',id:`+ ${count-6} more rows`,secondary:'',type:'',amount:+(rem).toFixed(2),more:true});
-  return rows;
-}
-function dsRows(total, count) {
-  const n = Math.min(count, 6);
-  const rows = [];
-  let rem = total;
-  for (let i=0;i<n;i++) {
-    const a = i===n-1 ? rem : +(total/count*(1+Math.sin(i*1.7)*0.15)).toFixed(2);
-    rows.push({
-      date:'May ?',
-      id: `tx_${(i*11+5).toString(36)}A4P${(i*3).toString(36)}Bk`,
-      secondary: `ch_3Td${(i*7+3).toString(36).toUpperCase()}gBhqUAd6P${(i*13).toString(36)}`,
-      type: i%5===0?'Refund': i%4===0?'Fee':'Sales receipt',
-      amount: a
-    });
-    rem -= a;
-  }
-  if (count>6) rows.push({date:'…',id:`+ ${count-6} more rows`,secondary:'',type:'',amount:+(rem).toFixed(2),more:true});
-  return rows;
-}
-
-function simple4(total, count, grpId, jeId) {
-  return [
-    mkStage('Integration report','Stripe API', total, stripeRows(total,count)),
-    mkStage('Synder datasource','Internal transactions', total, dsRows(total,count)),
-    mkStage('Summary group','SM aggregation', total, [{date:'—',id:grpId,secondary:'Daily summary',type:'Sales receipt; charge; fee',amount:total,count}]),
-    mkStage('Summary transaction','QuickBooks Online · JE', total, [{date:'—',id:jeId,secondary:`doc_QBO_${jeId.replace('JE-','')}`,type:'Journal entry',amount:total,count:1}]),
+  const stages = [
+    {label:'Stage 1 — Integration report', sub:'Stripe API'},
+    {label:'Stage 2 — Synder datasource',  sub:'Internal transactions'},
+    {label:'Stage 3 — Summary group',      sub:'SM aggregation'},
+    {label:'Stage 4 — Summary transaction',sub:'QuickBooks Online · JE'},
   ];
+  return stages.map((s,i)=>`<th colspan="2" class="${hcls(i)}">${s.label}<br><span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:9.5px;opacity:.8">${s.sub}</span></th>`).join('');
 }
 
-/* ===== DATA ===== */
-let ROWS = [
-  // MATCHED (5 shown, badge says 28)
-  {kind:'matched',date:'2026-05-31',id:'grp_20260531_dailySummary',summary:'Daily summary · May 31', total:6094.31,count:41, stages:simple4(6094.31,41,'grp_20260531_dailySummary','JE-2914')},
-  {kind:'matched',date:'2026-05-30',id:'grp_20260530_dailySummary',summary:'Daily summary · May 30', total:11204.92,count:74, stages:simple4(11204.92,74,'grp_20260530_dailySummary','JE-2913')},
-  {kind:'matched',date:'2026-05-29',id:'grp_20260529_dailySummary',summary:'Daily summary · May 29', total:9304.88, count:61, stages:simple4(9304.88,61,'grp_20260529_dailySummary','JE-2912')},
-  {kind:'matched',date:'2026-05-28',id:'grp_20260528_dailySummary',summary:'Daily summary · May 28', total:15678.44,count:101, stages:simple4(15678.44,101,'grp_20260528_dailySummary','JE-2911')},
-  {kind:'matched',date:'2026-05-26',id:'grp_20260526_dailySummary',summary:'Daily summary · May 26', total:20044.32,count:129, stages:simple4(20044.32,129,'grp_20260526_dailySummary','JE-2909')},
+function lineageTableHtml(r) {
+  const divAt = r.divergeAt; // 0-based stage index that diverges
 
-  // DISCREPANCY — diverges at stage 3 (summary group)
-  {
-    kind:'discrepancy', divergeAt:2,
-    date:'2026-05-12', id:'grp_20260512_dailySummary', summary:'Daily summary · May 12',
-    total:14309.71, count:96,
-    reason:'Fee mapping changed on May 11 — $184.27 of Stripe processing fees now route to a separate "Stripe fees" summary group. The integration report still reports them gross on this day; the summary group and JE reflect the new (split) mapping.',
-    fix:'Confirm the new fee mapping is intentional. If yes, Ignore and the new fee group is canonical. If not, revert the mapping and re-sync May 12.',
-    stages:[
-      mkStage('Integration report','Stripe API', 14309.71, stripeRows(14309.71,96)),
-      mkStage('Synder datasource','Internal transactions', 14309.71, dsRows(14309.71,96)),
-      mkStage('Summary group','SM aggregation', 14125.44, [
-        {date:'May 12',id:'grp_20260512_dailySummary',secondary:'Daily summary',type:'Sales receipt; charge',amount:14125.44,count:94},
-        {date:'May 12',id:'grp_20260512_stripeFees',secondary:'Stripe fees split',type:'Fee',amount:184.27,count:2,note:'rerouted to separate group — NOT in JE-2895'},
-      ], -184.27),
-      mkStage('Summary transaction','QuickBooks Online · JE', 14125.44, [{date:'May 12',id:'JE-2895',secondary:'doc_QBO_2895',type:'Journal entry',amount:14125.44,count:1}]),
-    ]
-  },
+  function cellHtml(c, stageIdx, rowStatus) {
+    if (c === null) {
+      const cls = rowStatus === 'miss' ? 'cell-missing' : (rowStatus === 'disc' ? 'cell-missing' : '');
+      return `<td class="${cls}">—</td><td class="${cls}">—</td>`;
+    }
+    const isDivPoint = stageIdx === divAt && rowStatus === 'disc';
+    const cls = isDivPoint ? 'cell-bad' : '';
+    const sepCls = stageIdx > 0
+      ? ((divAt !== undefined && stageIdx >= divAt && rowStatus !== 'ok') ? 'stage-sep-bad' : 'stage-sep')
+      : '';
+    return `
+      <td class="${cls} ${sepCls}">
+        <span class="id-mono" title="${c.primary}">${c.primary}</span>
+        ${c.secondary?`<span class="id-sub" title="${c.secondary}">${c.secondary}</span>`:''}
+      </td>
+      <td class="${cls} tnum" style="white-space:nowrap">
+        ${c.amount !== null ? fmt(c.amount) : '<span style="color:#9ca3af;font-style:italic">—</span>'}
+        ${c.type?`<br><span style="font-size:10px;color:${isDivPoint?'#991b1b':'#9ca3af'}">${c.type}</span>`:''}
+      </td>`;
+  }
 
-  // DISCREPANCY — diverges at stage 4 (QBO JE)
-  {
-    kind:'discrepancy', divergeAt:3,
-    date:'2026-05-18', id:'grp_20260518_dailySummary', summary:'Daily summary · May 18',
-    total:22806.04, count:137,
-    reason:'JE #2901 posted to QBO is missing one $300.00 refund line. Likely a transient QBO API error during a batch retry. The Synder summary group is correct; QBO is incomplete.',
-    fix:'Re-post JE #2901 from Synder. The summary group is the source of truth; QBO needs a corrective posting.',
-    stages:[
-      mkStage('Integration report','Stripe API', 22806.04, stripeRows(22806.04,137)),
-      mkStage('Synder datasource','Internal transactions', 22806.04, dsRows(22806.04,137)),
-      mkStage('Summary group','SM aggregation', 22806.04, [{date:'May 18',id:'grp_20260518_dailySummary',secondary:'Daily summary',type:'Sales receipt; charge; refund',amount:22806.04,count:137}]),
-      mkStage('Summary transaction','QuickBooks Online · JE', 22506.04, [{date:'May 18',id:'JE-2901 (partial)',secondary:'doc_QBO_2901',type:'Journal entry',amount:22506.04,count:1,note:'$300.00 refund line missing — expected from txn ch_3P...QrLm'}], -300.00),
-    ]
-  },
+  let totS1=0,totS2=0,totS4=0;
+  const bodyRows = r.lineage.map(lr => {
+    if (lr.more !== undefined) {
+      return `<tr><td colspan="8" style="text-align:center;font-style:italic;color:#6b7280;padding:7px 10px;background:#f9fafb">
+        + ${lr.more} more rows${lr.total_rem ? ' · Σ '+fmt(lr.total_rem) : ''}
+      </td></tr>`;
+    }
+    const trCls = lr.status==='disc'?'row-disc':lr.status==='miss'?'row-miss':'';
+    if (lr.s1) totS1 += lr.s1.amount||0;
+    if (lr.s2) totS2 += lr.s2.amount||0;
+    if (lr.s4) totS4 += lr.s4.amount||0;
+    return `<tr class="${trCls}">
+      ${cellHtml(lr.s1, 0, lr.status)}
+      ${cellHtml(lr.s2, 1, lr.status)}
+      ${cellHtml(lr.s3, 2, lr.status)}
+      ${cellHtml(lr.s4, 3, lr.status)}
+    </tr>`;
+  }).join('');
 
-  // NOT MATCHED — webhook gap, stage 2 onwards missing
-  {
-    kind:'notmatched', divergeAt:1,
-    date:'2026-05-27', id:'adj_payout_20260527', summary:'Stripe payout adjustment · May 27',
-    total:842.18, count:4,
-    reason:'A Stripe payout adjustment ($842.18, 4 transactions) is present in the Stripe report but was never ingested into Synder datasource. Likely a webhook delivery gap during the May 27 incident window. No summary group was created; nothing was posted to QBO.',
-    fix:'Trigger a manual import for May 27 from Stripe. The downstream stages (datasource → summary → JE) will populate automatically on the next sync.',
-    stages:[
-      mkStage('Integration report','Stripe API', 842.18, [{date:'May 27',id:'po_adj_3TdXYZabcd',secondary:'adj_3TdABCefgh',type:'Payout adjustment',amount:842.18,count:4}]),
-      mkStage('Synder datasource','Internal transactions', null, []),
-      mkStage('Summary group','SM aggregation', null, []),
-      mkStage('Summary transaction','QuickBooks Online · JE', null, []),
-    ]
-  },
-];
+  const totS4cls = r.kind==='discrepancy' && Math.abs(totS4-totS1)>0.005 ? 'bad' : '';
 
-/* ===== render ===== */
-let activeTab = 'matched';
-
-function subTable(stage) {
-  if (!stage.rows || !stage.rows.length) return `<div class="sub-empty">No record at this stage</div>`;
-  return `<div style="overflow-y:auto;max-height:220px"><table class="sub-tbl w-full">
-    <thead><tr><th>Date</th><th>Primary ID</th><th>Secondary ID</th><th>Type</th><th style="text-align:right">Amount</th></tr></thead>
-    <tbody>${stage.rows.map(r=>`
-      <tr${r.more?' style="background:#f9fafb;font-style:italic"':''}>
-        <td style="white-space:nowrap">${r.date}</td>
-        <td><span class="id-cell" title="${r.id}">${r.id}</span></td>
-        <td><span class="id-cell" title="${r.secondary||''}">${r.secondary||'—'}</span></td>
-        <td style="white-space:nowrap;font-size:11px">${r.type||'—'}</td>
-        <td class="r" style="white-space:nowrap">${r.amount===null?'—':fmt(r.amount)}</td>
-      </tr>${r.note?`<tr><td colspan="5" style="padding:2px 8px 6px;font-size:10.5px;color:#92400e;font-style:italic">↳ ${r.note}</td></tr>`:''}
-    `).join('')}</tbody>
-  </table></div>`;
-}
-
-function stagePanel(r, idx) {
-  const s = r.stages[idx];
-  const missing  = s.total === null;
-  const isDivPt  = r.divergeAt === idx;
-  const afterDiv = r.divergeAt !== undefined && idx > r.divergeAt;
-  let cls = 'stage-panel';
-  if (missing) cls += ' missing';
-  else if (isDivPt) cls += ' diverge';
-
-  const totalCls = missing ? 'text-amber-800' : (isDivPt ? 'text-red-700' : 'text-gray-900');
-  const deltaPill = s.delta
-    ? `<span class="delta-pill ${r.kind==='notmatched'?'delta-warn':'delta-red'}">Δ ${fmt(s.delta)}</span>`
-    : '';
-
-  return `<div class="${cls}">
-    <div class="stage-head">
-      <div>
-        <div class="stage-name">Stage ${idx+1} · ${s.name}</div>
-        <div class="stage-sub">${s.sub}</div>
-      </div>
-      <div style="text-align:right">
-        <div class="stage-total">${missing?'— missing':fmt(s.total)}</div>
-        ${deltaPill?`<div style="margin-top:3px">${deltaPill}</div>`:''}
-      </div>
-    </div>
-    ${subTable(s)}
+  return `<div style="overflow-x:auto;border-top:1px solid #e5e7eb">
+    <table class="ltable">
+      <thead>
+        <tr>${stageHeaders(r)}</tr>
+        <tr>
+          <th>Primary ID</th><th class="num">Amount / Type</th>
+          <th class="stage-sep">Primary ID</th><th class="num">Amount / Type</th>
+          <th class="stage-sep">Group ID</th><th>Label</th>
+          <th class="stage-sep">JE / Doc ID</th><th>Doc ref</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${bodyRows}
+        <tr class="total-row">
+          <td colspan="2">Σ ${fmt(totS1)}</td>
+          <td colspan="2" class="stage-sep">${totS2>0 ? 'Σ '+fmt(totS2) : '—'}</td>
+          <td colspan="2" class="stage-sep">→ ${fmt(r.total)}</td>
+          <td colspan="2" class="stage-sep ${totS4cls}">${totS4>0 ? 'Σ '+fmt(totS4) : '—'}${totS4cls?` <span style="font-size:10px">(Δ ${fmt(totS4-totS1)})</span>`:''}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>`;
 }
 
-function arrowCol(r, betweenIdx) {
-  const da = r.divergeAt;
-  let cls = '';
-  if (da !== undefined) {
-    if (betweenIdx + 1 === da && r.kind === 'notmatched') cls = 'warn';
-    else if (betweenIdx + 1 >= da) cls = 'bad';
-  }
-  return `<div class="flow-col ${cls}">→</div>`;
+function statusChip(r) {
+  if (r.kind==='matched')     return '';
+  if (r.kind==='discrepancy') return `<span class="chip-sq red ml-2">Discrepancy · stage ${r.divergeAt+1}</span>`;
+  if (r.kind==='notmatched')  return `<span class="chip-sq amber ml-2">Not matched</span>`;
+  return `<span class="chip-sq gray ml-2">Ignored</span>`;
 }
 
-function parentRow(r, uid) {
-  const types = [...new Set((r.stages[0].rows||[]).flatMap(x=>(x.type||'').split(';').map(t=>t.trim()).filter(Boolean)))].slice(0,3).join('; ')||'—';
-  const amtCls = r.kind==='matched'?'text-gray-900 font-medium': r.kind==='discrepancy'?'text-red-700 font-semibold':'text-amber-700 font-semibold';
-  const statusChip = r.kind==='matched'
-    ? '' // no chip on matched rows (clean)
-    : r.kind==='discrepancy'
-      ? `<span class="chip-sq chip-red ml-2">Discrepancy · stage ${r.divergeAt+1}</span>`
-      : `<span class="chip-sq chip-amber ml-2">Not matched</span>`;
+function parentRowHtml(r, uid) {
+  const amtCls = r.kind==='matched'?'font-medium text-gray-900':
+                 r.kind==='discrepancy'?'font-semibold text-red-700':'font-semibold text-amber-700';
 
   const reasonBlock = r.reason ? `
     <div class="reason-box ${r.kind==='notmatched'?'reason-warn':'reason-red'}">
@@ -366,7 +472,7 @@ function parentRow(r, uid) {
         ${r.kind==='notmatched'?'⚠ Not matched':'✕ Discrepancy'} — why this diverges
       </div>
       <div style="font-size:12px;color:#374151;line-height:1.5">${r.reason}</div>
-      ${r.fix?`<div style="font-size:12px;color:#374151;margin-top:6px"><strong>Suggested action:</strong> ${r.fix}</div>`:''}
+      ${r.fix?`<div style="margin-top:5px;font-size:12px;color:#374151"><strong>Suggested action:</strong> ${r.fix}</div>`:''}
     </div>` : '';
 
   const actions = r.kind==='matched' ? '' : `
@@ -379,27 +485,21 @@ function parentRow(r, uid) {
   return `<div class="recon-row" id="${uid}">
     <div class="row-head" onclick="document.getElementById('${uid}').classList.toggle('open')">
       <div style="display:flex;justify-content:center">
-        <svg class="chev" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+        <svg class="chev" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+        </svg>
       </div>
       <div style="color:#374151">${fmtDate(r.date)}</div>
       <div style="display:flex;align-items:center;min-width:0">
-        <span class="mono" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.id}">${r.id}</span>
-        ${statusChip}
+        <span class="id-mono" style="max-width:none" title="${r.id}">${r.id}</span>
+        ${statusChip(r)}
       </div>
-      <div class="pr-1 tabular-nums ${amtCls}" style="text-align:right">${fmt(r.total)}</div>
-      <div style="font-size:12px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${types}</div>
-      <div class="tabular-nums" style="text-align:right;font-size:13px">${r.count}</div>
+      <div class="pr-1 tnum ${amtCls}">${fmt(r.total)}</div>
+      <div style="font-size:12px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.types}</div>
+      <div class="tnum" style="font-size:13px">${r.count}</div>
     </div>
     <div class="row-detail">
-      <div class="stage-grid">
-        ${stagePanel(r,0)}
-        ${arrowCol(r,0)}
-        ${stagePanel(r,1)}
-        ${arrowCol(r,1)}
-        ${stagePanel(r,2)}
-        ${arrowCol(r,2)}
-        ${stagePanel(r,3)}
-      </div>
+      ${lineageTableHtml(r)}
       ${reasonBlock}
       ${actions}
     </div>
@@ -407,13 +507,13 @@ function parentRow(r, uid) {
 }
 
 function render() {
-  const filtered = ROWS.filter(r=>r.kind===activeTab||(activeTab==='ignored'&&r.kind==='ignored'));
-  const c = document.getElementById('rows-container');
-  const e = document.getElementById('empty-state');
+  const filtered = ROWS.filter(r=>r.kind===activeTab);
+  const c=document.getElementById('rows-container');
+  const e=document.getElementById('empty-state');
   if (!filtered.length) { c.innerHTML=''; e.classList.remove('hidden'); }
   else {
     e.classList.add('hidden');
-    c.innerHTML = filtered.map((r,i)=>parentRow(r,`${activeTab}-${i}`)).join('');
+    c.innerHTML = filtered.map((r,i)=>parentRowHtml(r,`${activeTab}-${i}`)).join('');
     if (activeTab==='discrepancy'||activeTab==='notmatched') {
       c.querySelectorAll('.recon-row').forEach(el=>el.classList.add('open'));
     }
@@ -425,8 +525,8 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     activeTab=btn.dataset.tab;
     document.querySelectorAll('.tab-btn').forEach(b=>{
-      b.classList.toggle('tab-active', b===btn);
-      b.classList.toggle('tab-inactive', b!==btn);
+      b.classList.toggle('tab-active',b===btn);
+      b.classList.toggle('tab-inactive',b!==btn);
     });
     render();
   });
