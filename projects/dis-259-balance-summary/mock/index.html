@@ -212,60 +212,47 @@
     </div>
   </div>
 
-  <!-- MATCH state (collapsed horizontal strip) -->
+  <!-- MATCH state (full math, always visible) -->
   <div id="bb-match" class="bb-section" style="display:none">
-    <div class="bb-match-strip">
-      <div class="bb-match-tick">✓</div>
-      <div>
-        <div class="bb-match-main">Balance matches <span class="bb-match-amount">$5,621.22</span></div>
-        <div class="text-[12px] text-emerald-700">All transactions accounted for · period is closeable</div>
-      </div>
-      <div class="bb-match-equation">
-        <span class="pill">Beg $5,200.00</span><span class="op op1">+</span>
-        <span class="pill">Deb $58,232.18</span><span class="op op2">−</span>
-        <span class="pill">Cred $57,810.96</span><span class="op">=</span>
-        <span class="pill">Computed $5,621.22</span><span class="op">=</span>
-        <span class="pill">Reported $5,621.22</span>
-      </div>
-      <button class="bb-expand-btn" onclick="expandMatch()">Show full math ▾</button>
+    <div class="bb-header">
+      <span class="bb-title" style="color:#065f46;">✓ Balance matches · Mar 1 – 31, 2026</span>
+      <span class="bb-meta">All transactions accounted for · period is closeable</span>
     </div>
-    <div id="bb-match-expanded" style="display:none">
-      <div class="bb-grid" style="background:#f0fdf4;border-top:1px solid #a7f3d0">
-        <div class="bb-cell">
-          <div class="bb-label">Beginning balance</div>
-          <div class="bb-num">$5,200.00</div>
-          <div class="bb-src">QBO clearing register</div>
-        </div>
-        <div class="bb-op op1">+</div>
-        <div class="bb-cell">
-          <div class="bb-label">Debits</div>
-          <div class="bb-num">$58,232.18</div>
-          <div class="bb-src">Stripe · sum of debit txns</div>
-        </div>
-        <div class="bb-op op2">−</div>
-        <div class="bb-cell">
-          <div class="bb-label">Credits</div>
-          <div class="bb-num">$57,810.96</div>
-          <div class="bb-src">Stripe · sum of credit txns</div>
-        </div>
-        <div class="bb-op">=</div>
-        <div class="bb-cell computed">
-          <div class="bb-label">Computed ending</div>
-          <div class="bb-num">$5,621.22</div>
-          <div class="bb-src formula-src">Beg + Deb − Cred</div>
-        </div>
-        <div class="bb-vsep" style="background:#a7f3d0"></div>
-        <div class="bb-cell">
-          <div class="bb-label">Reported ending</div>
-          <div class="bb-num">$5,621.22</div>
-          <div class="bb-src">QBO clearing register</div>
-        </div>
-        <div class="bb-vsep" style="background:#a7f3d0"></div>
-        <div class="bb-cell" style="background:#dcfce7">
-          <div class="bb-label" style="color:#065f46">✓ Delta</div>
-          <div class="bb-num" style="color:#065f46">$0.00</div>
-          <div class="bb-src" style="color:#047857">Balance matches</div>
-        </div>
+    <div class="bb-grid" style="background:#f0fdf4">
+      <div class="bb-cell">
+        <div class="bb-label">Beginning balance</div>
+        <div class="bb-num">$5,200.00</div>
+        <div class="bb-src">QBO clearing register</div>
+      </div>
+      <div class="bb-op op1">+</div>
+      <div class="bb-cell">
+        <div class="bb-label">Debits</div>
+        <div class="bb-num">$58,232.18</div>
+        <div class="bb-src">Stripe · sum of debit txns</div>
+      </div>
+      <div class="bb-op op2">−</div>
+      <div class="bb-cell">
+        <div class="bb-label">Credits</div>
+        <div class="bb-num">$57,810.96</div>
+        <div class="bb-src">Stripe · sum of credit txns</div>
+      </div>
+      <div class="bb-op">=</div>
+      <div class="bb-cell computed">
+        <div class="bb-label">Computed ending</div>
+        <div class="bb-num">$5,621.22</div>
+        <div class="bb-src formula-src">Beg + Deb − Cred</div>
+      </div>
+      <div class="bb-vsep" style="background:#a7f3d0"></div>
+      <div class="bb-cell">
+        <div class="bb-label">Reported ending</div>
+        <div class="bb-num">$5,621.22</div>
+        <div class="bb-src">QBO clearing register</div>
+      </div>
+      <div class="bb-vsep" style="background:#a7f3d0"></div>
+      <div class="bb-cell" style="background:#dcfce7">
+        <div class="bb-label" style="color:#065f46">✓ Delta</div>
+        <div class="bb-num" style="color:#065f46">$0.00</div>
+        <div class="bb-src" style="color:#047857">Balance matches</div>
       </div>
     </div>
   </div>
@@ -422,11 +409,10 @@ function setState(state){
   });
   // Block
   const block=document.getElementById('balance-block');
-  block.classList.remove('state-off','state-match','state-none','collapsed');
+  block.classList.remove('state-off','state-match','state-none');
   document.getElementById('bb-off').style.display='none';
   document.getElementById('bb-match').style.display='none';
   document.getElementById('bb-none').style.display='none';
-  document.getElementById('bb-match-expanded').style.display='none';
   // Pill
   const pill=document.getElementById('balance-pill');
   pill.classList.remove('c-red','c-green','c-gray','c-amber');
@@ -436,7 +422,7 @@ function setState(state){
     pill.classList.add('c-red');
     pill.textContent='⚠ Balance off by $421.22';
   } else if(state==='match'){
-    block.classList.add('state-match','collapsed');
+    block.classList.add('state-match');
     document.getElementById('bb-match').style.display='block';
     pill.classList.add('c-green');
     pill.textContent='✓ Balance matches';
@@ -445,18 +431,6 @@ function setState(state){
     document.getElementById('bb-none').style.display='block';
     pill.classList.add('c-gray');
     pill.textContent='– No beginning balance';
-  }
-}
-
-function expandMatch(){
-  const exp=document.getElementById('bb-match-expanded');
-  const link=document.querySelector('#bb-match .bb-expand');
-  if(exp.style.display==='none'){
-    exp.style.display='block';
-    link.textContent='Hide math ▴';
-  } else {
-    exp.style.display='none';
-    link.textContent='Show math ▾';
   }
 }
 
