@@ -49,14 +49,14 @@
     .balance-block.state-match .bb-header{background:#f0fdf4;border-bottom-color:#a7f3d0;}
     .balance-block.state-match .bb-title {color:#065f46;}
     .bb-meta{font-size:11px;color:#94a3b8;}
-    /* horizontal equation grid */
-    .bb-grid{display:grid;align-items:stretch;grid-template-columns:1fr 28px 1fr 28px 1fr 1px 1fr 1px 1.3fr;}
-    .bb-cell{padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;}
+    /* horizontal equation grid — 6 data tiles + 3 operators + 2 vertical separators */
+    .bb-grid{display:grid;align-items:stretch;grid-template-columns:1.05fr 22px 1fr 22px 1fr 22px 1.05fr 1px 1fr 1px 1.25fr;}
+    .bb-cell{padding:12px 12px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;}
     .bb-op{display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#94a3b8;padding-top:18px;}
     .bb-vsep{background:#e5e7eb;}
     .balance-block.state-off .bb-vsep{background:#fecaca;}
     .bb-label{font-size:10.5px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .bb-num{font-size:20px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.1;white-space:nowrap;}
+    .bb-num{font-size:18px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.1;white-space:nowrap;}
     .bb-num.neg{color:#0f172a;}
     .bb-src{font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     /* computed cell — emphasized */
@@ -112,12 +112,21 @@
   <span class="text-gray-400 cursor-pointer hover:text-gray-700 text-lg">×</span>
   <span class="font-medium text-gray-800">Reconciliation results</span>
   <span class="ml-3 chip c-blue" style="font-size:10px">DIS-259 mock · Balance Summary above tabs</span>
-  <div class="ml-auto flex items-center gap-2">
-    <span class="text-xs text-gray-500">Balance state:</span>
-    <div class="state-toggle">
-      <button id="st-off"   class="active" onclick="setState('off')">⚠ Off by $421.22</button>
-      <button id="st-match"            onclick="setState('match')">✓ Matches</button>
-      <button id="st-none"             onclick="setState('none')">– No beginning balance</button>
+  <div class="ml-auto flex items-center gap-4">
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-500">State:</span>
+      <div class="state-toggle">
+        <button id="st-off"   class="active" onclick="setState('off')">⚠ Off by</button>
+        <button id="st-match"            onclick="setState('match')">✓ Matches</button>
+        <button id="st-none"             onclick="setState('none')">– No beg.</button>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-500">Account type:</span>
+      <div class="state-toggle">
+        <button id="at-asset"     class="active" onclick="setAcctType('asset')">Asset (clearing)</button>
+        <button id="at-liability"            onclick="setAcctType('liability')">Liability / Revenue</button>
+      </div>
     </div>
   </div>
 </div>
@@ -133,7 +142,7 @@
         <!-- NEW: Balance status pill -->
         <span id="balance-pill" class="chip c-red">⚠ Balance off by $421.22</span>
       </div>
-      <div class="text-[13px] text-gray-500 mt-0.5">Stripe Test (sandbox) / Mar 1 - 31, 2026</div>
+      <div class="text-[13px] text-gray-500 mt-0.5">Stripe Test (sandbox) / Mar 1 - 31, 2026 · <span class="acct-type-label font-medium text-gray-600">Asset · Clearing</span></div>
     </div>
     <div class="flex items-center gap-2">
       <button class="btn btn-o">Copy share link</button>
@@ -158,7 +167,7 @@
   <div id="bb-off" class="bb-section">
     <div class="bb-header">
       <span class="bb-title">Balance Summary · Mar 1 – 31, 2026</span>
-      <span class="bb-meta">Beginning &amp; Reported from QBO clearing register · Change from Stripe</span>
+      <span class="bb-meta">Beginning &amp; Reported from QBO clearing register · Debits and Credits from Stripe</span>
     </div>
     <div class="bb-grid">
       <div class="bb-cell">
@@ -166,17 +175,23 @@
         <div class="bb-num">$5,200.00</div>
         <div class="bb-src">QBO clearing register</div>
       </div>
-      <div class="bb-op">+</div>
+      <div class="bb-op op1">+</div>
       <div class="bb-cell">
-        <div class="bb-label">Balance change</div>
-        <div class="bb-num neg">−$4,720.00</div>
-        <div class="bb-src">Stripe · sum of mapped amounts</div>
+        <div class="bb-label">Debits</div>
+        <div class="bb-num">$58,232.18</div>
+        <div class="bb-src">Stripe · sum of debit txns</div>
+      </div>
+      <div class="bb-op op2">−</div>
+      <div class="bb-cell">
+        <div class="bb-label">Credits</div>
+        <div class="bb-num">$62,952.18</div>
+        <div class="bb-src">Stripe · sum of credit txns</div>
       </div>
       <div class="bb-op">=</div>
       <div class="bb-cell computed">
         <div class="bb-label">Computed ending</div>
         <div class="bb-num">$480.00</div>
-        <div class="bb-src">Beginning + Change</div>
+        <div class="bb-src formula-src">Beg + Deb − Cred</div>
       </div>
       <div class="bb-vsep"></div>
       <div class="bb-cell">
@@ -206,8 +221,9 @@
         <div class="text-[12px] text-emerald-700">All transactions accounted for · period is closeable</div>
       </div>
       <div class="bb-match-equation">
-        <span class="pill">Beginning $5,200.00</span><span class="op">+</span>
-        <span class="pill">Change +$421.22</span><span class="op">=</span>
+        <span class="pill">Beg $5,200.00</span><span class="op op1">+</span>
+        <span class="pill">Deb $58,232.18</span><span class="op op2">−</span>
+        <span class="pill">Cred $57,810.96</span><span class="op">=</span>
         <span class="pill">Computed $5,621.22</span><span class="op">=</span>
         <span class="pill">Reported $5,621.22</span>
       </div>
@@ -220,17 +236,23 @@
           <div class="bb-num">$5,200.00</div>
           <div class="bb-src">QBO clearing register</div>
         </div>
-        <div class="bb-op">+</div>
+        <div class="bb-op op1">+</div>
         <div class="bb-cell">
-          <div class="bb-label">Balance change</div>
-          <div class="bb-num">+$421.22</div>
-          <div class="bb-src">Stripe · sum of mapped amounts</div>
+          <div class="bb-label">Debits</div>
+          <div class="bb-num">$58,232.18</div>
+          <div class="bb-src">Stripe · sum of debit txns</div>
+        </div>
+        <div class="bb-op op2">−</div>
+        <div class="bb-cell">
+          <div class="bb-label">Credits</div>
+          <div class="bb-num">$57,810.96</div>
+          <div class="bb-src">Stripe · sum of credit txns</div>
         </div>
         <div class="bb-op">=</div>
         <div class="bb-cell computed">
           <div class="bb-label">Computed ending</div>
           <div class="bb-num">$5,621.22</div>
-          <div class="bb-src">Beginning + Change</div>
+          <div class="bb-src formula-src">Beg + Deb − Cred</div>
         </div>
         <div class="bb-vsep" style="background:#a7f3d0"></div>
         <div class="bb-cell">
@@ -254,7 +276,7 @@
       <span class="bb-title">Balance Summary · Mar 1 – 31, 2026</span>
       <span class="bb-meta">Iteration 2 surface — Xero / QBD / manual platforms</span>
     </div>
-    <div class="bb-none-strip">
+    <div class="bb-none-strip" style="grid-template-columns:auto 1px 1fr 1fr 1px auto auto">
       <div class="cell copy-cell">
         <div class="icon">–</div>
         <div>
@@ -264,9 +286,14 @@
       </div>
       <div class="vsep"></div>
       <div class="cell">
-        <div class="change-label">+ Balance change</div>
-        <div class="change-num">−$4,720.00</div>
-        <div class="change-src">Stripe · sum of mapped amounts</div>
+        <div class="change-label">+ Debits</div>
+        <div class="change-num">$58,232.18</div>
+        <div class="change-src">Stripe · sum of debit txns</div>
+      </div>
+      <div class="cell">
+        <div class="change-label">− Credits</div>
+        <div class="change-num">$62,952.18</div>
+        <div class="change-src">Stripe · sum of credit txns</div>
       </div>
       <div class="vsep"></div>
       <div class="cell">
@@ -380,10 +407,11 @@
 
 <div class="annot">
   <strong>What's new vs. live UI:</strong><br/>
-  1. Balance status pill in the header (3 states)<br/>
-  2. Balance Summary block above the tabs<br/>
-  3. Delta line links into Not matched / Discrepancy<br/>
-  <span class="text-gray-400">Toggle states from the top-right · Block stays visible across tab switches</span>
+  1. Balance pill in the header (3 states)<br/>
+  2. Balance block above the tabs<br/>
+  3. <strong>Debits / Credits</strong> breakdown — operators flip per account type<br/>
+  4. Delta line links into Not matched / Discrepancy<br/>
+  <span class="text-gray-400">Toggle <em>Account type</em> top-right to see the formula flip: Asset (Beg + Deb − Cred) vs. Liability (Beg − Deb + Cred).</span>
 </div>
 
 <script>
@@ -440,6 +468,27 @@ function switchTab(name){
   });
   document.querySelectorAll('.tab-pane').forEach(p=>p.style.display='none');
   document.getElementById('tab-'+name).style.display='block';
+}
+
+/* Account-type toggle — flips operators per Option B accounting convention.
+   Asset / Expense:        Beginning + Debits − Credits = Computed
+   Liability / Equity / Revenue:  Beginning − Debits + Credits = Computed
+*/
+function setAcctType(type){
+  ['asset','liability'].forEach(t=>{
+    document.getElementById('at-'+t).classList.toggle('active', t===type);
+  });
+  const op1Text = type==='asset' ? '+' : '−';
+  const op2Text = type==='asset' ? '−' : '+';
+  document.querySelectorAll('.bb-op.op1').forEach(el=>el.textContent=op1Text);
+  document.querySelectorAll('.bb-op.op2').forEach(el=>el.textContent=op2Text);
+  document.querySelectorAll('.formula-src').forEach(el=>{
+    el.textContent = type==='asset' ? 'Beg + Deb − Cred' : 'Beg − Deb + Cred';
+  });
+  // Recompute "Selected transactions balance" semantics — switch the displayed account label
+  document.querySelectorAll('.acct-type-label').forEach(el=>{
+    el.textContent = type==='asset' ? 'Asset · Clearing' : 'Liability · Deferred revenue';
+  });
 }
 </script>
 </body>
