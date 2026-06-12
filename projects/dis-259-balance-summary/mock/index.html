@@ -37,39 +37,61 @@
     .id-mono{font-family:'SFMono-Regular','Menlo',monospace;font-size:12px;color:#374151;}
     .tnum{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
     .chev-icon{color:#9ca3af;cursor:pointer;}
-    /* balance block */
-    .balance-block{background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;margin:12px 24px;}
-    .balance-block.state-off  {border:1px solid #fda4af;background:#fffafa;}
-    .balance-block.state-match{border:1px solid #a7f3d0;background:#f0fdf4;}
+    /* balance block — horizontal layout */
+    .balance-block{background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;margin:12px 24px;overflow:hidden;}
+    .balance-block.state-off  {border:1px solid #fecaca;}
+    .balance-block.state-match{border:1px solid #a7f3d0;}
     .balance-block.state-none {border:1px solid #d1d5db;background:#fafafa;}
-    .bb-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;}
-    .bb-title{font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.04em;}
-    .balance-block.state-off  .bb-title{color:#9f1239;}
-    .balance-block.state-match.collapsed .bb-title{color:#065f46;}
-    .bb-rows{padding:4px 16px 12px;font-size:13px;color:#374151;}
-    .bb-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;}
-    .bb-row .lbl{display:flex;align-items:center;gap:8px;}
-    .bb-row .src{font-size:11px;color:#9ca3af;}
-    .bb-row .num{font-variant-numeric:tabular-nums;font-weight:500;}
-    .bb-sep{height:1px;background:#e5e7eb;margin:6px 0;}
-    .balance-block.state-off .bb-sep-strong{height:1px;background:#fda4af;margin:8px 0;}
-    .bb-delta{padding:8px 16px 12px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-top:1px solid #fda4af;}
-    .balance-block.state-off .bb-delta{background:#fff5f5;border-top:1px dashed #fca5a5;border-bottom-left-radius:7px;border-bottom-right-radius:7px;}
-    .delta-amount{font-size:18px;font-weight:700;color:#991b1b;font-variant-numeric:tabular-nums;}
-    .delta-hint{font-size:12px;color:#7f1d1d;margin-top:2px;}
-    .delta-actions{display:flex;gap:6px;flex-shrink:0;}
-    .delta-link{padding:5px 10px;font-size:12px;font-weight:500;background:white;color:#991b1b;border:1px solid #fca5a5;border-radius:4px;cursor:pointer;}
-    .delta-link:hover{background:#fee2e2;}
-    /* collapsed match strip */
-    .bb-match-strip{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;}
-    .bb-match-text{display:flex;align-items:center;gap:10px;}
-    .bb-match-text .label{font-size:13px;font-weight:600;color:#065f46;}
-    .bb-match-text .amount{font-size:14px;font-weight:700;color:#064e3b;font-variant-numeric:tabular-nums;}
-    .bb-expand{font-size:12px;color:#065f46;cursor:pointer;text-decoration:underline;}
-    .bb-expand:hover{color:#022c22;}
-    /* no beginning balance state */
-    .bb-empty{padding:12px 16px;font-size:13px;color:#6b7280;display:flex;justify-content:space-between;align-items:center;gap:12px;}
-    .bb-empty .cta{font-size:12px;color:#2563eb;cursor:pointer;text-decoration:underline;}
+    .bb-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #f1f5f9;background:#fafafa;}
+    .bb-title{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;}
+    .balance-block.state-off   .bb-header{background:#fef2f2;border-bottom-color:#fecaca;}
+    .balance-block.state-off   .bb-title {color:#9f1239;}
+    .balance-block.state-match .bb-header{background:#f0fdf4;border-bottom-color:#a7f3d0;}
+    .balance-block.state-match .bb-title {color:#065f46;}
+    .bb-meta{font-size:11px;color:#94a3b8;}
+    /* horizontal equation grid */
+    .bb-grid{display:grid;align-items:stretch;grid-template-columns:1fr 28px 1fr 28px 1fr 1px 1fr 1px 1.3fr;}
+    .bb-cell{padding:14px 16px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;}
+    .bb-op{display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#94a3b8;padding-top:18px;}
+    .bb-vsep{background:#e5e7eb;}
+    .balance-block.state-off .bb-vsep{background:#fecaca;}
+    .bb-label{font-size:10.5px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .bb-num{font-size:20px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.1;white-space:nowrap;}
+    .bb-num.neg{color:#0f172a;}
+    .bb-src{font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    /* computed cell — emphasized */
+    .bb-cell.computed{background:#f8fafc;}
+    .bb-cell.computed .bb-label{color:#475569;}
+    .bb-cell.computed .bb-num  {color:#0f172a;}
+    /* delta cell — dominant, action-oriented */
+    .bb-cell.delta{background:#fff5f5;gap:6px;padding:12px 16px;}
+    .bb-cell.delta .bb-label{color:#991b1b;}
+    .bb-cell.delta .bb-num  {color:#991b1b;font-size:22px;}
+    .bb-cell.delta .bb-src  {color:#b91c1c;}
+    .bb-actions{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}
+    .bb-action{padding:4px 10px;font-size:12px;font-weight:500;background:white;color:#991b1b;border:1px solid #fca5a5;border-radius:4px;cursor:pointer;white-space:nowrap;}
+    .bb-action:hover{background:#fee2e2;}
+    /* match state — horizontal one-line */
+    .bb-match-strip{display:flex;align-items:center;gap:16px;padding:14px 18px;background:#f0fdf4;}
+    .bb-match-tick{width:24px;height:24px;border-radius:50%;background:#10b981;color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+    .bb-match-main{font-size:14px;font-weight:600;color:#064e3b;}
+    .bb-match-amount{font-size:18px;font-weight:700;color:#064e3b;font-variant-numeric:tabular-nums;margin-left:6px;}
+    .bb-match-equation{flex:1;font-size:12px;color:#047857;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+    .bb-match-equation .pill{background:#d1fae5;padding:2px 8px;border-radius:4px;font-weight:500;}
+    .bb-match-equation .op{color:#10b981;font-weight:600;}
+    .bb-expand-btn{font-size:12px;color:#065f46;cursor:pointer;background:none;border:none;text-decoration:underline;padding:4px 8px;}
+    .bb-expand-btn:hover{color:#022c22;}
+    /* no beginning balance state — horizontal */
+    .bb-none-strip{display:grid;grid-template-columns:auto 1px 1fr 1px auto auto;align-items:center;gap:0;}
+    .bb-none-strip > .cell{padding:14px 18px;display:flex;flex-direction:column;gap:3px;}
+    .bb-none-strip > .vsep{background:#e5e7eb;}
+    .bb-none-strip .icon{width:32px;height:32px;border-radius:50%;background:#f1f5f9;color:#64748b;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;}
+    .bb-none-strip .copy-cell{flex-direction:row;align-items:center;gap:14px;}
+    .bb-none-strip .copy-main{font-size:13px;font-weight:600;color:#374151;}
+    .bb-none-strip .copy-sub{font-size:12px;color:#94a3b8;margin-top:2px;}
+    .bb-none-strip .change-num{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;color:#475569;}
+    .bb-none-strip .change-label{font-size:10.5px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.04em;}
+    .bb-none-strip .change-src{font-size:11px;color:#94a3b8;}
     /* state toggle */
     .state-toggle{display:flex;background:white;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;font-size:12px;}
     .state-toggle button{padding:5px 10px;border:none;background:white;color:#374151;cursor:pointer;font-weight:500;}
@@ -136,103 +158,124 @@
   <div id="bb-off" class="bb-section">
     <div class="bb-header">
       <span class="bb-title">Balance Summary · Mar 1 – 31, 2026</span>
-      <span class="text-[11px] text-gray-400">Beginning from QBO · Change from Stripe · Reported from QBO</span>
+      <span class="bb-meta">Beginning &amp; Reported from QBO clearing register · Change from Stripe</span>
     </div>
-    <div class="bb-rows">
-      <div class="bb-row">
-        <span class="lbl">Beginning balance <span class="src">(QBO clearing register)</span></span>
-        <span class="num">$5,200.00</span>
+    <div class="bb-grid">
+      <div class="bb-cell">
+        <div class="bb-label">Beginning balance</div>
+        <div class="bb-num">$5,200.00</div>
+        <div class="bb-src">QBO clearing register</div>
       </div>
-      <div class="bb-row">
-        <span class="lbl">+ Balance change <span class="src">(Stripe · sum of mapped amounts)</span></span>
-        <span class="num">−$4,720.00</span>
+      <div class="bb-op">+</div>
+      <div class="bb-cell">
+        <div class="bb-label">Balance change</div>
+        <div class="bb-num neg">−$4,720.00</div>
+        <div class="bb-src">Stripe · sum of mapped amounts</div>
       </div>
-      <div class="bb-sep"></div>
-      <div class="bb-row">
-        <span class="lbl"><strong>= Computed ending balance</strong></span>
-        <span class="num"><strong>$480.00</strong></span>
+      <div class="bb-op">=</div>
+      <div class="bb-cell computed">
+        <div class="bb-label">Computed ending</div>
+        <div class="bb-num">$480.00</div>
+        <div class="bb-src">Beginning + Change</div>
       </div>
-      <div class="bb-row">
-        <span class="lbl">Reported ending balance <span class="src">(QBO clearing register)</span></span>
-        <span class="num">$58.78</span>
+      <div class="bb-vsep"></div>
+      <div class="bb-cell">
+        <div class="bb-label">Reported ending</div>
+        <div class="bb-num">$58.78</div>
+        <div class="bb-src">QBO clearing register</div>
       </div>
-    </div>
-    <div class="bb-delta">
-      <div>
-        <div class="delta-amount">Delta: $421.22</div>
-        <div class="delta-hint">Likely cause: 3 transactions missing in accounting (Stripe payouts &amp; charges not yet booked to QBO).</div>
-      </div>
-      <div class="delta-actions">
-        <button class="delta-link" onclick="switchTab('discrepancy')">Review discrepancies →</button>
-        <button class="delta-link" onclick="switchTab('notmatched')">Review missing →</button>
+      <div class="bb-vsep"></div>
+      <div class="bb-cell delta">
+        <div class="bb-label">⚠ Delta</div>
+        <div class="bb-num">$421.22</div>
+        <div class="bb-src">3 missing in accounting</div>
+        <div class="bb-actions">
+          <button class="bb-action" onclick="switchTab('notmatched')">Review missing →</button>
+          <button class="bb-action" onclick="switchTab('discrepancy')">Review discrepancies →</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- MATCH state (collapsed strip) -->
+  <!-- MATCH state (collapsed horizontal strip) -->
   <div id="bb-match" class="bb-section" style="display:none">
     <div class="bb-match-strip">
-      <div class="bb-match-text">
-        <span class="text-emerald-600 text-base">✓</span>
-        <span class="label">Balance matches</span>
-        <span class="amount">$5,621.22</span>
-        <span class="text-[12px] text-emerald-700">— all transactions accounted for, period is closeable</span>
+      <div class="bb-match-tick">✓</div>
+      <div>
+        <div class="bb-match-main">Balance matches <span class="bb-match-amount">$5,621.22</span></div>
+        <div class="text-[12px] text-emerald-700">All transactions accounted for · period is closeable</div>
       </div>
-      <span class="bb-expand" onclick="expandMatch()">Show math ▾</span>
+      <div class="bb-match-equation">
+        <span class="pill">Beginning $5,200.00</span><span class="op">+</span>
+        <span class="pill">Change +$421.22</span><span class="op">=</span>
+        <span class="pill">Computed $5,621.22</span><span class="op">=</span>
+        <span class="pill">Reported $5,621.22</span>
+      </div>
+      <button class="bb-expand-btn" onclick="expandMatch()">Show full math ▾</button>
     </div>
     <div id="bb-match-expanded" style="display:none">
-      <div class="bb-sep" style="margin:0 16px"></div>
-      <div class="bb-rows" style="padding-top:8px">
-        <div class="bb-row">
-          <span class="lbl">Beginning balance <span class="src">(QBO clearing register)</span></span>
-          <span class="num">$5,200.00</span>
+      <div class="bb-grid" style="background:#f0fdf4;border-top:1px solid #a7f3d0">
+        <div class="bb-cell">
+          <div class="bb-label">Beginning balance</div>
+          <div class="bb-num">$5,200.00</div>
+          <div class="bb-src">QBO clearing register</div>
         </div>
-        <div class="bb-row">
-          <span class="lbl">+ Balance change <span class="src">(Stripe · sum of mapped amounts)</span></span>
-          <span class="num">+$421.22</span>
+        <div class="bb-op">+</div>
+        <div class="bb-cell">
+          <div class="bb-label">Balance change</div>
+          <div class="bb-num">+$421.22</div>
+          <div class="bb-src">Stripe · sum of mapped amounts</div>
         </div>
-        <div class="bb-sep"></div>
-        <div class="bb-row">
-          <span class="lbl"><strong>= Computed ending balance</strong></span>
-          <span class="num"><strong>$5,621.22</strong></span>
+        <div class="bb-op">=</div>
+        <div class="bb-cell computed">
+          <div class="bb-label">Computed ending</div>
+          <div class="bb-num">$5,621.22</div>
+          <div class="bb-src">Beginning + Change</div>
         </div>
-        <div class="bb-row">
-          <span class="lbl">Reported ending balance <span class="src">(QBO clearing register)</span></span>
-          <span class="num">$5,621.22</span>
+        <div class="bb-vsep" style="background:#a7f3d0"></div>
+        <div class="bb-cell">
+          <div class="bb-label">Reported ending</div>
+          <div class="bb-num">$5,621.22</div>
+          <div class="bb-src">QBO clearing register</div>
         </div>
-        <div class="bb-row" style="margin-top:4px">
-          <span class="lbl" style="color:#065f46;font-weight:600">Delta: $0.00 · Balance matches</span>
-          <span></span>
+        <div class="bb-vsep" style="background:#a7f3d0"></div>
+        <div class="bb-cell" style="background:#dcfce7">
+          <div class="bb-label" style="color:#065f46">✓ Delta</div>
+          <div class="bb-num" style="color:#065f46">$0.00</div>
+          <div class="bb-src" style="color:#047857">Balance matches</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- NONE state (no beginning balance available — manual fallback, Iteration 2) -->
+  <!-- NONE state (no beginning balance, horizontal) -->
   <div id="bb-none" class="bb-section" style="display:none">
     <div class="bb-header">
       <span class="bb-title">Balance Summary · Mar 1 – 31, 2026</span>
-      <span class="text-[11px] text-gray-400">Iteration 2 surface — Xero / QBD / manual platforms</span>
+      <span class="bb-meta">Iteration 2 surface — Xero / QBD / manual platforms</span>
     </div>
-    <div class="bb-empty">
-      <div>
-        <div class="text-[13px] text-gray-700 font-medium mb-0.5">No beginning balance set for this period</div>
-        <div class="text-[12px] text-gray-500">Synder couldn't auto-pull the beginning balance from the accounting side. Enter it once and we'll carry it over to future periods.</div>
+    <div class="bb-none-strip">
+      <div class="cell copy-cell">
+        <div class="icon">–</div>
+        <div>
+          <div class="copy-main">No beginning balance set</div>
+          <div class="copy-sub">Synder couldn't auto-pull from accounting. Enter once — carries over.</div>
+        </div>
       </div>
-      <button class="btn btn-o">Enter beginning balance</button>
-    </div>
-    <div class="bb-rows" style="padding-top:0">
-      <div class="bb-row">
-        <span class="lbl">+ Balance change <span class="src">(Stripe · sum of mapped amounts)</span></span>
-        <span class="num">−$4,720.00</span>
+      <div class="vsep"></div>
+      <div class="cell">
+        <div class="change-label">+ Balance change</div>
+        <div class="change-num">−$4,720.00</div>
+        <div class="change-src">Stripe · sum of mapped amounts</div>
       </div>
-      <div class="bb-row" style="color:#9ca3af">
-        <span class="lbl">= Computed ending balance</span>
-        <span class="num">—</span>
+      <div class="vsep"></div>
+      <div class="cell">
+        <div class="change-label">Reported ending</div>
+        <div class="change-num">$58.78</div>
+        <div class="change-src">QBO clearing register</div>
       </div>
-      <div class="bb-row" style="color:#9ca3af">
-        <span class="lbl">Reported ending balance <span class="src">(QBO clearing register)</span></span>
-        <span class="num">$58.78</span>
+      <div class="cell" style="padding-right:18px">
+        <button class="btn btn-p">Enter beginning balance →</button>
       </div>
     </div>
   </div>
