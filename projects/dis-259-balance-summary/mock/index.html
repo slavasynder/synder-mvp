@@ -103,6 +103,64 @@
     .annot{position:fixed;bottom:16px;right:16px;background:#1f2937;color:#f9fafb;padding:10px 14px;border-radius:6px;font-size:12px;max-width:320px;box-shadow:0 10px 25px rgba(0,0,0,0.2);line-height:1.5;}
     .annot strong{color:#fef3c7;}
     .annot a{color:#93c5fd;text-decoration:underline;}
+    /* view segment toggle */
+    .view-seg{display:inline-flex;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;font-size:13px;}
+    .view-seg button{padding:6px 14px;background:white;color:#475569;cursor:pointer;border:none;font-weight:500;display:flex;align-items:center;gap:6px;}
+    .view-seg button:hover{background:#f8fafc;}
+    .view-seg button.active{background:#0f172a;color:white;}
+    .view-seg button+button{border-left:1px solid #cbd5e1;}
+    .view-seg button.active+button{border-left-color:#0f172a;}
+    .view-seg .lock{font-size:11px;opacity:.7;}
+    /* report teaser inside balance block */
+    .bb-teaser{padding:10px 16px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;}
+    .balance-block.state-match .bb-teaser{background:#dcfce7;border-top:1px solid #a7f3d0;}
+    .bb-teaser .ic{width:22px;height:22px;border-radius:50%;background:#e2e8f0;color:#475569;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+    .balance-block.state-match .bb-teaser .ic{background:#10b981;color:white;}
+    .bb-teaser .cta-btn{padding:5px 12px;font-size:12px;font-weight:600;background:white;color:#0f172a;border:1px solid #cbd5e1;border-radius:4px;cursor:pointer;white-space:nowrap;}
+    .balance-block.state-match .bb-teaser .cta-btn{background:#10b981;color:white;border-color:#10b981;}
+    .balance-block.state-match .bb-teaser .cta-btn:hover{background:#059669;}
+    /* report view */
+    .report-page{max-width:980px;margin:24px auto 60px;background:white;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 4px 16px rgba(15,23,42,.04);overflow:hidden;}
+    .report-cover{padding:28px 36px;background:linear-gradient(180deg,#0f172a 0%,#1e293b 100%);color:white;display:flex;align-items:flex-start;justify-content:space-between;gap:32px;}
+    .report-cover .brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:#cbd5e1;margin-bottom:14px;}
+    .report-cover .brand .logo{width:24px;height:24px;border-radius:5px;background:#2563eb;display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:14px;}
+    .report-cover h2{font-size:22px;font-weight:700;letter-spacing:-.01em;}
+    .report-cover .sub{font-size:13px;color:#cbd5e1;margin-top:4px;}
+    .report-cover .meta{font-size:11px;color:#94a3b8;margin-top:18px;line-height:1.6;font-variant-numeric:tabular-nums;}
+    .report-cover .status{display:flex;align-items:center;gap:10px;background:#065f46;padding:8px 14px;border-radius:6px;font-size:13px;font-weight:600;color:#d1fae5;}
+    .report-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px;}
+    .report-actions .dl{padding:8px 16px;background:white;color:#0f172a;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer;border:none;display:flex;align-items:center;gap:6px;}
+    .report-actions .dl.secondary{background:transparent;color:#cbd5e1;border:1px solid #475569;}
+    .report-actions .dl.secondary:hover{background:#1e293b;}
+    .report-body{padding:28px 36px;}
+    .report-sec{margin-bottom:24px;}
+    .report-sec:last-child{margin-bottom:0;}
+    .report-sec h3{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;}
+    .report-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#334155;font-variant-numeric:tabular-nums;}
+    .report-row.total{font-weight:700;color:#0f172a;border-top:1px solid #cbd5e1;margin-top:6px;padding-top:10px;}
+    .report-row .src{font-size:11px;color:#94a3b8;font-weight:400;display:block;}
+    .report-tbl{width:100%;border-collapse:collapse;font-size:13px;}
+    .report-tbl th{text-align:left;font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.04em;padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-weight:600;}
+    .report-tbl td{padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#334155;font-variant-numeric:tabular-nums;}
+    .report-tbl tr:last-child td{border-bottom:none;}
+    .report-tbl tr.total td{background:#f8fafc;font-weight:700;color:#0f172a;border-top:1px solid #cbd5e1;}
+    .report-note{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px 16px;font-size:13px;color:#334155;line-height:1.6;}
+    .report-sign{display:flex;justify-content:space-between;padding-top:18px;border-top:1px solid #e2e8f0;margin-top:24px;font-size:12px;color:#64748b;}
+    .report-sign .field{flex:1;}
+    .report-sign .field .label{font-size:10.5px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+    .report-sign .field .val{font-weight:600;color:#1e293b;border-bottom:1px solid #cbd5e1;padding:4px 0;width:90%;font-size:14px;}
+    /* report locked state */
+    .report-locked{padding:60px 36px;background:white;text-align:center;}
+    .report-locked .icon{width:60px;height:60px;border-radius:50%;background:#f1f5f9;color:#64748b;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
+    .report-locked h2{font-size:18px;font-weight:700;color:#0f172a;margin-bottom:8px;}
+    .report-locked .desc{font-size:13px;color:#64748b;max-width:480px;margin:0 auto 24px;line-height:1.6;}
+    .report-checklist{max-width:480px;margin:0 auto;text-align:left;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px 18px;}
+    .report-check-item{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;}
+    .report-check-item .marker{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+    .report-check-item.ok .marker{background:#d1fae5;color:#065f46;}
+    .report-check-item.todo .marker{background:#fee2e2;color:#991b1b;}
+    .report-check-item .copy{flex:1;color:#334155;}
+    .report-check-item.todo .copy strong{color:#991b1b;}
   </style>
 </head>
 <body>
@@ -111,7 +169,11 @@
 <div class="bg-white border-b border-gray-200 px-6 py-2 flex items-center gap-2.5">
   <span class="text-gray-400 cursor-pointer hover:text-gray-700 text-lg">×</span>
   <span class="font-medium text-gray-800">Reconciliation results</span>
-  <span class="ml-3 chip c-blue" style="font-size:10px">DIS-259 mock · Balance Summary above tabs</span>
+  <span class="ml-3 chip c-blue" style="font-size:10px">DIS-259 mock</span>
+  <div class="ml-4 view-seg">
+    <button id="vw-workspace" class="active" onclick="setView('workspace')">⚙ Workspace</button>
+    <button id="vw-report"             onclick="setView('report')">📄 Final report <span id="vw-report-lock" class="lock">🔒</span></button>
+  </div>
   <div class="ml-auto flex items-center gap-4">
     <div class="flex items-center gap-2">
       <span class="text-xs text-gray-500">State:</span>
@@ -130,6 +192,9 @@
     </div>
   </div>
 </div>
+
+<!-- =================== WORKSPACE VIEW =================== -->
+<div id="view-workspace">
 
 <!-- Header -->
 <div class="bg-white border-b border-gray-200 px-6 pt-3">
@@ -210,6 +275,17 @@
         </div>
       </div>
     </div>
+    <!-- Teaser: locks the report behind completion -->
+    <div class="bb-teaser">
+      <div class="flex items-center gap-3">
+        <span class="ic">🔒</span>
+        <div>
+          <div class="text-[13px] font-semibold text-slate-700">Resolve all transactions to unlock your auditor report</div>
+          <div class="text-[12px] text-slate-500">3 not-matched · 0 discrepancy · Balance not yet tied</div>
+        </div>
+      </div>
+      <button class="cta-btn" onclick="setView('report')">Preview report ↗</button>
+    </div>
   </div>
 
   <!-- MATCH state (full math, always visible) -->
@@ -254,6 +330,17 @@
         <div class="bb-num" style="color:#065f46">$0.00</div>
         <div class="bb-src" style="color:#047857">Balance matches</div>
       </div>
+    </div>
+    <!-- Teaser: report unlocked -->
+    <div class="bb-teaser">
+      <div class="flex items-center gap-3">
+        <span class="ic">🎉</span>
+        <div>
+          <div class="text-[13px] font-semibold text-emerald-900">Reconciliation complete · final report ready</div>
+          <div class="text-[12px] text-emerald-700">60 matched · 0 discrepancy · 0 not-matched · balance verified</div>
+        </div>
+      </div>
+      <button class="cta-btn" onclick="setView('report')">View final report ↗</button>
     </div>
   </div>
 
@@ -392,21 +479,118 @@
   </div>
 </div>
 
+</div><!-- /view-workspace -->
+
+<!-- =================== FINAL REPORT VIEW =================== -->
+<div id="view-report" style="display:none">
+
+  <!-- Locked state — reconciliation incomplete -->
+  <div id="report-locked" class="report-page" style="display:none">
+    <div class="report-locked">
+      <div class="icon">🔒</div>
+      <h2>Final report not available yet</h2>
+      <p class="desc">Resolve all transactions in <strong>Not matched</strong> and <strong>Discrepancy</strong> to unlock your auditor-ready reconciliation report. The report consolidates the balance check, all matched transactions, and any notes — ready to hand off to your auditor.</p>
+      <div class="report-checklist">
+        <div class="report-check-item ok"><span class="marker">✓</span><span class="copy">Balance verified — Computed ending matches Reported ending</span></div>
+        <div id="rc-discrepancy" class="report-check-item ok"><span class="marker">✓</span><span class="copy">0 discrepancies</span></div>
+        <div id="rc-notmatched" class="report-check-item todo"><span class="marker">✗</span><span class="copy"><strong>3 transactions not matched</strong> — Match them or Ignore to continue</span></div>
+        <div class="report-check-item ok"><span class="marker">i</span><span class="copy" style="color:#64748b">Ignored items are fine — they appear in the report with reason</span></div>
+      </div>
+      <div style="margin-top:20px"><button class="btn btn-o" onclick="setView('workspace')">← Back to workspace</button></div>
+    </div>
+  </div>
+
+  <!-- Unlocked report — reconciliation complete -->
+  <div id="report-unlocked" class="report-page" style="display:block">
+    <div class="report-cover">
+      <div>
+        <div class="brand"><span class="logo">S</span> Synder · Reconciliation Report</div>
+        <h2>Stripe Stripe Test (sandbox) <span style="color:#94a3b8">(required for Synder)</span></h2>
+        <div class="sub">Mar 1 – 31, 2026 · <span class="acct-type-label">Asset · Clearing</span> · USD</div>
+        <div class="status" style="margin-top:18px;display:inline-flex">✓ Reconciled — balance and transactions verified</div>
+        <div class="meta">
+          Generated 2026-06-12 15:19 UTC · Reconciliation ID: <span style="color:#cbd5e1;font-weight:600">recon_3TgQ8m12bV</span><br/>
+          Source: Synder TxnRecon · Workspace: Synder Test Org
+        </div>
+      </div>
+      <div class="report-actions">
+        <button class="dl">⤓ Download PDF</button>
+        <button class="dl secondary">⤓ CSV</button>
+        <button class="dl secondary">✉ Send to auditor</button>
+      </div>
+    </div>
+    <div class="report-body">
+
+      <div class="report-sec">
+        <h3>Balance Summary</h3>
+        <div class="report-row">Beginning balance <span class="src">QBO clearing register · Mar 1, 2026</span><span>$5,200.00</span></div>
+        <div class="report-row">+ Debits <span class="src">Stripe · 38 debit txns</span><span>$58,232.18</span></div>
+        <div class="report-row">− Credits <span class="src">Stripe · 22 credit txns</span><span>$57,810.96</span></div>
+        <div class="report-row total">= Computed ending balance <span></span><span>$5,621.22</span></div>
+        <div class="report-row">Reported ending balance <span class="src">QBO clearing register · Mar 31, 2026</span><span>$5,621.22</span></div>
+        <div class="report-row total" style="color:#065f46">Delta <span></span><span>$0.00 — matches</span></div>
+      </div>
+
+      <div class="report-sec">
+        <h3>Transactions Summary</h3>
+        <table class="report-tbl">
+          <thead>
+            <tr><th>Category</th><th class="text-right" style="text-align:right">Count</th><th class="text-right" style="text-align:right">Total amount</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Auto-matched (by ID + amount)</td><td style="text-align:right">60</td><td style="text-align:right">$5,621.22</td><td style="color:#64748b">System reconciled</td></tr>
+            <tr><td>Manually matched</td><td style="text-align:right">0</td><td style="text-align:right">—</td><td style="color:#64748b">No manual interventions</td></tr>
+            <tr><td>Ignored (with reason)</td><td style="text-align:right">0</td><td style="text-align:right">—</td><td style="color:#64748b">—</td></tr>
+            <tr><td>Discrepancies</td><td style="text-align:right">0</td><td style="text-align:right">—</td><td style="color:#64748b">All amounts agree</td></tr>
+            <tr><td>Not matched</td><td style="text-align:right">0</td><td style="text-align:right">—</td><td style="color:#64748b">No unresolved items</td></tr>
+            <tr class="total"><td>Total reviewed</td><td style="text-align:right">60</td><td style="text-align:right">$5,621.22</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="report-sec">
+        <h3>Auditor Notes</h3>
+        <div class="report-note">
+          All transactions for the period matched automatically by transaction ID and amount. No manual matches, no ignored items, and no discrepancies. The Computed ending balance derived from Stripe activity reconciles to the Reported ending balance from QuickBooks Online clearing register without exception.
+        </div>
+      </div>
+
+      <div class="report-sec">
+        <h3>Source Files (attached to PDF)</h3>
+        <div class="report-row"><span>📎 Stripe · Balance change from activity · Mar 1–31, 2026 · 60 rows</span><span style="color:#64748b">stripe_balance_change_2026-03.csv</span></div>
+        <div class="report-row"><span>📎 QBO · GL Account register · Stripe clearing · Mar 1–31, 2026</span><span style="color:#64748b">qbo_register_stripe_clearing_2026-03.csv</span></div>
+        <div class="report-row"><span>📎 Synder · Reconciliation results · all tabs</span><span style="color:#64748b">synder_recon_recon_3TgQ8m12bV.csv</span></div>
+      </div>
+
+      <div class="report-sign">
+        <div class="field"><div class="label">Prepared by</div><div class="val">Synder · TxnRecon</div></div>
+        <div class="field"><div class="label">Reviewed by</div><div class="val">_________________________</div></div>
+        <div class="field"><div class="label">Date</div><div class="val">2026-06-12</div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /view-report -->
+
 <div class="annot">
   <strong>What's new vs. live UI:</strong><br/>
-  1. Balance pill in the header (3 states)<br/>
-  2. Balance block above the tabs<br/>
-  3. <strong>Debits / Credits</strong> breakdown — operators flip per account type<br/>
-  4. Delta line links into Not matched / Discrepancy<br/>
-  <span class="text-gray-400">Toggle <em>Account type</em> top-right to see the formula flip: Asset (Beg + Deb − Cred) vs. Liability (Beg − Deb + Cred).</span>
+  1. Balance pill + Debits/Credits block above the tabs<br/>
+  2. <strong>Workspace / Final report</strong> view toggle top-left<br/>
+  3. Report is <strong>locked until reconciliation is complete</strong> — conversion lever toward closing the period<br/>
+  <span class="text-gray-400">Switch state to ✓ Matches → final report unlocks · auditor-ready deliverable.</span>
 </div>
 
 <script>
+let currentState='off';
+
 function setState(state){
+  currentState=state;
   // Toggle buttons
   ['off','match','none'].forEach(s=>{
     document.getElementById('st-'+s).classList.toggle('active', s===state);
   });
+  // Update report view lock state
+  syncReportLock();
   // Block
   const block=document.getElementById('balance-block');
   block.classList.remove('state-off','state-match','state-none');
@@ -444,6 +628,24 @@ function switchTab(name){
   document.getElementById('tab-'+name).style.display='block';
 }
 
+/* View segment toggle — Workspace vs Final Report */
+function setView(view){
+  ['workspace','report'].forEach(v=>{
+    document.getElementById('vw-'+v).classList.toggle('active', v===view);
+    document.getElementById('view-'+v).style.display = v===view ? 'block' : 'none';
+  });
+  if(view==='report') syncReportLock();
+}
+
+/* Sync the lock state of the report and the workspace lock icon */
+function syncReportLock(){
+  const unlocked = currentState==='match';
+  document.getElementById('vw-report-lock').textContent = unlocked ? '✓' : '🔒';
+  document.getElementById('vw-report-lock').style.color = unlocked ? '#10b981' : '';
+  document.getElementById('report-locked').style.display   = unlocked ? 'none' : 'block';
+  document.getElementById('report-unlocked').style.display = unlocked ? 'block' : 'none';
+}
+
 /* Account-type toggle — flips operators per Option B accounting convention.
    Asset / Expense:        Beginning + Debits − Credits = Computed
    Liability / Equity / Revenue:  Beginning − Debits + Credits = Computed
@@ -464,6 +666,9 @@ function setAcctType(type){
     el.textContent = type==='asset' ? 'Asset · Clearing' : 'Liability · Deferred revenue';
   });
 }
+
+/* Initial state */
+syncReportLock();
 </script>
 </body>
 </html>
