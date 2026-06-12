@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DIS-358 — Free 1yr historical data for yearly plans (Mock)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; }
+  .check { color: #2563eb; }
+  .x-mark { color: #9ca3af; }
+  /* Variant transition smoothing */
+  .variant-el { transition: opacity 180ms ease, transform 180ms ease; }
+  .hidden-soft { opacity: 0; pointer-events: none; transform: translateY(-4px); height: 0; overflow: hidden; }
+  .modal-backdrop { background: rgba(15, 23, 42, 0.5); }
+</style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+<!-- Top variant switcher (mock control bar — NOT part of UI) -->
+<div class="bg-slate-900 text-white text-sm">
+  <div class="max-w-6xl mx-auto px-6 py-3 flex flex-wrap items-center gap-4">
+    <a href="../" class="text-slate-300 hover:text-white">← Back</a>
+    <span class="text-slate-400">DIS-358 mock — promote free 1yr historical data on yearly plans</span>
+    <div class="ml-auto flex flex-wrap items-center gap-2">
+      <span class="text-slate-400 mr-1">Variant:</span>
+      <button data-v="current" class="variant-btn px-3 py-1 rounded bg-slate-700 hover:bg-slate-600">Current</button>
+      <button data-v="A" class="variant-btn px-3 py-1 rounded bg-slate-700 hover:bg-slate-600">A — Toggle badge</button>
+      <button data-v="B" class="variant-btn px-3 py-1 rounded bg-slate-700 hover:bg-slate-600">B — Card callout</button>
+      <button data-v="C" class="variant-btn px-3 py-1 rounded bg-slate-700 hover:bg-slate-600">C — Monthly modal</button>
+      <button data-v="ALL" class="variant-btn px-3 py-1 rounded bg-blue-600 hover:bg-blue-500">All combined</button>
+    </div>
+  </div>
+  <div id="variant-note" class="max-w-6xl mx-auto px-6 pb-3 text-xs text-slate-400"></div>
+</div>
+
+<!-- ====== Plan page ====== -->
+<main class="max-w-6xl mx-auto px-6 py-12">
+  <h1 class="text-center text-3xl font-semibold text-slate-900">Choose your plan</h1>
+
+  <!-- Billing toggle -->
+  <div class="mt-8 flex flex-col items-center">
+    <div class="relative inline-flex items-center bg-slate-100 rounded-full p-1">
+      <button id="toggle-monthly" class="toggle-btn px-5 py-2 rounded-full text-sm font-medium text-slate-500">Pay monthly</button>
+      <button id="toggle-yearly" class="toggle-btn px-5 py-2 rounded-full text-sm font-medium text-white bg-blue-600 relative">
+        Pay yearly
+        <span class="absolute -top-3 -right-3 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">20% OFF</span>
+      </button>
+    </div>
+
+    <!-- Variant A badge (under the toggle) -->
+    <div id="variant-A-badge" class="variant-el hidden-soft mt-4">
+      <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Includes 1 year of historical data — free on Basic & Essential
+      </div>
+    </div>
+  </div>
+
+  <!-- Plan cards -->
+  <section class="mt-10 grid grid-cols-1 md:grid-cols-4 gap-5">
+
+    <!-- ====== BASIC ====== -->
+    <article class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
+      <h2 class="text-2xl font-semibold text-slate-900">Basic</h2>
+      <p class="text-slate-500 text-sm mt-1">Basic sync tools included.</p>
+
+      <div class="mt-10">
+        <div class="flex items-baseline justify-center">
+          <span class="text-5xl font-bold text-slate-900" data-price="basic">$52</span>
+          <span class="text-slate-500 ml-1">month</span>
+        </div>
+        <div class="text-center text-xs text-slate-500 mt-2" data-billing="basic">Billed yearly</div>
+      </div>
+
+      <div class="text-center text-sm text-slate-600 mt-4">up to 500 sales transactions/mo</div>
+
+      <!-- Variant B callout (inside Basic card) -->
+      <div data-callout="basic" class="variant-el hidden-soft mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 mt-0.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          <div>
+            <div class="text-sm font-semibold text-emerald-800">1 year of historical data — FREE</div>
+            <div class="text-xs text-emerald-700 mt-0.5">Included with yearly billing. <span class="line-through opacity-70">$30 per 500 txn</span></div>
+          </div>
+        </div>
+      </div>
+
+      <button data-sub="basic" class="sub-btn mt-5 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-lg transition">Subscribe</button>
+
+      <div class="mt-6">
+        <div class="text-sm font-semibold text-slate-900">Key features</div>
+        <ul class="mt-3 space-y-2 text-sm text-slate-700">
+          <li class="flex gap-2"><span class="check">✓</span>10 custom groups</li>
+          <li class="flex gap-2"><span class="check">✓</span>2 integration slots</li>
+          <!-- History line — swaps based on billing toggle -->
+          <li class="flex gap-2" data-history="basic">
+            <span class="check">✓</span><span data-history-text="basic">Paid unlimited history</span>
+          </li>
+          <li class="flex gap-2"><span class="check">✓</span>Multicurrency</li>
+          <li class="flex gap-2"><span class="check">✓</span>Items tracking</li>
+          <li class="flex gap-2"><span class="check">✓</span>Balance reconciliation</li>
+          <li class="flex gap-2 text-slate-400"><span class="x-mark">✕</span>Live chat support</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- ====== ESSENTIAL ====== -->
+    <article class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
+      <h2 class="text-2xl font-semibold text-slate-900">Essential</h2>
+      <p class="text-slate-500 text-sm mt-1">Ideal for expanding businesses.</p>
+
+      <div class="mt-10">
+        <div class="flex items-baseline justify-center">
+          <span class="text-sm text-slate-500 mr-1">from</span>
+          <span class="text-5xl font-bold text-slate-900" data-price="essential">$92</span>
+          <span class="text-slate-500 ml-1">month</span>
+        </div>
+        <div class="text-center text-xs text-slate-500 mt-2" data-billing="essential">Billed yearly</div>
+      </div>
+
+      <div class="mt-4">
+        <div class="text-xs text-slate-600 mb-1">Sales transactions a month</div>
+        <button class="w-full text-left text-sm bg-white border border-slate-300 rounded-md px-3 py-2 flex items-center justify-between">
+          <span>up to 1,000 transactions/mo</span>
+          <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+      </div>
+
+      <div data-callout="essential" class="variant-el hidden-soft mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 mt-0.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          <div>
+            <div class="text-sm font-semibold text-emerald-800">1 year of historical data — FREE</div>
+            <div class="text-xs text-emerald-700 mt-0.5">Included with yearly billing. <span class="line-through opacity-70">$30 per 500 txn</span></div>
+          </div>
+        </div>
+      </div>
+
+      <button data-sub="essential" class="sub-btn mt-5 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-lg transition">Subscribe</button>
+
+      <div class="mt-6">
+        <div class="text-sm font-semibold text-slate-900">Key features</div>
+        <div class="text-xs text-slate-500 mt-1">Basic plan features plus</div>
+        <ul class="mt-3 space-y-2 text-sm text-slate-700">
+          <li class="flex gap-2"><span class="check">✓</span>20 custom groups</li>
+          <li class="flex gap-2"><span class="check">✓</span>Unlimited integration slots</li>
+          <!-- History line — only shown if yearly (added by JS) OR replaces basic's paid line -->
+          <li class="flex gap-2" data-history="essential">
+            <span class="check">✓</span><span data-history-text="essential">Paid unlimited history</span>
+          </li>
+          <li class="flex gap-2"><span class="check">✓</span>Open invoices tracking</li>
+          <li class="flex gap-2"><span class="check">✓</span>COGS tracking</li>
+          <li class="flex gap-2"><span class="check">✓</span>QuickBooks classes and Xero tracking categories support</li>
+          <li class="flex gap-2 text-slate-400"><span class="x-mark">✕</span>Live chat support</li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- ====== PRO (most popular — blue) ====== -->
+    <article class="bg-blue-600 text-white rounded-2xl shadow-md p-6 flex flex-col relative">
+      <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide">Most Popular</span>
+      <h2 class="text-2xl font-semibold">Pro</h2>
+      <p class="text-blue-100 text-sm mt-1">Perfect fit for thriving multi-channel businesses.</p>
+
+      <div class="mt-4 flex items-center justify-center gap-3 text-sm">
+        <span class="font-semibold">Standard</span>
+        <div class="w-10 h-5 bg-blue-800 rounded-full flex items-center px-0.5">
+          <div class="w-4 h-4 bg-white rounded-full"></div>
+        </div>
+        <span class="text-blue-200">Max</span>
+      </div>
+
+      <div class="mt-4">
+        <div class="flex items-baseline justify-center">
+          <span class="text-sm text-blue-200 mr-1">from</span>
+          <span class="text-5xl font-bold" data-price="pro">$220</span>
+          <span class="text-blue-200 ml-1">month</span>
+        </div>
+        <div class="text-center text-xs text-blue-200 mt-2" data-billing="pro">Billed yearly</div>
+      </div>
+
+      <div class="mt-4">
+        <div class="text-xs text-blue-100 mb-1">Sales transactions a month</div>
+        <button class="w-full text-left text-sm bg-blue-700 border border-blue-500 rounded-md px-3 py-2 flex items-center justify-between text-white">
+          <span>up to 10,000 transactions/mo</span>
+          <svg class="w-4 h-4 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+      </div>
+
+      <button class="mt-5 w-full bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold py-2.5 rounded-lg transition">Subscribe</button>
+
+      <div class="mt-6">
+        <div class="text-sm font-semibold">Key features</div>
+        <div class="text-xs text-blue-100 mt-1">Essential plan features plus</div>
+        <ul class="mt-3 space-y-2 text-sm">
+          <li class="flex gap-2"><span>✓</span><span class="underline decoration-blue-300 underline-offset-2">30 custom groups</span></li>
+          <li class="flex gap-2"><span>✓</span><span class="underline decoration-blue-300 underline-offset-2">3 months of history for free, then paid unlimited history</span></li>
+          <li class="flex gap-2"><span>✓</span><span class="underline decoration-blue-300 underline-offset-2">Automated product verification</span></li>
+          <li class="flex gap-2"><span>✓</span><span class="underline decoration-blue-300 underline-offset-2">QuickBooks locations and Sage dimensions support</span></li>
+          <li class="flex gap-2"><span>✓</span><span class="underline decoration-blue-300 underline-offset-2">2 premium integrations</span></li>
+          <li class="flex gap-2"><span>✓</span><span class="underline decoration-blue-300 underline-offset-2">Discount on other Synder products</span></li>
+          <li class="flex gap-2"><span>✓</span><span class="underline decoration-blue-300 underline-offset-2">Zoom onboarding services</span></li>
+          <li class="flex gap-2"><span>✓</span><span class="underline decoration-blue-300 underline-offset-2">1 custom data modification</span></li>
+          <li class="flex gap-2"><span>✓</span><span class="underline decoration-blue-300 underline-offset-2">Synder Expert help on request</span></li>
+          <li class="flex gap-2"><span>✓</span><span class="underline decoration-blue-300 underline-offset-2">RevRec with up to 1k subscriptions</span></li>
+        </ul>
+      </div>
+    </article>
+
+    <!-- ====== PREMIUM ====== -->
+    <article class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col">
+      <h2 class="text-2xl font-semibold text-slate-900">Premium</h2>
+      <p class="text-slate-500 text-sm mt-1">Advanced features for complex needs.</p>
+
+      <div class="mt-10 flex justify-center">
+        <svg class="w-16 h-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      </div>
+
+      <div class="text-center text-sm text-slate-600 mt-4">Custom pricing for your company</div>
+
+      <button class="mt-5 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 rounded-lg transition">Talk to sales</button>
+
+      <div class="mt-6">
+        <div class="text-sm font-semibold text-slate-900">Key features</div>
+        <div class="text-xs text-slate-500 mt-1">Pro plan features plus</div>
+        <ul class="mt-3 space-y-2 text-sm text-slate-700">
+          <li class="flex gap-2"><span class="check">✓</span>Unlimited custom groups</li>
+          <li class="flex gap-2"><span class="check">✓</span>Free unlimited history</li>
+          <li class="flex gap-2"><span class="check">✓</span>RevRec with up to 5k subscriptions</li>
+          <li class="flex gap-2"><span class="check">✓</span>Paid custom development</li>
+          <li class="flex gap-2"><span class="check">✓</span>Unlimited Zoom onboarding and ongoing support</li>
+        </ul>
+      </div>
+    </article>
+
+  </section>
+
+  <!-- Bottom historical banner — copy adapts -->
+  <section id="bottom-banner" class="mt-10 bg-blue-50 rounded-2xl py-8 px-6 text-center">
+    <h3 id="banner-title" class="text-blue-700 font-semibold text-lg">Have historical transactions? Get custom pricing!</h3>
+    <p id="banner-body" class="text-sm text-slate-600 mt-2 max-w-2xl mx-auto">
+      Synchronize each additional 500 transactions for $30. The more you purchase, the less you pay per synced transaction. Contact our team to find out more.
+    </p>
+    <button class="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-6 py-2 rounded-lg">Contact us</button>
+  </section>
+
+</main>
+
+<!-- ====== Variant C modal ====== -->
+<div id="modal-c" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+  <div class="bg-white rounded-2xl max-w-md w-[92%] p-6 shadow-2xl">
+    <div class="flex items-start gap-3">
+      <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div class="flex-1">
+        <h3 class="text-lg font-semibold text-slate-900">Switch to yearly &amp; get a free year of historical data</h3>
+        <p class="text-sm text-slate-600 mt-2">
+          On the <span id="modal-plan-name" class="font-semibold">Basic</span> plan, switching to yearly billing gets you:
+        </p>
+        <ul class="mt-3 space-y-2 text-sm text-slate-700">
+          <li class="flex gap-2"><span class="text-emerald-600">✓</span>1 year of historical data — free <span class="text-slate-400 line-through">$30 / 500 txn</span></li>
+          <li class="flex gap-2"><span class="text-emerald-600">✓</span>20% off your monthly price</li>
+          <li class="flex gap-2"><span class="text-emerald-600">✓</span>One invoice. No monthly renewal.</li>
+        </ul>
+        <div class="mt-5 grid grid-cols-2 gap-3">
+          <button id="modal-stay" class="text-sm font-medium text-slate-600 hover:text-slate-900 border border-slate-300 rounded-lg py-2">Stay on monthly</button>
+          <button id="modal-switch" class="text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg py-2">Switch &amp; subscribe</button>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-3 text-center">Cancel anytime within the first 14 days for a full refund.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="text-center text-xs text-slate-400 py-8">
+  Mock — DIS-358 promo concepts • Tyrion 🦁
+</footer>
+
+<script>
+/* ============ State ============ */
+let billing = 'yearly';   // 'monthly' | 'yearly'
+let variant = 'current';  // 'current' | 'A' | 'B' | 'C' | 'ALL'
+
+const PRICES = {
+  basic:     { yearly: 52,  monthly: 65 },
+  essential: { yearly: 92,  monthly: 115 },
+  pro:       { yearly: 220, monthly: 275 }
+};
+
+const NOTES = {
+  current: 'Reproduction of current in-app plan page. No promo. Used as visual baseline.',
+  A: 'Variant A — Toggle badge: a small "Includes 1yr free history" tag appears under the yearly toggle. Cheapest surface; catches everyone who looks at the toggle.',
+  B: 'Variant B — Card callout: a green block inside Basic & Essential cards announces the offer. Strong + plan-specific; only shows on yearly.',
+  C: 'Variant C — Monthly modal: when a user clicks Subscribe on Basic/Essential while on monthly, a modal interrupts and pitches the switch. Targets only the wavering ones.',
+  ALL: 'A + B + C combined — for stakeholder demo. In production we would pick the surface(s) we want to A/B.'
+};
+
+/* ============ Renderers ============ */
+function setBilling(next) {
+  billing = next;
+
+  // toggle button styling
+  const monthly = document.getElementById('toggle-monthly');
+  const yearly  = document.getElementById('toggle-yearly');
+  if (billing === 'yearly') {
+    yearly.classList.add('bg-blue-600','text-white');
+    yearly.classList.remove('text-slate-500');
+    monthly.classList.remove('bg-blue-600','text-white');
+    monthly.classList.add('text-slate-500');
+  } else {
+    monthly.classList.add('bg-blue-600','text-white');
+    monthly.classList.remove('text-slate-500');
+    yearly.classList.remove('bg-blue-600','text-white');
+    yearly.classList.add('text-slate-500');
+  }
+
+  // prices
+  document.querySelector('[data-price="basic"]').textContent     = '$' + PRICES.basic[billing];
+  document.querySelector('[data-price="essential"]').textContent = '$' + PRICES.essential[billing];
+  document.querySelector('[data-price="pro"]').textContent       = '$' + PRICES.pro[billing];
+
+  // billing labels
+  const label = billing === 'yearly' ? 'Billed yearly' : 'Billed monthly';
+  document.querySelectorAll('[data-billing]').forEach(el => el.textContent = label);
+
+  // history line behavior for Basic & Essential
+  const eligible = (billing === 'yearly');
+  ['basic','essential'].forEach(plan => {
+    const text = document.querySelector(`[data-history-text="${plan}"]`);
+    if (!text) return;
+    if (eligible) {
+      text.innerHTML = '<span class="text-emerald-700 font-semibold">1 year of historical data — free</span>';
+    } else {
+      text.textContent = 'Paid unlimited history';
+    }
+  });
+
+  // bottom banner copy
+  if (eligible) {
+    document.getElementById('banner-title').textContent = 'Basic & Essential yearly subs get 1 year of history — free';
+    document.getElementById('banner-body').textContent  = 'Need more than a year? Additional history is $30 per 500 transactions. The more you sync, the less per transaction.';
+  } else {
+    document.getElementById('banner-title').textContent = 'Have historical transactions? Get custom pricing!';
+    document.getElementById('banner-body').textContent  = 'Synchronize each additional 500 transactions for $30. The more you purchase, the less you pay per synced transaction. Contact our team to find out more.';
+  }
+
+  applyVariant();
+}
+
+function applyVariant() {
+  document.getElementById('variant-note').textContent = NOTES[variant];
+
+  // highlight active variant button
+  document.querySelectorAll('.variant-btn').forEach(b => {
+    if (b.dataset.v === variant) {
+      b.classList.remove('bg-slate-700');
+      b.classList.add('bg-blue-600');
+    } else {
+      b.classList.add('bg-slate-700');
+      b.classList.remove('bg-blue-600');
+    }
+  });
+
+  const showA = (variant === 'A' || variant === 'ALL') && billing === 'yearly';
+  const showB = (variant === 'B' || variant === 'ALL') && billing === 'yearly';
+  // C is conditional — fires on subscribe click while on monthly
+
+  document.getElementById('variant-A-badge').classList.toggle('hidden-soft', !showA);
+
+  document.querySelectorAll('[data-callout]').forEach(el => {
+    el.classList.toggle('hidden-soft', !showB);
+  });
+}
+
+/* ============ Wire up ============ */
+document.getElementById('toggle-monthly').addEventListener('click', () => setBilling('monthly'));
+document.getElementById('toggle-yearly').addEventListener('click',  () => setBilling('yearly'));
+
+document.querySelectorAll('.variant-btn').forEach(btn => {
+  btn.addEventListener('click', () => { variant = btn.dataset.v; applyVariant(); });
+});
+
+document.querySelectorAll('[data-sub]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const plan = btn.dataset.sub;
+    const useModal = (variant === 'C' || variant === 'ALL');
+    if (useModal && billing === 'monthly' && (plan === 'basic' || plan === 'essential')) {
+      document.getElementById('modal-plan-name').textContent = plan === 'basic' ? 'Basic' : 'Essential';
+      const m = document.getElementById('modal-c');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    } else {
+      // No-op mock — would normally route to checkout
+      btn.textContent = 'Subscribed ✓';
+      btn.disabled = true;
+      btn.classList.remove('hover:bg-blue-700');
+      setTimeout(() => { btn.textContent = 'Subscribe'; btn.disabled = false; btn.classList.add('hover:bg-blue-700'); }, 1500);
+    }
+  });
+});
+
+document.getElementById('modal-stay').addEventListener('click', () => {
+  const m = document.getElementById('modal-c'); m.classList.add('hidden'); m.classList.remove('flex');
+});
+document.getElementById('modal-switch').addEventListener('click', () => {
+  const m = document.getElementById('modal-c'); m.classList.add('hidden'); m.classList.remove('flex');
+  setBilling('yearly');
+});
+
+/* Init */
+setBilling('yearly');
+applyVariant();
+</script>
+</body>
+</html>
