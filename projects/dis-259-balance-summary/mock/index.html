@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Reconciliation results — DIS-259 Balance Summary</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body{font-family:'Inter',system-ui,sans-serif;color:#1f2937;background:#f3f4f6;font-size:13px;}
+    .chip{display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;line-height:1.4;}
+    .c-green{background:#d1fae5;color:#065f46;}
+    .c-amber{background:#fef3c7;color:#92400e;}
+    .c-red{background:#fee2e2;color:#991b1b;}
+    .c-blue{background:#dbeafe;color:#1e40af;}
+    .c-gray{background:#e5e7eb;color:#4b5563;}
+    /* tabs */
+    .tab-btn{cursor:pointer;padding:10px 0;font-size:13px;font-weight:500;border-bottom:2px solid transparent;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+    .tab-active{color:#2563eb;border-bottom-color:#2563eb;}
+    .tab-inactive{color:#6b7280;}
+    .tab-inactive:hover{color:#374151;}
+    .tab-badge{font-size:12px;font-weight:600;padding:1px 7px;border-radius:10px;}
+    .tab-active .tab-badge{background:#dbeafe;color:#1d4ed8;}
+    .tab-inactive .tab-badge{background:#f3f4f6;color:#6b7280;}
+    /* buttons */
+    .btn{padding:5px 12px;font-size:13px;border-radius:4px;font-weight:500;cursor:pointer;border:none;}
+    .btn-p{background:#2563eb;color:white;} .btn-p:hover{background:#1d4ed8;}
+    .btn-o{background:white;color:#374151;border:1px solid #d1d5db;} .btn-o:hover{background:#f9fafb;}
+    .inp{border:1px solid #d1d5db;border-radius:4px;padding:5px 10px;font-size:13px;background:white;}
+    .inp:focus{outline:none;border-color:#3b82f6;}
+    /* table */
+    .tbl{width:100%;border-collapse:collapse;font-size:13px;}
+    .tbl thead th{background:#fafafa;color:#6b7280;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:9px 12px;text-align:left;border-bottom:1px solid #e5e7eb;white-space:nowrap;}
+    .tbl tbody td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+    .tbl tbody tr:last-child td{border-bottom:none;}
+    .tbl tbody tr:hover td{background:#fafafa;}
+    .id-mono{font-family:'SFMono-Regular','Menlo',monospace;font-size:12px;color:#374151;}
+    .tnum{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+    .chev-icon{color:#9ca3af;cursor:pointer;}
+    /* balance block */
+    .balance-block{background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;margin:12px 24px;}
+    .balance-block.state-off  {border:1px solid #fda4af;background:#fffafa;}
+    .balance-block.state-match{border:1px solid #a7f3d0;background:#f0fdf4;}
+    .balance-block.state-none {border:1px solid #d1d5db;background:#fafafa;}
+    .bb-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;}
+    .bb-title{font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.04em;}
+    .balance-block.state-off  .bb-title{color:#9f1239;}
+    .balance-block.state-match.collapsed .bb-title{color:#065f46;}
+    .bb-rows{padding:4px 16px 12px;font-size:13px;color:#374151;}
+    .bb-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;}
+    .bb-row .lbl{display:flex;align-items:center;gap:8px;}
+    .bb-row .src{font-size:11px;color:#9ca3af;}
+    .bb-row .num{font-variant-numeric:tabular-nums;font-weight:500;}
+    .bb-sep{height:1px;background:#e5e7eb;margin:6px 0;}
+    .balance-block.state-off .bb-sep-strong{height:1px;background:#fda4af;margin:8px 0;}
+    .bb-delta{padding:8px 16px 12px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-top:1px solid #fda4af;}
+    .balance-block.state-off .bb-delta{background:#fff5f5;border-top:1px dashed #fca5a5;border-bottom-left-radius:7px;border-bottom-right-radius:7px;}
+    .delta-amount{font-size:18px;font-weight:700;color:#991b1b;font-variant-numeric:tabular-nums;}
+    .delta-hint{font-size:12px;color:#7f1d1d;margin-top:2px;}
+    .delta-actions{display:flex;gap:6px;flex-shrink:0;}
+    .delta-link{padding:5px 10px;font-size:12px;font-weight:500;background:white;color:#991b1b;border:1px solid #fca5a5;border-radius:4px;cursor:pointer;}
+    .delta-link:hover{background:#fee2e2;}
+    /* collapsed match strip */
+    .bb-match-strip{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;}
+    .bb-match-text{display:flex;align-items:center;gap:10px;}
+    .bb-match-text .label{font-size:13px;font-weight:600;color:#065f46;}
+    .bb-match-text .amount{font-size:14px;font-weight:700;color:#064e3b;font-variant-numeric:tabular-nums;}
+    .bb-expand{font-size:12px;color:#065f46;cursor:pointer;text-decoration:underline;}
+    .bb-expand:hover{color:#022c22;}
+    /* no beginning balance state */
+    .bb-empty{padding:12px 16px;font-size:13px;color:#6b7280;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+    .bb-empty .cta{font-size:12px;color:#2563eb;cursor:pointer;text-decoration:underline;}
+    /* state toggle */
+    .state-toggle{display:flex;background:white;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;font-size:12px;}
+    .state-toggle button{padding:5px 10px;border:none;background:white;color:#374151;cursor:pointer;font-weight:500;}
+    .state-toggle button:hover{background:#f9fafb;}
+    .state-toggle button.active{background:#2563eb;color:white;}
+    .state-toggle button+button{border-left:1px solid #d1d5db;}
+    .state-toggle button.active+button{border-left-color:#1d4ed8;}
+    /* tooltip annotation */
+    .annot{position:fixed;bottom:16px;right:16px;background:#1f2937;color:#f9fafb;padding:10px 14px;border-radius:6px;font-size:12px;max-width:320px;box-shadow:0 10px 25px rgba(0,0,0,0.2);line-height:1.5;}
+    .annot strong{color:#fef3c7;}
+    .annot a{color:#93c5fd;text-decoration:underline;}
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="bg-white border-b border-gray-200 px-6 py-2 flex items-center gap-2.5">
+  <span class="text-gray-400 cursor-pointer hover:text-gray-700 text-lg">×</span>
+  <span class="font-medium text-gray-800">Reconciliation results</span>
+  <span class="ml-3 chip c-blue" style="font-size:10px">DIS-259 mock · Balance Summary above tabs</span>
+  <div class="ml-auto flex items-center gap-2">
+    <span class="text-xs text-gray-500">Balance state:</span>
+    <div class="state-toggle">
+      <button id="st-off"   class="active" onclick="setState('off')">⚠ Off by $421.22</button>
+      <button id="st-match"            onclick="setState('match')">✓ Matches</button>
+      <button id="st-none"             onclick="setState('none')">– No beginning balance</button>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="bg-white border-b border-gray-200 px-6 pt-3">
+  <div class="flex items-start justify-between mb-3">
+    <div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <h1 class="text-[21px] font-bold text-gray-900 leading-tight">Stripe Stripe Test (sandbox) (required for Synder)</h1>
+        <span class="chip c-green">Finished</span>
+        <span class="chip c-amber">Not reconciled</span>
+        <!-- NEW: Balance status pill -->
+        <span id="balance-pill" class="chip c-red">⚠ Balance off by $421.22</span>
+      </div>
+      <div class="text-[13px] text-gray-500 mt-0.5">Stripe Test (sandbox) / Mar 1 - 31, 2026</div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="btn btn-o">Copy share link</button>
+      <button class="btn btn-o">Refresh data</button>
+    </div>
+  </div>
+  <div class="flex items-center gap-2 pb-3">
+    <button class="btn btn-o">Process log</button>
+    <button class="btn btn-p flex items-center gap-1">Export <span class="text-xs">▾</span></button>
+  </div>
+  <div id="warn-banner" class="flex items-start gap-2.5 px-4 py-2.5 rounded mb-3 text-[13px] text-amber-900" style="background:#fffbeb;border:1px solid #fde68a">
+    <span class="text-amber-500 text-base leading-none mt-px">⚠</span>
+    <div class="flex-1">Resolve all transactions in <strong>Not matched</strong> and <strong>Discrepancy</strong> to finish reconciliation.</div>
+    <button onclick="document.getElementById('warn-banner').remove()" class="text-gray-400 hover:text-gray-700 text-xl ml-2">×</button>
+  </div>
+</div>
+
+<!-- NEW: Balance Summary block (above the tabs) -->
+<div id="balance-block" class="balance-block state-off">
+
+  <!-- OFF state -->
+  <div id="bb-off" class="bb-section">
+    <div class="bb-header">
+      <span class="bb-title">Balance Summary · Mar 1 – 31, 2026</span>
+      <span class="text-[11px] text-gray-400">Beginning from QBO · Change from Stripe · Reported from QBO</span>
+    </div>
+    <div class="bb-rows">
+      <div class="bb-row">
+        <span class="lbl">Beginning balance <span class="src">(QBO clearing register)</span></span>
+        <span class="num">$5,200.00</span>
+      </div>
+      <div class="bb-row">
+        <span class="lbl">+ Balance change <span class="src">(Stripe · sum of mapped amounts)</span></span>
+        <span class="num">−$4,720.00</span>
+      </div>
+      <div class="bb-sep"></div>
+      <div class="bb-row">
+        <span class="lbl"><strong>= Computed ending balance</strong></span>
+        <span class="num"><strong>$480.00</strong></span>
+      </div>
+      <div class="bb-row">
+        <span class="lbl">Reported ending balance <span class="src">(QBO clearing register)</span></span>
+        <span class="num">$58.78</span>
+      </div>
+    </div>
+    <div class="bb-delta">
+      <div>
+        <div class="delta-amount">Delta: $421.22</div>
+        <div class="delta-hint">Likely cause: 3 transactions missing in accounting (Stripe payouts &amp; charges not yet booked to QBO).</div>
+      </div>
+      <div class="delta-actions">
+        <button class="delta-link" onclick="switchTab('discrepancy')">Review discrepancies →</button>
+        <button class="delta-link" onclick="switchTab('notmatched')">Review missing →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATCH state (collapsed strip) -->
+  <div id="bb-match" class="bb-section" style="display:none">
+    <div class="bb-match-strip">
+      <div class="bb-match-text">
+        <span class="text-emerald-600 text-base">✓</span>
+        <span class="label">Balance matches</span>
+        <span class="amount">$5,621.22</span>
+        <span class="text-[12px] text-emerald-700">— all transactions accounted for, period is closeable</span>
+      </div>
+      <span class="bb-expand" onclick="expandMatch()">Show math ▾</span>
+    </div>
+    <div id="bb-match-expanded" style="display:none">
+      <div class="bb-sep" style="margin:0 16px"></div>
+      <div class="bb-rows" style="padding-top:8px">
+        <div class="bb-row">
+          <span class="lbl">Beginning balance <span class="src">(QBO clearing register)</span></span>
+          <span class="num">$5,200.00</span>
+        </div>
+        <div class="bb-row">
+          <span class="lbl">+ Balance change <span class="src">(Stripe · sum of mapped amounts)</span></span>
+          <span class="num">+$421.22</span>
+        </div>
+        <div class="bb-sep"></div>
+        <div class="bb-row">
+          <span class="lbl"><strong>= Computed ending balance</strong></span>
+          <span class="num"><strong>$5,621.22</strong></span>
+        </div>
+        <div class="bb-row">
+          <span class="lbl">Reported ending balance <span class="src">(QBO clearing register)</span></span>
+          <span class="num">$5,621.22</span>
+        </div>
+        <div class="bb-row" style="margin-top:4px">
+          <span class="lbl" style="color:#065f46;font-weight:600">Delta: $0.00 · Balance matches</span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NONE state (no beginning balance available — manual fallback, Iteration 2) -->
+  <div id="bb-none" class="bb-section" style="display:none">
+    <div class="bb-header">
+      <span class="bb-title">Balance Summary · Mar 1 – 31, 2026</span>
+      <span class="text-[11px] text-gray-400">Iteration 2 surface — Xero / QBD / manual platforms</span>
+    </div>
+    <div class="bb-empty">
+      <div>
+        <div class="text-[13px] text-gray-700 font-medium mb-0.5">No beginning balance set for this period</div>
+        <div class="text-[12px] text-gray-500">Synder couldn't auto-pull the beginning balance from the accounting side. Enter it once and we'll carry it over to future periods.</div>
+      </div>
+      <button class="btn btn-o">Enter beginning balance</button>
+    </div>
+    <div class="bb-rows" style="padding-top:0">
+      <div class="bb-row">
+        <span class="lbl">+ Balance change <span class="src">(Stripe · sum of mapped amounts)</span></span>
+        <span class="num">−$4,720.00</span>
+      </div>
+      <div class="bb-row" style="color:#9ca3af">
+        <span class="lbl">= Computed ending balance</span>
+        <span class="num">—</span>
+      </div>
+      <div class="bb-row" style="color:#9ca3af">
+        <span class="lbl">Reported ending balance <span class="src">(QBO clearing register)</span></span>
+        <span class="num">$58.78</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs (existing) -->
+<div class="bg-white border-b border-gray-200 px-6 pt-3">
+  <div class="flex items-center gap-8 -mb-px">
+    <button data-tab="matched"     class="tab-btn tab-active"   onclick="switchTab('matched')">Matched     <span class="tab-badge">60</span></button>
+    <button data-tab="discrepancy" class="tab-btn tab-inactive" onclick="switchTab('discrepancy')">Discrepancy <span class="tab-badge">0</span></button>
+    <button data-tab="notmatched"  class="tab-btn tab-inactive" onclick="switchTab('notmatched')">Not matched <span class="tab-badge">3</span></button>
+    <button data-tab="ignored"     class="tab-btn tab-inactive" onclick="switchTab('ignored')">Ignored     <span class="tab-badge">0</span></button>
+  </div>
+</div>
+
+<!-- Filters (existing) -->
+<div class="bg-white border-b border-gray-200 px-6 py-3 flex flex-wrap items-end gap-4">
+  <div><div class="text-xs text-gray-500 font-medium mb-1">Search</div><input class="inp w-52" placeholder="Search…"/></div>
+  <div>
+    <div class="text-xs text-gray-500 font-medium mb-1">Date range</div>
+    <div class="flex items-center gap-2">
+      <input class="inp" style="width:108px" placeholder="Mar 1, 2026"/>
+      <span class="text-gray-400">–</span>
+      <input class="inp" style="width:108px" placeholder="Mar 31, 2026"/>
+    </div>
+  </div>
+  <div><div class="text-xs text-gray-500 font-medium mb-1">Amount</div><input class="inp w-28" placeholder="Amount"/></div>
+  <button class="btn btn-p">Apply</button>
+  <button class="btn btn-o">Reset filters</button>
+</div>
+
+<!-- Table -->
+<div class="px-6 pt-3 pb-10">
+  <div class="bg-white border border-gray-200 rounded">
+    <div id="tab-matched" class="tab-pane">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:26px"></th>
+            <th>Date ↓</th>
+            <th>Matching ID ↓</th>
+            <th class="text-right" style="text-align:right">Total amount ↓</th>
+            <th>Types ↓</th>
+            <th class="text-right" style="text-align:right">Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="chev-icon">▾</span></td><td>Mar 31, 2026</td><td class="id-mono">po_1TGqaE7QSl16uhjVk9QMnj9H</td><td class="tnum">−301.76 USD</td><td>Transfer;payout</td><td class="tnum">2</td></tr>
+          <tr><td><span class="chev-icon">▾</span></td><td>Mar 30, 2026</td><td class="id-mono">po_1TGU6C7QSl16uhjV9eJPM9V8</td><td class="tnum">−520.74 USD</td><td>Transfer;payout</td><td class="tnum">2</td></tr>
+          <tr><td><span class="chev-icon">▾</span></td><td>Mar 27, 2026</td><td class="id-mono">po_1TFOI47QSl16uhjVAJxJMzGu</td><td class="tnum">−2,808.05 USD</td><td>Transfer;payout</td><td class="tnum">2</td></tr>
+          <tr><td><span class="chev-icon">▾</span></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TES167QSl16uhjV1bCL9uFG</td><td class="tnum">579.30 USD</td><td>Payment;Expense;charge</td><td class="tnum">3</td></tr>
+          <tr><td><span class="chev-icon">▾</span></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TFCdS7QSl16uhjV1ye0xCZn</td><td class="tnum">96.80 USD</td><td>Payment;Expense;charge</td><td class="tnum">3</td></tr>
+          <tr><td><span class="chev-icon">▾</span></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TFBSE7QSl16uhjV1Su3SgxF</td><td class="tnum">24.58 USD</td><td>Payment;Expense;charge</td><td class="tnum">3</td></tr>
+          <tr><td><span class="chev-icon">▾</span></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TFB4H7QSl16uhjV0TnJGOS8</td><td class="tnum">72.96 USD</td><td>Payment;Expense;charge</td><td class="tnum">3</td></tr>
+          <tr><td><span class="chev-icon">▾</span></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TFB8j7QSl16uhjV0zv86Cpy</td><td class="tnum">82.65 USD</td><td>Payment;Expense;charge</td><td class="tnum">3</td></tr>
+          <tr><td><span class="chev-icon">▾</span></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TF9d977QSl16uhjV0ubKSPFF</td><td class="tnum">40.27 USD</td><td>Payment;Expense;charge</td><td class="tnum">3</td></tr>
+          <tr><td><span class="chev-icon">▾</span></td><td>Mar 25, 2026</td><td class="id-mono">po_1TEfqB7QSl16uhjVIZzpcd8h</td><td class="tnum">−2,346.18 USD</td><td>Transfer;payout</td><td class="tnum">2</td></tr>
+          <tr><td><span class="chev-icon">▾</span></td><td>Mar 25, 2026</td><td class="id-mono">ch_3TEoHG7QSl16uhjV0aPCqNDe</td><td class="tnum">18.81 USD</td><td>Payment;Expense;charge</td><td class="tnum">3</td></tr>
+        </tbody>
+      </table>
+      <div class="px-4 py-2 text-xs text-gray-500 border-t border-gray-200 flex justify-between">
+        <span>Showing 11 of 60 matched rows</span>
+        <div class="flex items-center gap-2">
+          <button class="btn btn-o text-xs py-1 px-2">‹ Prev</button><span>1 / 6</span>
+          <button class="btn btn-o text-xs py-1 px-2">Next ›</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-discrepancy" class="tab-pane" style="display:none">
+      <div class="py-16 text-center text-gray-400 text-sm">No rows in this view.</div>
+    </div>
+
+    <div id="tab-notmatched" class="tab-pane" style="display:none">
+      <div class="px-4 py-3 text-[12px] text-gray-500 border-b border-gray-200 bg-amber-50">
+        <strong class="text-amber-900">3 transactions on the Stripe side have no counterpart in QBO.</strong> Total: $421.22 — matches the balance delta above.
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Date ↓</th>
+            <th>Stripe ID ↓</th>
+            <th class="text-right" style="text-align:right">Amount ↓</th>
+            <th>Type ↓</th>
+            <th class="text-right" style="text-align:right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mar 29, 2026</td><td class="id-mono">po_1TG4xV7QSl16uhjV9MissingA</td><td class="tnum">$179.22</td><td>Transfer;payout</td><td class="tnum"><button class="btn btn-o text-xs py-1 px-2">Match / Ignore</button></td></tr>
+          <tr><td>Mar 24, 2026</td><td class="id-mono">ch_3TE2bn7QSl16uhjV0MissingB</td><td class="tnum">$147.00</td><td>Payment;charge</td><td class="tnum"><button class="btn btn-o text-xs py-1 px-2">Match / Ignore</button></td></tr>
+          <tr><td>Mar 19, 2026</td><td class="id-mono">ch_3TC8nB7QSl16uhjV0MissingC</td><td class="tnum">$95.00</td><td>Payment;charge</td><td class="tnum"><button class="btn btn-o text-xs py-1 px-2">Match / Ignore</button></td></tr>
+        </tbody>
+      </table>
+      <div class="px-4 py-2 text-xs text-gray-500 border-t border-gray-200">Sum: $421.22 — fixing these in QBO closes the balance delta.</div>
+    </div>
+
+    <div id="tab-ignored" class="tab-pane" style="display:none">
+      <div class="py-16 text-center text-gray-400 text-sm">No rows in this view.</div>
+    </div>
+  </div>
+</div>
+
+<div class="annot">
+  <strong>What's new vs. live UI:</strong><br/>
+  1. Balance status pill in the header (3 states)<br/>
+  2. Balance Summary block above the tabs<br/>
+  3. Delta line links into Not matched / Discrepancy<br/>
+  <span class="text-gray-400">Toggle states from the top-right · Block stays visible across tab switches</span>
+</div>
+
+<script>
+function setState(state){
+  // Toggle buttons
+  ['off','match','none'].forEach(s=>{
+    document.getElementById('st-'+s).classList.toggle('active', s===state);
+  });
+  // Block
+  const block=document.getElementById('balance-block');
+  block.classList.remove('state-off','state-match','state-none','collapsed');
+  document.getElementById('bb-off').style.display='none';
+  document.getElementById('bb-match').style.display='none';
+  document.getElementById('bb-none').style.display='none';
+  document.getElementById('bb-match-expanded').style.display='none';
+  // Pill
+  const pill=document.getElementById('balance-pill');
+  pill.classList.remove('c-red','c-green','c-gray','c-amber');
+  if(state==='off'){
+    block.classList.add('state-off');
+    document.getElementById('bb-off').style.display='block';
+    pill.classList.add('c-red');
+    pill.textContent='⚠ Balance off by $421.22';
+  } else if(state==='match'){
+    block.classList.add('state-match','collapsed');
+    document.getElementById('bb-match').style.display='block';
+    pill.classList.add('c-green');
+    pill.textContent='✓ Balance matches';
+  } else {
+    block.classList.add('state-none');
+    document.getElementById('bb-none').style.display='block';
+    pill.classList.add('c-gray');
+    pill.textContent='– No beginning balance';
+  }
+}
+
+function expandMatch(){
+  const exp=document.getElementById('bb-match-expanded');
+  const link=document.querySelector('#bb-match .bb-expand');
+  if(exp.style.display==='none'){
+    exp.style.display='block';
+    link.textContent='Hide math ▴';
+  } else {
+    exp.style.display='none';
+    link.textContent='Show math ▾';
+  }
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    const active=b.getAttribute('data-tab')===name;
+    b.classList.toggle('tab-active', active);
+    b.classList.toggle('tab-inactive', !active);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p=>p.style.display='none');
+  document.getElementById('tab-'+name).style.display='block';
+}
+</script>
+</body>
+</html>
