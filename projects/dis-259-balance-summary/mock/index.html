@@ -111,45 +111,13 @@
     .view-seg button+button{border-left:1px solid #cbd5e1;}
     .view-seg button.active+button{border-left-color:#0f172a;}
     .view-seg .lock{font-size:11px;opacity:.7;}
-    /* report teaser inside balance block */
-    .bb-teaser{padding:10px 16px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;}
-    .balance-block.state-match .bb-teaser{background:#dcfce7;border-top:1px solid #a7f3d0;}
-    .bb-teaser .ic{width:22px;height:22px;border-radius:50%;background:#e2e8f0;color:#475569;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
-    .balance-block.state-match .bb-teaser .ic{background:#10b981;color:white;}
-    .bb-teaser .cta-btn{padding:5px 12px;font-size:12px;font-weight:600;background:white;color:#0f172a;border:1px solid #cbd5e1;border-radius:4px;cursor:pointer;white-space:nowrap;}
-    .balance-block.state-match .bb-teaser .cta-btn{background:#10b981;color:white;border-color:#10b981;}
-    .balance-block.state-match .bb-teaser .cta-btn:hover{background:#059669;}
-    /* report view — inline inside tab */
-    .report-inline-cover{padding:14px 20px;background:#f0fdf4;border-bottom:1px solid #a7f3d0;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
-    .report-body{padding:20px 24px;}
-    .report-sec{margin-bottom:24px;}
-    .report-sec:last-child{margin-bottom:0;}
-    .report-sec h3{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0;}
-    .report-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;color:#334155;font-variant-numeric:tabular-nums;}
-    .report-row.total{font-weight:700;color:#0f172a;border-top:1px solid #cbd5e1;margin-top:6px;padding-top:10px;}
-    .report-row .src{font-size:11px;color:#94a3b8;font-weight:400;display:block;}
-    .report-tbl{width:100%;border-collapse:collapse;font-size:13px;}
-    .report-tbl th{text-align:left;font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.04em;padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-weight:600;}
-    .report-tbl td{padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#334155;font-variant-numeric:tabular-nums;}
-    .report-tbl tr:last-child td{border-bottom:none;}
-    .report-tbl tr.total td{background:#f8fafc;font-weight:700;color:#0f172a;border-top:1px solid #cbd5e1;}
-    .report-note{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px 16px;font-size:13px;color:#334155;line-height:1.6;}
-    .report-sign{display:flex;justify-content:space-between;padding-top:18px;border-top:1px solid #e2e8f0;margin-top:24px;font-size:12px;color:#64748b;}
-    .report-sign .field{flex:1;}
-    .report-sign .field .label{font-size:10.5px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
-    .report-sign .field .val{font-weight:600;color:#1e293b;border-bottom:1px solid #cbd5e1;padding:4px 0;width:90%;font-size:14px;}
-    /* report locked state */
-    .report-locked{padding:48px 36px;background:white;text-align:center;}
-    .report-locked .icon{width:60px;height:60px;border-radius:50%;background:#f1f5f9;color:#64748b;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
-    .report-locked h2{font-size:18px;font-weight:700;color:#0f172a;margin-bottom:8px;}
-    .report-locked .desc{font-size:13px;color:#64748b;max-width:480px;margin:0 auto 24px;line-height:1.6;}
-    .report-checklist{max-width:480px;margin:0 auto;text-align:left;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px 18px;}
-    .report-check-item{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;}
-    .report-check-item .marker{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
-    .report-check-item.ok .marker{background:#d1fae5;color:#065f46;}
-    .report-check-item.todo .marker{background:#fee2e2;color:#991b1b;}
-    .report-check-item .copy{flex:1;color:#334155;}
-    .report-check-item.todo .copy strong{color:#991b1b;}
+    /* sum-scope footnote under the equation grid */
+    .bb-footnote{padding:8px 16px 10px;background:#f8fafc;border-top:1px solid #e5e7eb;font-size:11.5px;color:#64748b;line-height:1.5;}
+    .balance-block.state-off   .bb-footnote{background:#fef9f9;border-top-color:#fecaca;color:#7f1d1d;}
+    .balance-block.state-match .bb-footnote{background:#f0fdf4;border-top-color:#a7f3d0;color:#065f46;}
+    .bb-footnote strong{color:#1e293b;font-weight:600;}
+    .balance-block.state-off   .bb-footnote strong{color:#7f1d1d;}
+    .balance-block.state-match .bb-footnote strong{color:#065f46;}
   </style>
 </head>
 <body>
@@ -257,16 +225,8 @@
         </div>
       </div>
     </div>
-    <!-- Teaser: locks the report behind completion -->
-    <div class="bb-teaser">
-      <div class="flex items-center gap-3">
-        <span class="ic">🔒</span>
-        <div>
-          <div class="text-[13px] font-semibold text-slate-700">Resolve all transactions to unlock your auditor report</div>
-          <div class="text-[12px] text-slate-500">3 not-matched · 0 discrepancy · Balance not yet tied</div>
-        </div>
-      </div>
-      <button class="cta-btn" onclick="switchTab('report')">Preview report ↗</button>
+    <div class="bb-footnote">
+      Debits and Credits are summed across <strong>all integration-side transactions for the period</strong> — Matched + Discrepancy + Missing-in-accounting + <strong>Ignored</strong> (Discrepancy rows use their integration-side amount). Missing-in-integration rows affect <em>Reported ending</em> only.
     </div>
   </div>
 
@@ -313,16 +273,8 @@
         <div class="bb-src" style="color:#047857">Balance matches</div>
       </div>
     </div>
-    <!-- Teaser: report unlocked -->
-    <div class="bb-teaser">
-      <div class="flex items-center gap-3">
-        <span class="ic">🎉</span>
-        <div>
-          <div class="text-[13px] font-semibold text-emerald-900">Reconciliation complete · final report ready</div>
-          <div class="text-[12px] text-emerald-700">60 matched · 0 discrepancy · 0 not-matched · balance verified</div>
-        </div>
-      </div>
-      <button class="cta-btn" onclick="switchTab('report')">View final report ↗</button>
+    <div class="bb-footnote">
+      Debits and Credits are summed across <strong>all integration-side transactions for the period</strong> — Matched + Discrepancy + Missing-in-accounting + <strong>Ignored</strong> (Discrepancy rows use their integration-side amount). Missing-in-integration rows affect <em>Reported ending</em> only.
     </div>
   </div>
 
@@ -371,8 +323,6 @@
     <button data-tab="discrepancy" class="tab-btn tab-inactive" onclick="switchTab('discrepancy')">Discrepancy <span class="tab-badge">0</span></button>
     <button data-tab="notmatched"  class="tab-btn tab-inactive" onclick="switchTab('notmatched')">Not matched <span class="tab-badge">3</span></button>
     <button data-tab="ignored"     class="tab-btn tab-inactive" onclick="switchTab('ignored')">Ignored     <span class="tab-badge">0</span></button>
-    <span class="mx-2 text-gray-300 text-lg">│</span>
-    <button data-tab="report"      class="tab-btn tab-inactive" onclick="switchTab('report')">📄 Final report <span id="report-tab-lock" class="text-xs">🔒</span></button>
   </div>
 </div>
 
@@ -461,112 +411,23 @@
       <div class="py-16 text-center text-gray-400 text-sm">No rows in this view.</div>
     </div>
 
-    <!-- Final Report tab pane — inline, inside the existing table area -->
-    <div id="tab-report" class="tab-pane" style="display:none">
-      <!-- Locked state -->
-      <div id="report-locked-pane" style="display:none">
-        <div class="report-locked">
-          <div class="icon">🔒</div>
-          <h2>Final report not available yet</h2>
-          <p class="desc">Resolve all transactions in <strong>Not matched</strong> and <strong>Discrepancy</strong> to unlock your auditor-ready reconciliation report. The report consolidates the balance check, all matched transactions, and any notes — ready to hand off to your auditor.</p>
-          <div class="report-checklist">
-            <div class="report-check-item ok"><span class="marker">✓</span><span class="copy">Balance verified — Computed ending matches Reported ending</span></div>
-            <div class="report-check-item ok"><span class="marker">✓</span><span class="copy">0 discrepancies</span></div>
-            <div class="report-check-item todo"><span class="marker">✗</span><span class="copy"><strong>3 transactions not matched</strong> — Match them or Ignore to continue</span></div>
-            <div class="report-check-item ok"><span class="marker">i</span><span class="copy" style="color:#64748b">Ignored items are fine — they appear in the report with their reason</span></div>
-          </div>
-          <div style="margin-top:20px"><button class="btn btn-o" onclick="switchTab('notmatched')">Go to Not matched →</button></div>
-        </div>
-      </div>
-
-      <!-- Unlocked report — reconciliation complete -->
-      <div id="report-unlocked-pane" style="display:block">
-        <!-- Inline cover band — softer than full page, doesn't dominate -->
-        <div class="report-inline-cover">
-          <div>
-            <div class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider mb-1">✓ Reconciled · Auditor-ready report</div>
-            <div class="text-[14px] font-semibold text-slate-800">Reconciliation report · Stripe Stripe Test (sandbox) · Mar 1 – 31, 2026</div>
-            <div class="text-[12px] text-slate-500 mt-0.5">Generated 2026-06-12 15:19 UTC · Recon ID <span class="font-mono">recon_3TgQ8m12bV</span> · <span class="acct-type-label">Asset · Clearing</span></div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button class="btn btn-p">⤓ Download PDF</button>
-            <button class="btn btn-o">⤓ CSV</button>
-            <button class="btn btn-o">✉ Send to auditor</button>
-          </div>
-        </div>
-
-        <div class="report-body">
-          <div class="report-sec">
-            <h3>Balance Summary</h3>
-            <div class="report-row">Beginning balance <span class="src">QBO clearing register · Mar 1, 2026</span><span>$5,200.00</span></div>
-            <div class="report-row">+ Debits <span class="src">Stripe · 38 debit txns</span><span>$58,232.18</span></div>
-            <div class="report-row">− Credits <span class="src">Stripe · 22 credit txns</span><span>$57,810.96</span></div>
-            <div class="report-row total">= Computed ending balance <span></span><span>$5,621.22</span></div>
-            <div class="report-row">Reported ending balance <span class="src">QBO clearing register · Mar 31, 2026</span><span>$5,621.22</span></div>
-            <div class="report-row total" style="color:#065f46">Delta <span></span><span>$0.00 — matches</span></div>
-          </div>
-
-          <div class="report-sec">
-            <h3>Transactions Summary</h3>
-            <table class="report-tbl">
-              <thead>
-                <tr><th>Category</th><th class="text-right" style="text-align:right">Count</th><th class="text-right" style="text-align:right">Total amount</th><th>Notes</th></tr>
-              </thead>
-              <tbody>
-                <tr><td>Auto-matched (by ID + amount)</td><td style="text-align:right">60</td><td style="text-align:right">$5,621.22</td><td style="color:#64748b">System reconciled</td></tr>
-                <tr><td>Manually matched</td><td style="text-align:right">0</td><td style="text-align:right">—</td><td style="color:#64748b">No manual interventions</td></tr>
-                <tr><td>Ignored (with reason)</td><td style="text-align:right">0</td><td style="text-align:right">—</td><td style="color:#64748b">—</td></tr>
-                <tr><td>Discrepancies</td><td style="text-align:right">0</td><td style="text-align:right">—</td><td style="color:#64748b">All amounts agree</td></tr>
-                <tr><td>Not matched</td><td style="text-align:right">0</td><td style="text-align:right">—</td><td style="color:#64748b">No unresolved items</td></tr>
-                <tr class="total"><td>Total reviewed</td><td style="text-align:right">60</td><td style="text-align:right">$5,621.22</td><td></td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="report-sec">
-            <h3>Auditor Notes</h3>
-            <div class="report-note">
-              All transactions for the period matched automatically by transaction ID and amount. No manual matches, no ignored items, and no discrepancies. The Computed ending balance derived from Stripe activity reconciles to the Reported ending balance from QuickBooks Online clearing register without exception.
-            </div>
-          </div>
-
-          <div class="report-sec">
-            <h3>Source Files (attached to PDF)</h3>
-            <div class="report-row"><span>📎 Stripe · Balance change from activity · Mar 1–31, 2026 · 60 rows</span><span style="color:#64748b">stripe_balance_change_2026-03.csv</span></div>
-            <div class="report-row"><span>📎 QBO · GL Account register · Stripe clearing · Mar 1–31, 2026</span><span style="color:#64748b">qbo_register_stripe_clearing_2026-03.csv</span></div>
-            <div class="report-row"><span>📎 Synder · Reconciliation results · all tabs</span><span style="color:#64748b">synder_recon_recon_3TgQ8m12bV.csv</span></div>
-          </div>
-
-          <div class="report-sign">
-            <div class="field"><div class="label">Prepared by</div><div class="val">Synder · TxnRecon</div></div>
-            <div class="field"><div class="label">Reviewed by</div><div class="val">_________________________</div></div>
-            <div class="field"><div class="label">Date</div><div class="val">2026-06-12</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
 <div class="annot">
   <strong>What's new vs. live UI:</strong><br/>
   1. Balance pill + Debits/Credits block above the tabs<br/>
-  2. <strong>Final report tab</strong> on the right of the tab bar (separated by a divider)<br/>
-  3. Tab is <strong>locked until reconciliation is complete</strong> — conversion lever toward closing the period<br/>
-  <span class="text-gray-400">Switch state to ✓ Matches → tab unlocks · click it to see the auditor-ready deliverable inline.</span>
+  2. <strong>Sum-scope footnote</strong> under the equation — clarifies Ignored is included<br/>
+  3. Account-type toggle flips the operators (Asset vs Liability)<br/>
+  <span class="text-gray-400">Auditor report is a future iteration — see the separate <a href="../report-vision/">report-vision</a> prototype.</span>
 </div>
 
 <script>
-let currentState='off';
-
 function setState(state){
-  currentState=state;
   // Toggle buttons
   ['off','match','none'].forEach(s=>{
     document.getElementById('st-'+s).classList.toggle('active', s===state);
   });
-  // Update report view lock state
-  syncReportLock();
   // Block
   const block=document.getElementById('balance-block');
   block.classList.remove('state-off','state-match','state-none');
@@ -602,17 +463,6 @@ function switchTab(name){
   });
   document.querySelectorAll('.tab-pane').forEach(p=>p.style.display='none');
   document.getElementById('tab-'+name).style.display='block';
-  // Hide filters row on Report tab (doesn't apply to a deliverable)
-  document.getElementById('filters-row').style.display = name==='report' ? 'none' : 'flex';
-}
-
-/* Sync the lock state of the Report tab: locked when reconciliation isn't complete */
-function syncReportLock(){
-  const unlocked = currentState==='match';
-  document.getElementById('report-tab-lock').textContent = unlocked ? '✓' : '🔒';
-  document.getElementById('report-tab-lock').style.color = unlocked ? '#10b981' : '';
-  document.getElementById('report-locked-pane').style.display   = unlocked ? 'none' : 'block';
-  document.getElementById('report-unlocked-pane').style.display = unlocked ? 'block' : 'none';
 }
 
 /* Account-type toggle — flips operators per Option B accounting convention.
@@ -636,8 +486,6 @@ function setAcctType(type){
   });
 }
 
-/* Initial state */
-syncReportLock();
 </script>
 </body>
 </html>
