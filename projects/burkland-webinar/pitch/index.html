@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Synder × Burkland — Reconciliation Roundtable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      colors: { 'gray-850': '#18212f' }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #111827; color: #f9fafb; font-family: 'Inter', system-ui, sans-serif; }
+
+  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: #3b82f6; transition: width 0.3s ease; z-index: 100; }
+  #slide-deck { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+  .slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 60px 32px 80px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+  .slide.active { opacity: 1; pointer-events: all; }
+  .slide-inner { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 0; overflow-y: auto; max-height: calc(100vh - 140px); scrollbar-width: none; }
+  .slide-inner::-webkit-scrollbar { display: none; }
+
+  #nav-dots { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 100; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #374151; cursor: pointer; transition: background 0.2s, transform 0.2s; }
+  .dot.active { background: #3b82f6; transform: scale(1.4); }
+  .dot:hover:not(.active) { background: #6b7280; }
+
+  #slide-counter { position: fixed; bottom: 20px; right: 28px; font-size: 12px; color: #6b7280; font-variant-numeric: tabular-nums; z-index: 100; }
+
+  #overview { position: fixed; inset: 0; background: rgba(17,24,39,0.97); display: none; z-index: 200; overflow-y: auto; padding: 40px 32px; }
+  #overview.visible { display: block; }
+  #overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; max-width: 1200px; margin: 0 auto; }
+  #overview h2 { text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 24px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .thumb { background: #1f2937; border: 2px solid #374151; border-radius: 10px; padding: 14px; cursor: pointer; transition: border-color 0.15s, transform 0.15s; aspect-ratio: 16/9; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; overflow: hidden; }
+  .thumb:hover { border-color: #3b82f6; transform: scale(1.03); }
+  .thumb.active-thumb { border-color: #3b82f6; }
+  .thumb-num { font-size: 10px; color: #6b7280; margin-bottom: 6px; }
+  .thumb-title { font-size: 12px; font-weight: 600; color: #d1d5db; line-height: 1.3; }
+  #overview-close { position: fixed; top: 24px; right: 32px; color: #6b7280; cursor: pointer; font-size: 24px; z-index: 210; }
+  #overview-close:hover { color: #f9fafb; }
+
+  .card { background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 20px 24px; }
+  .card-sm { background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 14px 18px; }
+  .accent { color: #3b82f6; }
+  .success { color: #22c55e; }
+  .warning { color: #f59e0b; }
+  .violet { color: #a78bfa; }
+  .muted { color: #9ca3af; }
+
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .tag-violet { background: rgba(167,139,250,0.15); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.3); }
+  .tag-gray { background: rgba(107,114,128,0.15); color: #9ca3af; border: 1px solid rgba(107,114,128,0.3); }
+
+  .slide-title { font-size: 2.2rem; font-weight: 800; line-height: 1.15; color: #f9fafb; }
+  .slide-subtitle { font-size: 1rem; color: #9ca3af; font-weight: 400; margin-top: 6px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  .h-divider { border: none; border-top: 1px solid #374151; margin: 14px 0; }
+
+  .highlight-box { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: 10px; padding: 14px 18px; }
+  .warning-box { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 14px 18px; }
+  .success-box { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 14px 18px; }
+  .violet-box { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.3); border-radius: 10px; padding: 14px 18px; }
+
+  #keyboard-hint { position: fixed; bottom: 20px; left: 28px; font-size: 11px; color: #4b5563; z-index: 100; }
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.4s ease both; }
+
+  .demo-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59,130,246,0.15); border: 2px solid rgba(59,130,246,0.4);
+    border-radius: 12px; padding: 12px 28px; font-size: 1.8rem; font-weight: 800;
+    color: #60a5fa; letter-spacing: 0.05em;
+  }
+  .demo-badge .pulse-dot { width: 12px; height: 12px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+  /* Concept diagram blocks */
+  .concept-node {
+    background: #1f2937; border: 1.5px solid #374151; border-radius: 12px;
+    padding: 14px 18px; text-align: center; font-size: 13px; color: #d1d5db; font-weight: 500;
+  }
+  .concept-arrow { display: flex; align-items: center; justify-content: center; color: #4b5563; font-size: 22px; }
+
+  :fullscreen body, :-webkit-full-screen body { background: #111827; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div id="slide-deck">
+
+  <!-- ─────────── SLIDE 1: TITLE ─────────── -->
+  <div class="slide" data-slide="1">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-violet" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Burkland × Synder — June 2026</div>
+        <h1 style="font-size:3rem; font-weight:800; line-height:1.1; color:#f9fafb; margin-bottom:16px;">
+          Reconciliation in Practice<br/>
+          <span style="font-size:2rem; color:#9ca3af; font-weight:600;">A roundtable, not a pitch</span>
+        </h1>
+        <p style="font-size:1.15rem; color:#9ca3af; margin-bottom:12px; font-weight:400;">An hour to compare notes on how reconciliation actually works inside your firm.</p>
+        <p style="font-size:1rem; color:#6b7280; margin-bottom:40px;">60 min · Walkthrough · Live Demo · Conversation</p>
+        <div style="width:60px; height:2px; background:#374151; margin:0 auto 40px;"></div>
+        <div style="display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start;">
+          <div>
+            <p style="font-size:14px; color:#d1d5db; font-weight:700;">Slava</p>
+            <p style="font-size:11px; color:#6b7280; letter-spacing:0.06em; text-transform:uppercase;">Product Manager</p>
+          </div>
+          <div style="width:1px; background:#374151; align-self:stretch;"></div>
+          <div>
+            <p style="font-size:14px; color:#d1d5db; font-weight:700;">Barbara</p>
+            <p style="font-size:11px; color:#6b7280; letter-spacing:0.06em; text-transform:uppercase;">Product Marketing</p>
+          </div>
+          <div style="width:1px; background:#374151; align-self:stretch;"></div>
+          <div>
+            <p style="font-size:14px; color:#d1d5db; font-weight:700;">Vita</p>
+            <p style="font-size:11px; color:#6b7280; letter-spacing:0.06em; text-transform:uppercase;">Burkland CSM</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 2: AGENDA ─────────── -->
+  <div class="slide" data-slide="2">
+    <div class="slide-inner">
+      <div class="section-label">Overview</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">How We'll Spend the Hour</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Demo first, then a longer conversation — the second half is the more interesting half.</p>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+        <div class="card" style="border-left:4px solid #6b7280; display:flex; align-items:center; gap:20px; padding:14px 20px;">
+          <div style="width:40px; height:40px; background:rgba(107,114,128,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">👋</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Welcome & Framing</div>
+            <div style="font-size:13px; color:#9ca3af;">Why we're here and how the hour is structured.</div>
+          </div>
+          <div class="tag tag-gray">5 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #3b82f6; display:flex; align-items:center; gap:20px; padding:14px 20px;">
+          <div style="width:40px; height:40px; background:rgba(59,130,246,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🔍</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Transaction Reconciliation — Live</div>
+            <div style="font-size:13px; color:#9ca3af;">Launch flow, the four result cases, PT vs SM, and reconciling non-Synder accounts via uploaded statement.</div>
+          </div>
+          <div class="tag tag-blue">20 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #a78bfa; display:flex; align-items:center; gap:20px; padding:14px 20px;">
+          <div style="width:40px; height:40px; background:rgba(167,139,250,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🚀</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">What's Coming Next</div>
+            <div style="font-size:13px; color:#9ca3af;">Manual matching, JE-from-Synder, balance recon, AI matching — plus four concept ideas.</div>
+          </div>
+          <div class="tag tag-violet">15 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #22c55e; display:flex; align-items:center; gap:20px; padding:14px 20px;">
+          <div style="width:40px; height:40px; background:rgba(34,197,94,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">💬</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Roundtable</div>
+            <div style="font-size:13px; color:#9ca3af;">How reconciliation actually works inside Burkland — we listen, you talk.</div>
+          </div>
+          <div class="tag tag-green">16 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #f59e0b; display:flex; align-items:center; gap:20px; padding:14px 20px;">
+          <div style="width:40px; height:40px; background:rgba(245,158,11,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🤝</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Synthesis, Open Q&A & Close</div>
+            <div style="font-size:13px; color:#9ca3af;">What we heard, what we'll do with it, and how we follow up.</div>
+          </div>
+          <div class="tag tag-amber">4 min</div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:16px;">💬</span>
+          <span style="font-size:13px; color:#93c5fd;">Drop questions and reactions in chat anytime — Barbara will catch them.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 3: WHY RECONCILIATION MATTERS ─────────── -->
+  <div class="slide" data-slide="3">
+    <div class="slide-inner">
+      <div class="section-label">The Problem</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Why Reconciliation Matters</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">The receivable side is fundamentally harder than the payable side — and you know it.</p>
+
+      <div class="grid-2" style="margin-bottom:18px;">
+        <div class="card" style="border-top:3px solid #ef4444;">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">The Receivable Reality</div>
+          <p style="font-size:13.5px; color:#d1d5db; line-height:1.7;">For every <strong>one sale</strong>, you can have multiple transactions to align — a sales receipt, an expense for the fee, a payout. The matching is <strong>many-to-one</strong>, by hand, at scale.</p>
+          <hr class="h-divider" />
+          <div style="font-size:12px; color:#9ca3af; line-height:1.6;">That's where time and accuracy bleed out — and where mistakes hide until the auditor finds them.</div>
+        </div>
+
+        <div class="card" style="border-top:3px solid #22c55e;">
+          <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px;">What Synder Recon Does</div>
+          <p style="font-size:13.5px; color:#d1d5db; line-height:1.7;">Catches the gaps and discrepancies <strong>before</strong> you close the books, not after. The point isn't auditing — it's pre-close hygiene.</p>
+          <hr class="h-divider" />
+          <div style="font-size:12px; color:#9ca3af; line-height:1.6;">If a transaction is missing, mismatched, or never made it across — you find out while you still have time to fix it cleanly.</div>
+        </div>
+      </div>
+
+      <div class="violet-box">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:18px;">🎯</span>
+          <span style="font-size:13px; color:#c4b5fd;"><strong>Today's session:</strong> the recon we've built, the recon we're about to ship, and the recon we're still figuring out — and how all of it lines up against the way Burkland actually works.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 4: TR HOW IT WORKS ─────────── -->
+  <div class="slide" data-slide="4">
+    <div class="slide-inner">
+      <div class="section-label">Transaction Reconciliation</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">How It Works</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Pick the inputs. Pick how Synder matches. Read the result.</p>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Launch — Four Choices</div>
+      <div class="grid-4" style="margin-bottom:24px;">
+        <div class="card-sm" style="text-align:center;">
+          <div style="font-size:24px; margin-bottom:8px;">📅</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Period</div>
+          <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">Last month, quarter, custom</div>
+        </div>
+        <div class="card-sm" style="text-align:center;">
+          <div style="font-size:24px; margin-bottom:8px;">🔌</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Integration</div>
+          <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">Stripe, PayPal, Shopify…</div>
+        </div>
+        <div class="card-sm" style="text-align:center;">
+          <div style="font-size:24px; margin-bottom:8px;">📒</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Account</div>
+          <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">Where the txns land in QBO</div>
+        </div>
+        <div class="card-sm" style="text-align:center;">
+          <div style="font-size:24px; margin-bottom:8px;">⚙️</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Mode</div>
+          <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">Auto · Assisted · Manual</div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Result — Four Buckets</div>
+      <div class="grid-2" style="gap:10px; margin-bottom:16px;">
+        <div class="card-sm" style="border-left:3px solid #22c55e;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">✓</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:13.5px;">Matched</div>
+              <div style="font-size:12px; color:#9ca3af;">Integration ↔ accounting tied cleanly by ID.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #f59e0b;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">⚠</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:13.5px;">Discrepancy</div>
+              <div style="font-size:12px; color:#9ca3af;">Matched by ID, but the amounts disagree.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">↗</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:13.5px;">Missing in Accounting</div>
+              <div style="font-size:12px; color:#9ca3af;">Integration sees it, books don't.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #a78bfa;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">↙</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:13.5px;">Missing in Integration</div>
+              <div style="font-size:12px; color:#9ca3af;">Books have an entry the integration doesn't.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="font-size:12.5px; color:#93c5fd;">
+        <strong>Plus:</strong> reconcile accounts that aren't Synder-connected at all — by uploading a bank statement. Demo coming up.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 5: LIVE DEMO ─────────── -->
+  <div class="slide" data-slide="5">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:70vh;">
+      <div class="fade-up">
+        <div class="demo-badge" style="margin-bottom:28px;">
+          <div class="pulse-dot"></div>
+          LIVE DEMO
+        </div>
+        <h1 style="font-size:2.4rem; font-weight:800; color:#f9fafb; margin-bottom:14px;">Switching to Synder</h1>
+        <p style="font-size:1rem; color:#9ca3af; max-width:680px; margin: 0 auto 36px;">Four separate recons walking the result buckets — then PT vs SM (with the Register language you know), then a non-Synder bank account via uploaded statement.</p>
+
+        <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap; max-width:780px; margin:0 auto;">
+          <div class="card-sm" style="background:rgba(34,197,94,0.06); border-color:rgba(34,197,94,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#4ade80; font-weight:600;">R1</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">All Matched</span>
+          </div>
+          <div class="card-sm" style="background:rgba(107,114,128,0.06); border-color:rgba(107,114,128,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#9ca3af; font-weight:600;">R2</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">To Ignore</span>
+          </div>
+          <div class="card-sm" style="background:rgba(245,158,11,0.06); border-color:rgba(245,158,11,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#fbbf24; font-weight:600;">R3</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">Discrepancy</span>
+          </div>
+          <div class="card-sm" style="background:rgba(239,68,68,0.06); border-color:rgba(239,68,68,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#f87171; font-weight:600;">R4</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">Missing Both Sides</span>
+          </div>
+          <div class="card-sm" style="background:rgba(167,139,250,0.06); border-color:rgba(167,139,250,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#c4b5fd; font-weight:600;">SM</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">Summary Sync · Register</span>
+          </div>
+          <div class="card-sm" style="background:rgba(59,130,246,0.06); border-color:rgba(59,130,246,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#60a5fa; font-weight:600;">+</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">Non-Synder Account · Bank Statement</span>
+          </div>
+        </div>
+
+        <p style="font-size:12px; color:#6b7280; margin-top:36px;">Then back to slides for what's coming next.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 6: H6 — FIRM-LEVEL RECONCILIATION ─────────── -->
+  <div class="slide" data-slide="6">
+    <div class="slide-inner">
+      <div class="section-label">Concept · No UI Yet</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Firm-Level Reconciliation</h1>
+      <p class="slide-subtitle" style="margin-bottom:32px;">One view across the whole portfolio, not one org at a time.</p>
+
+      <div style="display:flex; align-items:center; gap:18px; margin-bottom:24px;">
+        <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+          <div class="concept-node" style="font-size:12px; padding: 10px 14px;">Client 1 — Stripe + QBO</div>
+          <div class="concept-node" style="font-size:12px; padding: 10px 14px;">Client 2 — Shopify + Xero</div>
+          <div class="concept-node" style="font-size:12px; padding: 10px 14px;">Client 3 — PayPal + QBO</div>
+          <div style="text-align:center; font-size:11px; color:#6b7280; padding:6px;">… 14 active clients</div>
+        </div>
+        <div class="concept-arrow">→</div>
+        <div style="flex:1.2;">
+          <div class="concept-node" style="background:rgba(34,197,94,0.08); border-color:rgba(34,197,94,0.4); padding:22px 18px;">
+            <div style="font-size:13px; font-weight:800; color:#4ade80; margin-bottom:6px;">Firm Dashboard</div>
+            <div style="font-size:11.5px; color:#9ca3af; line-height:1.6;">Recon health per client · who's done · who's behind · audit-ready exports</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="border-left:3px solid #22c55e;">
+        <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Why this matters</div>
+        <p style="font-size:13px; color:#d1d5db; line-height:1.7;">Today, checking recon status means opening each client's Synder org one at a time. The concept: one view, all clients, deadline-aware, exportable.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 7: H8 — MATCHING RULES ─────────── -->
+  <div class="slide" data-slide="7">
+    <div class="slide-inner">
+      <div class="section-label">Concept · No UI Yet · DIS-345</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Matching Rules</h1>
+      <p class="slide-subtitle" style="margin-bottom:32px;">What if you could define the matching criteria, not just rely on ID-match?</p>
+
+      <div style="display:flex; align-items:center; gap:14px; justify-content:center; flex-wrap:wrap; margin-bottom:24px;">
+        <div class="concept-node" style="border-color:rgba(59,130,246,0.4); background:rgba(59,130,246,0.06); color:#60a5fa; font-weight:700; min-width:80px;">ID</div>
+        <div class="concept-arrow">→</div>
+        <div class="concept-node" style="min-width:80px;">Date</div>
+        <div class="concept-arrow">→</div>
+        <div class="concept-node" style="min-width:80px;">Amount</div>
+        <div class="concept-arrow">→</div>
+        <div class="concept-node" style="min-width:80px;">Customer</div>
+        <div class="concept-arrow">→</div>
+        <div class="concept-node" style="min-width:80px;">Memo</div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card">
+          <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Today</div>
+          <p style="font-size:13px; color:#d1d5db; line-height:1.7;">Auto-match runs on integration transaction ID. When ID fails, the row drops to Missing.</p>
+        </div>
+        <div class="card" style="border:1px solid rgba(167,139,250,0.4); background:rgba(167,139,250,0.04);">
+          <div style="font-size:12px; font-weight:700; color:#c4b5fd; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Tomorrow</div>
+          <p style="font-size:13px; color:#d1d5db; line-height:1.7;">Configurable criteria stack with tolerances — and different stacks for different client setups.</p>
+        </div>
+      </div>
+
+      <div class="violet-box" style="font-size:12.5px; color:#c4b5fd;">
+        The question we want to learn from you: <strong>which criteria do you already lean on today</strong> when ID-match isn't enough?
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 8: H9 — AUDIT REPORT ─────────── -->
+  <div class="slide" data-slide="8">
+    <div class="slide-inner">
+      <div class="section-label">Concept · No UI Yet</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Audit Report</h1>
+      <p class="slide-subtitle" style="margin-bottom:32px;">Reconciliation has a downstream — make it shareable.</p>
+
+      <div style="display:flex; align-items:center; gap:18px; margin-bottom:24px;">
+        <div style="flex:1;">
+          <div class="concept-node" style="background:rgba(59,130,246,0.06); border-color:rgba(59,130,246,0.4); padding:18px 18px;">
+            <div style="font-size:13px; font-weight:800; color:#60a5fa; margin-bottom:6px;">Reconciliation Output</div>
+            <div style="font-size:11.5px; color:#9ca3af; line-height:1.6;">Matched · Discrepancies · Ignored · Resolutions</div>
+          </div>
+        </div>
+        <div class="concept-arrow">→</div>
+        <div style="flex:1;">
+          <div class="concept-node" style="background:rgba(34,197,94,0.08); border-color:rgba(34,197,94,0.4); padding:18px 18px;">
+            <div style="font-size:13px; font-weight:800; color:#4ade80; margin-bottom:6px;">Shareable Artifact</div>
+            <div style="font-size:11.5px; color:#9ca3af; line-height:1.6;">PDF · CSV · link · branded</div>
+          </div>
+        </div>
+        <div class="concept-arrow">→</div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+          <div class="concept-node" style="font-size:12px; padding:8px 12px;">Auditor</div>
+          <div class="concept-node" style="font-size:12px; padding:8px 12px;">Partner</div>
+          <div class="concept-node" style="font-size:12px; padding:8px 12px;">Client</div>
+        </div>
+      </div>
+
+      <div class="card" style="border-left:3px solid #22c55e;">
+        <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">The idea</div>
+        <p style="font-size:13px; color:#d1d5db; line-height:1.7;">Stop reformatting the recon screen for downstream audiences. Final-stage artifact, generated from the recon itself, ready to hand off.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 9: H10 — PERIOD LOCKING + SOFT CLOSE ─────────── -->
+  <div class="slide" data-slide="9">
+    <div class="slide-inner">
+      <div class="section-label">Concept · No UI Yet · DIS-44</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Period Locking & Soft Close</h1>
+      <p class="slide-subtitle" style="margin-bottom:32px;">When the books close, Synder respects it. With one variant worth discussing.</p>
+
+      <div class="grid-2" style="margin-bottom:18px;">
+        <div class="card" style="border-top:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:22px;">🔒</span>
+            <div style="font-weight:800; color:#f9fafb;">Hard Close</div>
+          </div>
+          <p style="font-size:13px; color:#d1d5db; line-height:1.7;">Closed period is closed. A late transaction lands under the <strong>earliest open date</strong>.</p>
+          <hr class="h-divider" />
+          <div style="font-size:11.5px; color:#9ca3af;">No re-opening. Strict discipline.</div>
+        </div>
+
+        <div class="card" style="border-top:3px solid #a78bfa;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:22px;">🚪</span>
+            <div style="font-weight:800; color:#f9fafb;">Soft Close</div>
+          </div>
+          <p style="font-size:13px; color:#d1d5db; line-height:1.7;">Closed for now — but if something needs to land in the closed period, <strong>re-open · enter · close again</strong>.</p>
+          <hr class="h-divider" />
+          <div style="font-size:11.5px; color:#9ca3af;">Flexible. Pragmatic.</div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="font-size:12.5px; color:#fbbf24;">
+        Which discipline does Burkland practice — and is the earliest-open-date re-routing already part of how you handle late transactions today?
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 10: OVER TO YOU ─────────── -->
+  <div class="slide" data-slide="10">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-green" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Roundtable</div>
+        <h1 style="font-size:2.6rem; font-weight:800; line-height:1.15; color:#f9fafb; margin-bottom:18px;">
+          Over to You
+        </h1>
+        <p style="font-size:1.25rem; color:#d1d5db; max-width:760px; margin:0 auto 20px; line-height:1.5;">
+          We've shown you what we have and what's coming. The part we <em>can't</em> see from inside the product is how this lands inside how you actually work.
+        </p>
+        <p style="font-size:1.05rem; color:#9ca3af; max-width:720px; margin:0 auto 36px; line-height:1.6;">
+          So let's compare notes. There are no wrong answers — the surprises matter more than the confirmations.
+        </p>
+
+        <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap; max-width:780px; margin:0 auto;">
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">How you reconcile today</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">Which clients are the messiest</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">Matching criteria you trust</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">How fixes get into the books</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">AI in your firm</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">Firm-level cadence</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">What your clients see</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">How you close a period</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 11: THANK YOU + COMMITMENT ─────────── -->
+  <div class="slide" data-slide="11">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-amber" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Close</div>
+        <h1 style="font-size:2.6rem; font-weight:800; line-height:1.15; color:#f9fafb; margin-bottom:18px;">
+          Thank You, Burkland
+        </h1>
+        <p style="font-size:1.15rem; color:#d1d5db; max-width:720px; margin:0 auto 36px; line-height:1.6;">
+          You set the bar high for the first of these. Here's what happens next.
+        </p>
+
+        <div style="display:flex; flex-direction:column; gap:12px; max-width:680px; margin:0 auto 32px;">
+          <div class="card" style="text-align:left; padding:16px 22px; display:flex; gap:14px; align-items:center;">
+            <span style="font-size:22px;">📝</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:14px;">T+1 day</div>
+              <div style="font-size:12.5px; color:#9ca3af;">Slava and Barbara debrief — verbatim quotes captured per hypothesis.</div>
+            </div>
+          </div>
+          <div class="card" style="text-align:left; padding:16px 22px; display:flex; gap:14px; align-items:center;">
+            <span style="font-size:22px;">✉️</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:14px;">T+2 days</div>
+              <div style="font-size:12.5px; color:#9ca3af;">Follow-up email from Vita — recording, top takeaways, and what's moving up the roadmap.</div>
+            </div>
+          </div>
+          <div class="card" style="text-align:left; padding:16px 22px; display:flex; gap:14px; align-items:center;">
+            <span style="font-size:22px;">🧭</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:14px;">T+7 days</div>
+              <div style="font-size:12.5px; color:#9ca3af;">Product memo — per-hypothesis verdict, ranked roadmap impact, co-design invitations.</div>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size:13px; color:#6b7280; max-width:640px; margin:0 auto; line-height:1.6;">
+          If anything else comes to mind between now and the follow-up — ping Vita directly.
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Overview grid -->
+<div id="overview">
+  <span id="overview-close">✕</span>
+  <h2>All Slides — Press Esc to close</h2>
+  <div id="overview-grid"></div>
+</div>
+
+<!-- Navigation -->
+<div id="nav-dots"></div>
+<div id="slide-counter">1 / 11</div>
+<div id="keyboard-hint">← → Navigate · Esc Overview · F Fullscreen</div>
+
+<script>
+const TOTAL = 11;
+const TITLES = [
+  "Reconciliation in Practice — Title",
+  "How We'll Spend the Hour",
+  "Why Reconciliation Matters",
+  "Transaction Reconciliation — How It Works",
+  "Live Demo",
+  "Concept — Firm-Level Reconciliation",
+  "Concept — Matching Rules (DIS-345)",
+  "Concept — Audit Report",
+  "Concept — Period Locking & Soft Close (DIS-44)",
+  "Over to You — Roundtable",
+  "Thank You & Next Steps"
+];
+
+let current = 1;
+
+const dotsEl = document.getElementById('nav-dots');
+for (let i = 1; i <= TOTAL; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.dataset.slide = i;
+  d.title = TITLES[i-1];
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+const grid = document.getElementById('overview-grid');
+for (let i = 1; i <= TOTAL; i++) {
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb' + (i === 1 ? ' active-thumb' : '');
+  thumb.dataset.slide = i;
+  thumb.innerHTML = `<div class="thumb-num">Slide ${i}</div><div class="thumb-title">${TITLES[i-1]}</div>`;
+  thumb.addEventListener('click', () => { goTo(i); hideOverview(); });
+  grid.appendChild(thumb);
+}
+
+function goTo(n) {
+  if (n < 1 || n > TOTAL) return;
+  const prev = document.querySelector('.slide.active');
+  if (prev) prev.classList.remove('active');
+  const prevDot = document.querySelector('.dot.active');
+  if (prevDot) prevDot.classList.remove('active');
+  const prevThumb = document.querySelector('.thumb.active-thumb');
+  if (prevThumb) prevThumb.classList.remove('active-thumb');
+
+  current = n;
+  const next = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (next) next.classList.add('active');
+  const dots = document.querySelectorAll('.dot');
+  if (dots[n-1]) dots[n-1].classList.add('active');
+  const thumbs = document.querySelectorAll('.thumb');
+  if (thumbs[n-1]) thumbs[n-1].classList.add('active-thumb');
+
+  document.getElementById('slide-counter').textContent = `${n} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = ((n / TOTAL) * 100) + '%';
+}
+
+goTo(1);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current - 1);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    const ov = document.getElementById('overview');
+    if (ov.classList.contains('visible')) hideOverview();
+    else showOverview();
+  } else if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault();
+    toggleFullscreen();
+  }
+});
+
+function showOverview() { document.getElementById('overview').classList.add('visible'); }
+function hideOverview() { document.getElementById('overview').classList.remove('visible'); }
+document.getElementById('overview-close').addEventListener('click', hideOverview);
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+  else document.exitFullscreen().catch(() => {});
+}
+
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    if (dx < 0) goTo(current + 1);
+    else goTo(current - 1);
+  }
+}, { passive: true });
+</script>
+</body>
+</html>
