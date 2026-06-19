@@ -507,32 +507,32 @@ tailwind.config = {
     </div>
   </div>
 
-  <!-- ─────────── SLIDE 10: H10 — PERIOD LOCKING + SOFT CLOSE ─────────── -->
+  <!-- ─────────── SLIDE 10: H10 — PERIOD LOCKING (SOFT-LOCK / HARD-LOCK) ─────────── -->
   <div class="slide" data-slide="10">
     <div class="slide-inner">
       <div class="section-label">Concept · No UI Yet · DIS-44</div>
-      <h1 class="slide-title" style="margin-bottom:8px;">Period Locking & Soft Close</h1>
-      <p class="slide-subtitle" style="margin-bottom:32px;">When the books close, Synder respects it. With one variant worth discussing.</p>
+      <h1 class="slide-title" style="margin-bottom:8px;">Period Locking — Soft-lock & Hard-lock</h1>
+      <p class="slide-subtitle" style="margin-bottom:32px;">When the books close, Synder respects it. Two variants depending on how strict the discipline is.</p>
 
       <div class="grid-2" style="margin-bottom:18px;">
-        <div class="card" style="border-top:3px solid #ef4444;">
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-            <span style="font-size:22px;">🔒</span>
-            <div style="font-weight:800; color:#f9fafb;">Hard Close</div>
-          </div>
-          <p style="font-size:13px; color:#d1d5db; line-height:1.7;">Closed period is closed. A late transaction lands under the <strong>earliest open date</strong>.</p>
-          <hr class="h-divider" />
-          <div style="font-size:11.5px; color:#9ca3af;">No re-opening. Strict discipline.</div>
-        </div>
-
         <div class="card" style="border-top:3px solid #a78bfa;">
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
             <span style="font-size:22px;">🚪</span>
-            <div style="font-weight:800; color:#f9fafb;">Soft Close</div>
+            <div style="font-weight:800; color:#f9fafb;">Soft-lock</div>
           </div>
-          <p style="font-size:13px; color:#d1d5db; line-height:1.7;">Closed for now — but if something needs to land in the closed period, <strong>re-open · enter · close again</strong>.</p>
+          <p style="font-size:13px; color:#d1d5db; line-height:1.7;">A transaction destined for the closed period auto-routes to the <strong>nearest open period date</strong> and posts there.</p>
           <hr class="h-divider" />
-          <div style="font-size:11.5px; color:#9ca3af;">Flexible. Pragmatic.</div>
+          <div style="font-size:11.5px; color:#9ca3af;">No action needed. Books stay current.</div>
+        </div>
+
+        <div class="card" style="border-top:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:22px;">🔒</span>
+            <div style="font-weight:800; color:#f9fafb;">Hard-lock</div>
+          </div>
+          <p style="font-size:13px; color:#d1d5db; line-height:1.7;">The transaction <strong>doesn't post to the books</strong>. Synder flags it for the user to action manually.</p>
+          <hr class="h-divider" />
+          <div style="font-size:11.5px; color:#9ca3af;">Strict discipline. Nothing slips in by default.</div>
         </div>
       </div>
 
@@ -640,7 +640,7 @@ const TITLES = [
   "Concept — Firm-Level Reconciliation",
   "Concept — Matching Rules (DIS-345)",
   "Concept — Audit Report",
-  "Concept — Period Locking & Soft Close (DIS-44)",
+  "Concept — Period Locking (Soft-lock & Hard-lock, DIS-44)",
   "Over to You — Roundtable",
   "Thank You & Next Steps"
 ];
