@@ -197,7 +197,7 @@ tailwind.config = {
           <div style="width:36px; height:36px; background:rgba(245,158,11,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🤝</div>
           <div style="flex:1;">
             <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Close + Next Steps</div>
-            <div style="font-size:12.5px; color:#9ca3af;">How we follow up: tomorrow's recap email, the product memo within a week.</div>
+            <div style="font-size:12.5px; color:#9ca3af;">Survey right after the call, follow-up email in a couple of days, product memo within a week.</div>
           </div>
           <div class="tag tag-amber">3 min</div>
         </div>
@@ -424,12 +424,13 @@ tailwind.config = {
           </div>
           <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Fix the discrepancy in QBO/Xero, then refresh the reconciliation. In-Synder fix is on the roadmap.</div>
         </div>
-        <div class="card-sm" style="border-left:3px solid #a78bfa;">
+        <div class="card-sm" style="border-left:3px solid #a78bfa; position:relative;">
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
             <span style="font-size:18px;">🔗</span>
             <div style="font-weight:700; color:#f9fafb; font-size:13px;">Manual matching</div>
+            <span style="font-size:9.5px; font-weight:700; color:#c4b5fd; background:rgba(167,139,250,0.18); border:1px solid rgba(167,139,250,0.35); padding:1px 6px; border-radius:8px; letter-spacing:0.04em; text-transform:uppercase;">Test server</span>
           </div>
-          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Pair missing rows on either side when ID-matching can't link them. Different conventions, manual entries, re-syncs.</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Pair missing rows on either side when ID-matching can't link them. Different conventions, manual entries, re-syncs. <strong style="color:#c4b5fd;">Closest feature to release</strong> — not in production yet.</div>
         </div>
         <div class="card-sm" style="border-left:3px solid #6b7280;">
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
@@ -701,7 +702,7 @@ tailwind.config = {
           </div>
           <p style="font-size:12.5px; color:#d1d5db; line-height:1.6; margin-bottom:12px;">Pick the items you'd want to see first. Pick more than one.</p>
           <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:6px;">
-            <div class="card-sm" style="padding:8px 12px; font-size:12px; color:#d1d5db; background:rgba(167,139,250,0.05);">Manual matching <span style="color:#9ca3af;">· already shipping</span></div>
+            <div class="card-sm" style="padding:8px 12px; font-size:12px; color:#d1d5db; background:rgba(167,139,250,0.05);">Manual matching <span style="color:#9ca3af;">· test server, closest release</span></div>
             <div class="card-sm" style="padding:8px 12px; font-size:12px; color:#d1d5db; background:rgba(167,139,250,0.05);">JE-from-Synder</div>
             <div class="card-sm" style="padding:8px 12px; font-size:12px; color:#d1d5db; background:rgba(167,139,250,0.05);">Balance Reconciliation</div>
             <div class="card-sm" style="padding:8px 12px; font-size:12px; color:#d1d5db; background:rgba(167,139,250,0.05);">Match with AI</div>
@@ -735,23 +736,30 @@ tailwind.config = {
         <h1 style="font-size:2.6rem; font-weight:800; line-height:1.15; color:#f9fafb; margin-bottom:18px;">
           Thank You, Burkland
         </h1>
-        <p style="font-size:1.15rem; color:#d1d5db; max-width:720px; margin:0 auto 32px; line-height:1.6;">
+        <p style="font-size:1.1rem; color:#d1d5db; max-width:720px; margin:0 auto 28px; line-height:1.6;">
           You're our first firm doing this format and you set the bar high. Here's how we follow up.
         </p>
 
-        <div style="display:flex; flex-direction:column; gap:12px; max-width:700px; margin:0 auto 28px;">
-          <div class="card" style="text-align:left; padding:18px 24px; display:flex; gap:14px; align-items:center;">
-            <span style="font-size:24px;">✉️</span>
+        <div style="display:flex; flex-direction:column; gap:12px; max-width:720px; margin:0 auto 24px;">
+          <div class="card" style="text-align:left; padding:16px 22px; display:flex; gap:14px; align-items:center; border:1px solid rgba(34,197,94,0.4); background:rgba(34,197,94,0.05);">
+            <span style="font-size:24px;">📋</span>
             <div>
-              <div style="font-weight:700; color:#f9fafb; font-size:15px;">Tomorrow — Follow-up Email</div>
-              <div style="font-size:13px; color:#9ca3af;">From Vita — recording, the live poll results, and a summary of what was discussed.</div>
+              <div style="font-weight:700; color:#4ade80; font-size:14px;">Right after we close — Short Survey</div>
+              <div style="font-size:12.5px; color:#9ca3af; line-height:1.5;">~10 minutes if you go thoughtfully. Helps us serve Burkland better — the strongest signal we get for what to build next.</div>
             </div>
           </div>
-          <div class="card" style="text-align:left; padding:18px 24px; display:flex; gap:14px; align-items:center;">
+          <div class="card" style="text-align:left; padding:16px 22px; display:flex; gap:14px; align-items:center;">
+            <span style="font-size:24px;">✉️</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:14px;">In a couple of days — Follow-up Email</div>
+              <div style="font-size:12.5px; color:#9ca3af; line-height:1.5;">Recording, live poll results, summary, and a friendly nudge if the survey is still on your list.</div>
+            </div>
+          </div>
+          <div class="card" style="text-align:left; padding:16px 22px; display:flex; gap:14px; align-items:center;">
             <span style="font-size:24px;">🧭</span>
             <div>
-              <div style="font-weight:700; color:#f9fafb; font-size:15px;">Within a week — Product Memo</div>
-              <div style="font-size:13px; color:#9ca3af;">What we heard, what's moving up the roadmap, what we're rethinking. You'll see your input land.</div>
+              <div style="font-weight:700; color:#f9fafb; font-size:14px;">Within a week — Product Memo</div>
+              <div style="font-size:12.5px; color:#9ca3af; line-height:1.5;">Combines your Q&A, vote, suggestions, and survey responses. Shows what's moving up the roadmap.</div>
             </div>
           </div>
         </div>
