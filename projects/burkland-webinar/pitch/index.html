@@ -212,42 +212,83 @@ tailwind.config = {
     </div>
   </div>
 
-  <!-- ─────────── SLIDE 3: WHY RECONCILIATION MATTERS + WHY SYNDER ─────────── -->
+  <!-- ─────────── SLIDE 3: WHY SYNDER ─────────── -->
   <div class="slide" data-slide="3">
     <div class="slide-inner">
       <div class="section-label">The Problem · Why Synder</div>
-      <h1 class="slide-title" style="margin-bottom:8px;">Why Reconciliation Matters · Why Synder</h1>
-      <p class="slide-subtitle" style="margin-bottom:22px;">Receivable reconciliation is many-to-one at scale. Here's the three things Synder brings to it.</p>
+      <h1 class="slide-title" style="margin-bottom:6px;">Why Synder</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Reconciliation is hard for a stack of reasons. Here's how Synder makes it less so.</p>
 
-      <div class="card" style="border-top:3px solid #ef4444; margin-bottom:18px;">
-        <div style="font-size:13px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">The Receivable Reality</div>
-        <p style="font-size:13.5px; color:#d1d5db; line-height:1.7;">For every <strong>one sale</strong>, you can have multiple transactions to align — a sales receipt, an expense for the fee, a payout. The matching is <strong>many-to-one</strong>, by hand, at scale. It's where the hours stack up and small errors can quietly accumulate before close.</p>
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Why reconciliation is hard</div>
+      <div class="grid-3" style="gap:8px; margin-bottom:20px;">
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🔀</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Many-to-one matching</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">One sale → receipt + fee + payout. By hand, at scale.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">❓</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Native tools work by totals</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Accounting platforms tie volume to a balance. You confirm totals, not which rows actually paired.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">📑</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Source is usually an Excel</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">For non-integrated accounts — statements, exports — shaped and compared by hand.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🧩</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Hard to scale across platforms</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Stripe isn't Shopify isn't PayPal. A different recipe per integration — painful across a portfolio.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🕵</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Errors hide until audit</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Small mismatches surface months later — by then the trail is cold.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">⏳</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Hours per client per month</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Manual work scales with volume — and never shrinks.</div>
+        </div>
       </div>
 
-      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">What Synder brings</div>
-      <div class="grid-3" style="gap:12px; margin-bottom:14px;">
-        <div class="card-sm" style="border-top:3px solid #22c55e; padding:16px 18px;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-            <span style="font-size:20px;">🔍</span>
-            <div style="font-weight:800; color:#f9fafb; font-size:14px;">Auditable</div>
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">What Synder brings</div>
+      <div class="grid-3" style="gap:10px; margin-bottom:6px;">
+        <div class="card-sm" style="border-top:3px solid #22c55e; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">🔍</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Auditable</div>
           </div>
-          <p style="font-size:12.5px; color:#d1d5db; line-height:1.6;">See <strong>which row matched which row</strong>, side by side. Native QBO reconciliation ties by <strong>totals</strong> — you can confirm the numbers, but not the underlying pairs.</p>
+          <p style="font-size:11.5px; color:#d1d5db; line-height:1.55;">See <strong>which row matched which row</strong>, side by side. Native QBO ties by totals — you can confirm numbers, not pairs.</p>
         </div>
 
-        <div class="card-sm" style="border-top:3px solid #3b82f6; padding:16px 18px;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-            <span style="font-size:20px;">⚙️</span>
-            <div style="font-weight:800; color:#f9fafb; font-size:14px;">Automated</div>
+        <div class="card-sm" style="border-top:3px solid #3b82f6; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">⚙️</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Automated</div>
           </div>
-          <p style="font-size:12.5px; color:#d1d5db; line-height:1.6;">Synder does the matching and <strong>surgically shows what's missing</strong>, what needs correction, and what shouldn't have come through — so you act row by row, not on the whole report.</p>
+          <p style="font-size:11.5px; color:#d1d5db; line-height:1.55;">Synder matches and <strong>surgically points out what's wrong</strong> — which row, which side, which delta. Every fix is anchored in a transaction, not a guess.</p>
         </div>
 
-        <div class="card-sm" style="border-top:3px solid #a78bfa; padding:16px 18px;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-            <span style="font-size:20px;">⚡</span>
-            <div style="font-weight:800; color:#f9fafb; font-size:14px;">Fast</div>
+        <div class="card-sm" style="border-top:3px solid #a78bfa; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">⚡</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Fast</div>
           </div>
-          <p style="font-size:12.5px; color:#d1d5db; line-height:1.6;"><strong>No waiting for cash</strong> to land in the bank. Platform-level data is available immediately — you can reconcile during the month, not just after close.</p>
+          <p style="font-size:11.5px; color:#d1d5db; line-height:1.55;"><strong>Hours become minutes.</strong> No waiting for cash to land in the bank — platform data is available immediately.</p>
         </div>
       </div>
     </div>
@@ -741,7 +782,7 @@ const TOTAL = 14;
 const TITLES = [
   "Reconciliation in Practice — Title",
   "How We'll Spend the Hour",
-  "Why Reconciliation Matters · Why Synder",
+  "Why Synder",
   "Transaction Reconciliation — How It Works",
   "Live Demo",
   "Resolution Paths Today",
