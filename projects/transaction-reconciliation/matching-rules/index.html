@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Matching Rules · Synder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; background: #f6f7f9; color: #111827; }
+  .ring-brand { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .chip-blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .chip-green { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+  .chip-amber { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+  .chip-gray { background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
+  .chip-violet { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+
+  .tag-mock {
+    position: fixed; top: 12px; right: 12px; z-index: 50;
+    background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;
+    border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  .rule-card.active { border-color: #2563eb; background: #eff6ff; }
+  .rule-card.active .rule-card-name { color: #1d4ed8; }
+
+  .strictness-bar {
+    display: flex; gap: 3px; align-items: center;
+  }
+  .strictness-bar .seg { width: 22px; height: 6px; border-radius: 2px; background: #e5e7eb; }
+  .strictness-bar .seg.on { background: #2563eb; }
+
+  /* Toggle switch */
+  .switch { position: relative; width: 32px; height: 18px; background: #d1d5db; border-radius: 999px; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
+  .switch.on { background: #2563eb; }
+  .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: white; border-radius: 50%; transition: left 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+  .switch.on::after { left: 16px; }
+
+  /* Radio chips */
+  .radio-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .radio-chip { padding: 5px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; font-weight: 500; color: #4b5563; cursor: pointer; background: white; transition: all 0.15s; }
+  .radio-chip:hover { border-color: #9ca3af; }
+  .radio-chip.on { background: #2563eb; border-color: #2563eb; color: white; }
+  .radio-chip.disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .criteria-row { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; transition: border-color 0.15s; }
+  .criteria-row.enabled { border-color: #bfdbfe; background: #fafbff; }
+  .criteria-row.disabled { opacity: 0.6; }
+  .criteria-row.required { border-color: #d1d5db; background: #f9fafb; }
+
+  .preview-card { background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<div class="tag-mock">Concept Mock · Reality may differ</div>
+
+<!-- Mock-context bar -->
+<div style="background:#1f2937; color:#d1d5db; font-size:11.5px; padding:6px 24px; display:flex; justify-content:space-between; align-items:center;">
+  <a href="../" style="color:#93c5fd; text-decoration:none;">← Transaction Reconciliation</a>
+  <span style="color:#9ca3af;">Concept · Matching Rules</span>
+</div>
+
+<!-- Top bar -->
+<header class="bg-white border-b border-gray-200">
+  <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 bg-gradient-to-br from-blue-600 to-violet-600 rounded-md flex items-center justify-center text-white font-bold text-sm">S</div>
+      <span class="font-semibold text-gray-900">Synder</span>
+      <span class="text-xs text-gray-400">/ Advanced Sandbox Company US 9ac8</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="text-xs text-gray-500">Stripe Test (sandbox)</span>
+      <div class="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center text-xs font-semibold text-gray-700">VT</div>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-7xl mx-auto px-6 py-8">
+
+  <!-- Breadcrumb + Title -->
+  <nav class="text-xs text-gray-500 mb-3">
+    <a href="#" class="hover:text-blue-600">Settings</a> <span class="mx-1">›</span> <span class="text-gray-700">Matching rules</span>
+  </nav>
+  <div class="flex items-end justify-between mb-7">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Matching rules</h1>
+      <p class="text-sm text-gray-500 mt-1 max-w-2xl">Define how Synder matches integration transactions to accounting entries when running a reconciliation. Rules apply per integration or across all integrations.</p>
+    </div>
+    <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2 rounded-md flex items-center gap-2">
+      <span>+</span> New rule set
+    </button>
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="grid grid-cols-12 gap-6">
+
+    <!-- Left: rule list -->
+    <div class="col-span-4">
+      <div class="bg-white rounded-lg border border-gray-200">
+        <div class="px-4 py-3 border-b border-gray-200">
+          <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Rule sets</div>
+        </div>
+        <div class="p-3 space-y-2">
+
+          <div class="rule-card active border rounded-lg p-3 cursor-pointer transition-colors" onclick="selectRule(this, 'default')">
+            <div class="flex items-start justify-between mb-1">
+              <div class="rule-card-name font-semibold text-sm text-gray-900">Default rule set</div>
+              <span class="chip chip-gray">System</span>
+            </div>
+            <div class="text-xs text-gray-500 mb-2">All integrations · ID match only</div>
+            <div class="strictness-bar">
+              <div class="seg on"></div>
+              <div class="seg"></div>
+              <div class="seg"></div>
+              <div class="seg"></div>
+              <div class="seg"></div>
+            </div>
+            <div class="text-[10.5px] text-gray-400 mt-1.5">Strictness: Loose</div>
+          </div>
+
+          <div class="rule-card border border-gray-200 hover:border-gray-300 rounded-lg p-3 cursor-pointer transition-colors" onclick="selectRule(this, 'stripe-strict')">
+            <div class="flex items-start justify-between mb-1">
+              <div class="rule-card-name font-semibold text-sm text-gray-900">Stripe Strict</div>
+              <span class="chip chip-blue">Stripe</span>
+            </div>
+            <div class="text-xs text-gray-500 mb-2">ID + amount exact + date ±1d</div>
+            <div class="strictness-bar">
+              <div class="seg on"></div>
+              <div class="seg on"></div>
+              <div class="seg on"></div>
+              <div class="seg on"></div>
+              <div class="seg"></div>
+            </div>
+            <div class="text-[10.5px] text-gray-400 mt-1.5">Used in 8 reconciliations</div>
+          </div>
+
+          <div class="rule-card border border-gray-200 hover:border-gray-300 rounded-lg p-3 cursor-pointer transition-colors" onclick="selectRule(this, 'shopify-lenient')">
+            <div class="flex items-start justify-between mb-1">
+              <div class="rule-card-name font-semibold text-sm text-gray-900">Shopify Lenient</div>
+              <span class="chip chip-green">Shopify</span>
+            </div>
+            <div class="text-xs text-gray-500 mb-2">ID + amount ±0.5% + date ±3d</div>
+            <div class="strictness-bar">
+              <div class="seg on"></div>
+              <div class="seg on"></div>
+              <div class="seg on"></div>
+              <div class="seg"></div>
+              <div class="seg"></div>
+            </div>
+            <div class="text-[10.5px] text-gray-400 mt-1.5">Used in 3 reconciliations</div>
+          </div>
+
+          <div class="rule-card border border-gray-200 hover:border-gray-300 rounded-lg p-3 cursor-pointer transition-colors" onclick="selectRule(this, 'paypal-flexible')">
+            <div class="flex items-start justify-between mb-1">
+              <div class="rule-card-name font-semibold text-sm text-gray-900">PayPal — Date Flexible</div>
+              <span class="chip chip-amber">PayPal</span>
+            </div>
+            <div class="text-xs text-gray-500 mb-2">Amount + customer + date ±7d</div>
+            <div class="strictness-bar">
+              <div class="seg on"></div>
+              <div class="seg on"></div>
+              <div class="seg"></div>
+              <div class="seg"></div>
+              <div class="seg"></div>
+            </div>
+            <div class="text-[10.5px] text-gray-400 mt-1.5">Used in 2 reconciliations</div>
+          </div>
+
+          <div class="rule-card border border-gray-200 hover:border-gray-300 rounded-lg p-3 cursor-pointer transition-colors" onclick="selectRule(this, 'audit-strict')">
+            <div class="flex items-start justify-between mb-1">
+              <div class="rule-card-name font-semibold text-sm text-gray-900">Audit-Ready Strict</div>
+              <span class="chip chip-violet">All integrations</span>
+            </div>
+            <div class="text-xs text-gray-500 mb-2">All criteria, exact match</div>
+            <div class="strictness-bar">
+              <div class="seg on"></div>
+              <div class="seg on"></div>
+              <div class="seg on"></div>
+              <div class="seg on"></div>
+              <div class="seg on"></div>
+            </div>
+            <div class="text-[10.5px] text-gray-400 mt-1.5">Used in 1 reconciliation</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="mt-4 px-3 text-[11.5px] text-gray-500 leading-relaxed">
+        <strong>How it works:</strong> When you launch a reconciliation, Synder picks the rule set that matches the integration. The Default rule set is the fallback when no integration-specific rule exists.
+      </div>
+    </div>
+
+    <!-- Right: rule editor -->
+    <div class="col-span-8">
+
+      <div class="bg-white rounded-lg border border-gray-200">
+
+        <!-- Editor header -->
+        <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <h2 id="editor-name" class="text-lg font-bold text-gray-900">Default rule set</h2>
+              <span class="chip chip-gray">System</span>
+            </div>
+            <p class="text-xs text-gray-500">Applied to any reconciliation that doesn't match a more specific rule set.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="text-xs text-gray-600 hover:text-gray-900 px-3 py-1.5 border border-gray-200 rounded-md">Duplicate</button>
+            <button class="text-xs text-gray-600 hover:text-red-600 px-3 py-1.5 border border-gray-200 rounded-md" disabled title="System rule — cannot be deleted">Delete</button>
+          </div>
+        </div>
+
+        <!-- Editor body -->
+        <div class="px-6 py-6 space-y-6">
+
+          <!-- Rule name + applies to -->
+          <div class="grid grid-cols-2 gap-5">
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1.5">Rule name</label>
+              <input type="text" value="Default rule set" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 mb-1.5">Applies to</label>
+              <select class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white">
+                <option>All integrations (fallback)</option>
+                <option>Stripe only</option>
+                <option>Shopify only</option>
+                <option>PayPal only</option>
+                <option>Specific account...</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Criteria stack -->
+          <div>
+            <div class="flex items-baseline justify-between mb-2">
+              <label class="block text-xs font-semibold text-gray-700">Match criteria · in priority order</label>
+              <span class="text-[11px] text-gray-500">Drag to reorder</span>
+            </div>
+
+            <div class="space-y-2">
+
+              <!-- ID match (required) -->
+              <div class="criteria-row required flex items-center gap-4">
+                <div class="text-xs font-bold text-gray-400 w-5">1</div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-0.5">
+                    <span class="text-sm font-semibold text-gray-900">Transaction ID</span>
+                    <span class="chip chip-gray">Always on</span>
+                  </div>
+                  <div class="text-xs text-gray-500">Integration transaction ID matches the accounting reference field</div>
+                </div>
+                <div class="text-xs text-gray-500">Exact match only</div>
+              </div>
+
+              <!-- Amount -->
+              <div class="criteria-row enabled flex items-center gap-4">
+                <div class="text-xs font-bold text-gray-400 w-5">2</div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1.5">
+                    <span class="text-sm font-semibold text-gray-900">Amount</span>
+                    <div class="switch on" onclick="this.classList.toggle('on')"></div>
+                  </div>
+                  <div class="radio-row">
+                    <div class="radio-chip" onclick="setRadio(this)">Exact</div>
+                    <div class="radio-chip on" onclick="setRadio(this)">± $0.01</div>
+                    <div class="radio-chip" onclick="setRadio(this)">± $0.05</div>
+                    <div class="radio-chip" onclick="setRadio(this)">± 0.5%</div>
+                    <div class="radio-chip" onclick="setRadio(this)">± 1%</div>
+                  </div>
+                  <div class="text-[11px] text-gray-500 mt-1.5">Use a small tolerance for currency rounding. 0.5–1% helps with FX-converted transactions.</div>
+                </div>
+              </div>
+
+              <!-- Date -->
+              <div class="criteria-row enabled flex items-center gap-4">
+                <div class="text-xs font-bold text-gray-400 w-5">3</div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1.5">
+                    <span class="text-sm font-semibold text-gray-900">Date</span>
+                    <div class="switch on" onclick="this.classList.toggle('on')"></div>
+                  </div>
+                  <div class="radio-row">
+                    <div class="radio-chip" onclick="setRadio(this)">Exact</div>
+                    <div class="radio-chip on" onclick="setRadio(this)">± 1 day</div>
+                    <div class="radio-chip" onclick="setRadio(this)">± 3 days</div>
+                    <div class="radio-chip" onclick="setRadio(this)">± 7 days</div>
+                  </div>
+                  <div class="text-[11px] text-gray-500 mt-1.5">Common when payouts settle a day or two after the underlying transaction.</div>
+                </div>
+              </div>
+
+              <!-- Customer -->
+              <div class="criteria-row disabled flex items-center gap-4">
+                <div class="text-xs font-bold text-gray-400 w-5">4</div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1.5">
+                    <span class="text-sm font-semibold text-gray-900">Customer</span>
+                    <div class="switch" onclick="this.classList.toggle('on')"></div>
+                  </div>
+                  <div class="radio-row">
+                    <div class="radio-chip on disabled">Exact name</div>
+                    <div class="radio-chip disabled">Email match</div>
+                    <div class="radio-chip disabled">Customer ID</div>
+                  </div>
+                  <div class="text-[11px] text-gray-500 mt-1.5">Off by default — name spellings vary across integrations. Turn on for high-trust matches.</div>
+                </div>
+              </div>
+
+              <!-- Memo -->
+              <div class="criteria-row disabled flex items-center gap-4">
+                <div class="text-xs font-bold text-gray-400 w-5">5</div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1.5">
+                    <span class="text-sm font-semibold text-gray-900">Memo / description</span>
+                    <div class="switch" onclick="this.classList.toggle('on')"></div>
+                  </div>
+                  <div class="radio-row">
+                    <div class="radio-chip on disabled">Contains keyword</div>
+                    <div class="radio-chip disabled">Exact</div>
+                    <div class="radio-chip disabled">Regex pattern</div>
+                  </div>
+                  <div class="text-[11px] text-gray-500 mt-1.5">Useful when a reference like "INV-####" lives in the memo on one side.</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Action when matched -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-2">When all enabled criteria match</label>
+            <div class="radio-row">
+              <div class="radio-chip on" onclick="setRadio(this)">Auto-match (no review)</div>
+              <div class="radio-chip" onclick="setRadio(this)">Suggest for review</div>
+            </div>
+          </div>
+
+          <!-- Strictness preview -->
+          <div class="preview-card">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-xs font-semibold text-blue-900 uppercase tracking-wider">Match preview</div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-semibold text-blue-900">Strictness</span>
+                <div class="strictness-bar">
+                  <div class="seg on"></div>
+                  <div class="seg on"></div>
+                  <div class="seg on"></div>
+                  <div class="seg"></div>
+                  <div class="seg"></div>
+                </div>
+                <span class="text-xs font-semibold text-blue-900">Medium</span>
+              </div>
+            </div>
+            <p class="text-sm text-gray-800 leading-relaxed">Match when <strong>transaction ID is exact</strong>, <strong>amount is within $0.01</strong>, and <strong>date is within 1 day</strong>. Auto-pair without review.</p>
+            <div class="mt-3 flex items-center gap-2 text-xs text-blue-800">
+              <span>📈</span>
+              <span>Estimated effect on the May 2026 Stripe reconciliation: <strong>+4 auto-matches</strong> currently sitting as Discrepancy.</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer bar -->
+        <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between rounded-b-lg">
+          <div class="text-xs text-gray-500">Changes apply to all future reconciliations using this rule set.</div>
+          <div class="flex items-center gap-3">
+            <button class="text-sm text-gray-600 hover:text-gray-900 px-4 py-2">Cancel</button>
+            <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-5 py-2 rounded-md">Save changes</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function selectRule(el, ruleId) {
+    document.querySelectorAll('.rule-card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+
+    const nameEl = el.querySelector('.rule-card-name');
+    if (nameEl) {
+      document.getElementById('editor-name').textContent = nameEl.textContent;
+    }
+  }
+
+  function setRadio(el) {
+    const row = el.parentElement;
+    row.querySelectorAll('.radio-chip').forEach(c => c.classList.remove('on'));
+    el.classList.add('on');
+  }
+</script>
+
+</body>
+</html>

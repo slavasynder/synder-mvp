@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Firm Reconciliations · Synder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Inter', system-ui, sans-serif; background: #f6f7f9; color: #111827; }
+
+  .tag-mock {
+    position: fixed; top: 12px; right: 12px; z-index: 50;
+    background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;
+    border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .chip-clean { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+  .chip-discrepancy { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+  .chip-missing { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+  .chip-pending { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .chip-notstarted { background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
+
+  .integration-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; font-size: 10.5px; font-weight: 600; margin-right: 2px; }
+  .int-stripe { background: #f3f0ff; color: #635bff; }
+  .int-shopify { background: #ecfdf5; color: #047857; }
+  .int-paypal { background: #eff6ff; color: #1d4ed8; }
+  .int-amazon { background: #fef3c7; color: #b45309; }
+  .int-qbo { background: #ecfdf5; color: #0f766e; }
+  .int-xero { background: #eff6ff; color: #0369a1; }
+  .int-sm { background: #fdf4ff; color: #a21caf; }
+
+  .tab { padding: 10px 4px; font-size: 14px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; cursor: pointer; margin-right: 28px; transition: color 0.15s, border-color 0.15s; }
+  .tab.active { color: #2563eb; border-bottom-color: #2563eb; }
+  .tab:hover:not(.active) { color: #374151; }
+
+  .summary-card { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px 16px; }
+  .summary-card .num { font-size: 22px; font-weight: 800; line-height: 1.1; }
+  .summary-card .lbl { font-size: 11px; color: #6b7280; font-weight: 500; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .row-hover:hover { background: #fafbff; }
+  .row-selected { background: #eff6ff; }
+
+  .deadline-warn { color: #b45309; font-weight: 600; }
+  .deadline-ok { color: #047857; font-weight: 500; }
+  .deadline-overdue { color: #b91c1c; font-weight: 700; }
+
+  .progress-bar { background: #e5e7eb; border-radius: 4px; height: 6px; overflow: hidden; }
+  .progress-fill { height: 100%; transition: width 0.3s; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<div class="tag-mock">Concept Mock · Reality may differ</div>
+
+<!-- Mock-context bar -->
+<div style="background:#1f2937; color:#d1d5db; font-size:11.5px; padding:6px 24px; display:flex; justify-content:space-between; align-items:center;">
+  <a href="../" style="color:#93c5fd; text-decoration:none;">← Transaction Reconciliation</a>
+  <span style="color:#9ca3af;">Concept · Firm-Level Reconciliations</span>
+</div>
+
+<!-- Top bar -->
+<header class="bg-white border-b border-gray-200">
+  <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 bg-gradient-to-br from-blue-600 to-violet-600 rounded-md flex items-center justify-center text-white font-bold text-sm">S</div>
+      <span class="font-semibold text-gray-900">Synder</span>
+      <span class="text-xs text-gray-400">/ Burkland</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="text-xs text-gray-500">Firm view</span>
+      <div class="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center text-xs font-semibold text-gray-700">VT</div>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-7xl mx-auto px-6 py-7">
+
+  <!-- Page header -->
+  <div class="mb-1">
+    <h1 class="text-2xl font-bold text-gray-900">My Firm</h1>
+    <div class="text-xs text-gray-500 mt-0.5">Firm ID <span class="font-mono text-gray-700">1782149893</span></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="border-b border-gray-200 mt-6 mb-6">
+    <div class="flex">
+      <div class="tab">Colleagues</div>
+      <div class="tab">Clients</div>
+      <div class="tab active">Reconciliations</div>
+      <div class="tab">Billing and licenses</div>
+    </div>
+  </div>
+
+  <!-- Period + filters bar -->
+  <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+    <div class="flex items-center gap-3">
+      <label class="text-xs font-semibold text-gray-700">Period</label>
+      <select class="text-sm border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100">
+        <option>May 2026</option>
+        <option>April 2026</option>
+        <option>March 2026</option>
+        <option>Custom…</option>
+      </select>
+      <span class="text-xs text-gray-500">Close deadline: <strong class="text-gray-800">Jun 10, 2026</strong> · <span class="deadline-warn">5 days left</span></span>
+    </div>
+    <div class="flex items-center gap-2">
+      <input type="text" placeholder="Search clients..." class="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 w-56" />
+      <button class="text-xs text-gray-600 hover:text-gray-900 px-3 py-1.5 border border-gray-200 rounded-md flex items-center gap-1.5">
+        <span>⚙</span> Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="grid grid-cols-5 gap-3 mb-5">
+    <div class="summary-card">
+      <div class="num text-gray-900">14</div>
+      <div class="lbl">Active clients</div>
+    </div>
+    <div class="summary-card" style="border-left: 3px solid #10b981;">
+      <div class="num text-emerald-700">8</div>
+      <div class="lbl">Reconciled · clean</div>
+    </div>
+    <div class="summary-card" style="border-left: 3px solid #f59e0b;">
+      <div class="num text-amber-700">2</div>
+      <div class="lbl">Discrepancies</div>
+    </div>
+    <div class="summary-card" style="border-left: 3px solid #ef4444;">
+      <div class="num text-red-700">2</div>
+      <div class="lbl">Missing rows</div>
+    </div>
+    <div class="summary-card" style="border-left: 3px solid #6b7280;">
+      <div class="num text-gray-700">2</div>
+      <div class="lbl">In progress / not started</div>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="bg-white rounded-lg border border-gray-200 px-5 py-4 mb-5">
+    <div class="flex items-center justify-between mb-2">
+      <div class="text-xs font-semibold text-gray-700 uppercase tracking-wider">May 2026 close progress</div>
+      <div class="text-xs text-gray-600"><strong class="text-gray-900">8 / 14</strong> closed · 4 need review · 2 outstanding</div>
+    </div>
+    <div class="progress-bar">
+      <div style="display:flex; height:100%;">
+        <div class="progress-fill" style="width: 57%; background: #10b981;"></div>
+        <div class="progress-fill" style="width: 14%; background: #f59e0b;"></div>
+        <div class="progress-fill" style="width: 14%; background: #ef4444;"></div>
+        <div class="progress-fill" style="width: 7%; background: #3b82f6;"></div>
+        <div class="progress-fill" style="width: 8%; background: #9ca3af;"></div>
+      </div>
+    </div>
+    <div class="flex items-center gap-4 mt-2 text-[11px] text-gray-500">
+      <span><span class="inline-block w-2 h-2 rounded-sm align-middle" style="background:#10b981;"></span> Clean</span>
+      <span><span class="inline-block w-2 h-2 rounded-sm align-middle" style="background:#f59e0b;"></span> Discrepancy</span>
+      <span><span class="inline-block w-2 h-2 rounded-sm align-middle" style="background:#ef4444;"></span> Missing rows</span>
+      <span><span class="inline-block w-2 h-2 rounded-sm align-middle" style="background:#3b82f6;"></span> In progress</span>
+      <span><span class="inline-block w-2 h-2 rounded-sm align-middle" style="background:#9ca3af;"></span> Not started</span>
+    </div>
+  </div>
+
+  <!-- Action bar -->
+  <div class="flex items-center justify-between mb-3">
+    <div class="flex items-center gap-3">
+      <label class="flex items-center gap-2 text-xs text-gray-700">
+        <input type="checkbox" id="selectAll" class="rounded border-gray-300" onchange="toggleAll(this)" />
+        Select all
+      </label>
+      <span id="selectedCount" class="text-xs text-gray-500">0 selected</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="text-sm text-gray-700 hover:text-gray-900 px-3 py-1.5 border border-gray-200 rounded-md bg-white">Export audit report</button>
+      <button class="text-sm text-white bg-blue-600 hover:bg-blue-700 px-4 py-1.5 rounded-md font-medium flex items-center gap-1.5">
+        <span>▶</span> Run reconciliations
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 border-b border-gray-200 text-xs uppercase tracking-wider text-gray-500">
+        <tr>
+          <th class="px-4 py-3 w-8"></th>
+          <th class="px-4 py-3 text-left font-semibold">Client</th>
+          <th class="px-4 py-3 text-left font-semibold">Integrations</th>
+          <th class="px-4 py-3 text-left font-semibold">Status</th>
+          <th class="px-4 py-3 text-center font-semibold">Issues</th>
+          <th class="px-4 py-3 text-left font-semibold">Last reconciled</th>
+          <th class="px-4 py-3 text-left font-semibold">Owner</th>
+          <th class="px-4 py-3 w-8"></th>
+        </tr>
+      </thead>
+      <tbody id="clientTable" class="divide-y divide-gray-100"></tbody>
+    </table>
+  </div>
+
+  <!-- Footer hint -->
+  <div class="mt-4 text-xs text-gray-500">
+    <strong>Tip:</strong> Bulk-run launches reconciliations for selected clients in parallel using each client's saved <a href="../matching-rules/" class="text-blue-600 hover:underline">matching rule set</a>. Results land here as each one completes.
+  </div>
+
+</div>
+
+<script>
+const clients = [
+  { name: "Lattice AI",         integrations: ["stripe","qbo"],          status: "clean",       issues: { disc: 0, miss: 0 }, last: "Jun 3, 10:42 AM",  owner: "M. Chen" },
+  { name: "Conduit Health",     integrations: ["stripe","qbo"],          status: "clean",       issues: { disc: 0, miss: 0 }, last: "Jun 3, 9:18 AM",   owner: "M. Chen" },
+  { name: "Pulse Robotics",     integrations: ["stripe","qbo"],          status: "clean",       issues: { disc: 0, miss: 0 }, last: "Jun 2, 4:22 PM",   owner: "D. Patel" },
+  { name: "Nimbus Data",        integrations: ["stripe","qbo"],          status: "clean",       issues: { disc: 0, miss: 0 }, last: "Jun 2, 11:55 AM",  owner: "D. Patel" },
+  { name: "Forge AI",           integrations: ["stripe","qbo"],          status: "clean",       issues: { disc: 0, miss: 0 }, last: "Jun 2, 9:30 AM",   owner: "M. Chen" },
+  { name: "Anchor Labs",        integrations: ["stripe","qbo"],          status: "clean",       issues: { disc: 0, miss: 0 }, last: "Jun 1, 3:08 PM",   owner: "S. Reyes" },
+  { name: "Tessera Bio",        integrations: ["stripe","qbo"],          status: "clean",       issues: { disc: 0, miss: 0 }, last: "Jun 1, 1:44 PM",   owner: "S. Reyes" },
+  { name: "Hyperion Cloud",     integrations: ["stripe","qbo"],          status: "clean",       issues: { disc: 0, miss: 0 }, last: "May 31, 5:12 PM",  owner: "M. Chen" },
+  { name: "Crescent Materials", integrations: ["stripe","shopify","qbo"], status: "discrepancy", issues: { disc: 3, miss: 0 }, last: "Jun 2, 2:30 PM",   owner: "D. Patel" },
+  { name: "Orbit Wellness",     integrations: ["shopify","paypal","qbo"], status: "discrepancy", issues: { disc: 7, miss: 1 }, last: "Jun 2, 11:08 AM",  owner: "S. Reyes" },
+  { name: "Quanta Health",      integrations: ["stripe","qbo","xero"],   status: "missing",     issues: { disc: 0, miss: 4 }, last: "Jun 1, 6:45 PM",   owner: "S. Reyes" },
+  { name: "Verge AI",           integrations: ["stripe","qbo"],          status: "missing",     issues: { disc: 1, miss: 9 }, last: "May 30, 2:14 PM",  owner: "D. Patel" },
+  { name: "Spectra Bio",        integrations: ["stripe","sm","qbo"],     status: "pending",     issues: { disc: 0, miss: 0 }, last: "Running… 3 min",   owner: "M. Chen" },
+  { name: "Sentinel Sec",       integrations: ["stripe","qbo"],          status: "notstarted",  issues: { disc: 0, miss: 0 }, last: "—",                owner: "Unassigned" },
+];
+
+const STATUS_META = {
+  clean:       { label: "Clean",            chip: "chip-clean" },
+  discrepancy: { label: "Discrepancy",      chip: "chip-discrepancy" },
+  missing:     { label: "Missing rows",     chip: "chip-missing" },
+  pending:     { label: "In progress",      chip: "chip-pending" },
+  notstarted:  { label: "Not started",      chip: "chip-notstarted" },
+};
+
+const INT_LABEL = {
+  stripe: { label: "Stripe", cls: "int-stripe" },
+  shopify: { label: "Shopify", cls: "int-shopify" },
+  paypal: { label: "PayPal", cls: "int-paypal" },
+  amazon: { label: "Amazon", cls: "int-amazon" },
+  qbo: { label: "QBO", cls: "int-qbo" },
+  xero: { label: "Xero", cls: "int-xero" },
+  sm: { label: "Summary mode", cls: "int-sm" },
+};
+
+function row(c, i) {
+  const meta = STATUS_META[c.status];
+  const ints = c.integrations.map(k => `<span class="integration-pill ${INT_LABEL[k].cls}">${INT_LABEL[k].label}</span>`).join("");
+  const issues = (c.issues.disc + c.issues.miss) > 0
+    ? `<div class="flex items-center justify-center gap-2 text-xs">
+         ${c.issues.disc > 0 ? `<span class="text-amber-700 font-semibold">⚠ ${c.issues.disc}</span>` : ''}
+         ${c.issues.miss > 0 ? `<span class="text-red-700 font-semibold">✕ ${c.issues.miss}</span>` : ''}
+       </div>`
+    : `<span class="text-xs text-gray-300">—</span>`;
+  const owner = c.owner === "Unassigned"
+    ? `<span class="text-xs text-gray-400 italic">Unassigned</span>`
+    : `<div class="flex items-center gap-2">
+         <div class="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-[10px] font-semibold text-gray-700">${c.owner.split(' ').map(s=>s[0]).join('')}</div>
+         <span class="text-xs text-gray-700">${c.owner}</span>
+       </div>`;
+  const lastClass = c.last === "—" ? "text-gray-400" : (c.last.startsWith("Running") ? "text-blue-600 font-medium" : "text-gray-700");
+  return `
+    <tr class="row-hover" data-i="${i}">
+      <td class="px-4 py-3"><input type="checkbox" class="row-check rounded border-gray-300" onchange="updateSelected()" /></td>
+      <td class="px-4 py-3"><a href="#" class="font-semibold text-gray-900 hover:text-blue-600">${c.name}</a></td>
+      <td class="px-4 py-3">${ints}</td>
+      <td class="px-4 py-3"><span class="chip ${meta.chip}">${meta.label}</span></td>
+      <td class="px-4 py-3 text-center">${issues}</td>
+      <td class="px-4 py-3 text-xs ${lastClass}">${c.last}</td>
+      <td class="px-4 py-3">${owner}</td>
+      <td class="px-4 py-3 text-gray-400 hover:text-gray-700 cursor-pointer">⋯</td>
+    </tr>
+  `;
+}
+
+document.getElementById("clientTable").innerHTML = clients.map(row).join("");
+
+function toggleAll(el) {
+  document.querySelectorAll(".row-check").forEach(c => c.checked = el.checked);
+  updateSelected();
+}
+
+function updateSelected() {
+  const n = document.querySelectorAll(".row-check:checked").length;
+  document.getElementById("selectedCount").textContent = n + " selected";
+}
+</script>
+
+</body>
+</html>

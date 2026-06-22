@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Reconciliation — Synder MVP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto px-6 py-16">
+        <a href="../../" class="text-sm text-gray-400 hover:text-blue-500 transition-colors mb-8 inline-block">← Back to Hub</a>
+
+        <div class="mb-10">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded">Product area</span>
+                <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-1 rounded">In flight</span>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Transaction Reconciliation</h1>
+            <p class="text-gray-500 text-lg">Vision mocks and prototypes for the next wave of Transaction Reconciliation work. Each card links to an interactive concept — react to the idea, not the pixels.</p>
+        </div>
+
+        <div class="space-y-4">
+
+            <!-- Balance Summary -->
+            <a href="balance-summary/" class="block bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-rose-300 transition-all duration-200 group">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="bg-rose-100 text-rose-700 text-xs font-semibold px-2 py-1 rounded">Balance Summary</span>
+                            <span class="bg-blue-50 text-blue-700 text-[10.5px] font-semibold px-2 py-0.5 rounded">In scope</span>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-900 group-hover:text-rose-600 transition-colors">Balance Summary Block</h2>
+                        <p class="text-gray-500 mt-1">A balance-level lens that sits inside Transaction Reconciliation. Verifies the aggregate balance ties out before drilling into individual rows. Unifies SM's standalone Balance Reconciliation with PT.</p>
+                        <div class="flex gap-4 mt-3 text-sm text-gray-400">
+                            <span>🎯 Validated bet</span>
+                            <span>🧪 Interactive mock + report vision</span>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 group-hover:text-rose-500 mt-1 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+            <!-- Matching Rules -->
+            <a href="matching-rules/" class="block bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-blue-300 transition-all duration-200 group">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded">Matching Rules</span>
+                            <span class="bg-amber-50 text-amber-700 text-[10.5px] font-semibold px-2 py-0.5 rounded">Concept · no UI yet</span>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">Matching Rules · Configurability</h2>
+                        <p class="text-gray-500 mt-1">Move beyond ID-only matching. Configure a criteria stack (ID → amount tolerance → date tolerance → customer → memo) per integration or per client. Saved rule sets, strictness preview, auto-match vs review.</p>
+                        <div class="flex gap-4 mt-3 text-sm text-gray-400">
+                            <span>🎯 Vote item</span>
+                            <span>🧪 Interactive concept mock</span>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500 mt-1 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+            <!-- Firm Reconciliations -->
+            <a href="firm-reconciliation/" class="block bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-violet-300 transition-all duration-200 group">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="bg-violet-100 text-violet-700 text-xs font-semibold px-2 py-1 rounded">Firm Scale</span>
+                            <span class="bg-amber-50 text-amber-700 text-[10.5px] font-semibold px-2 py-0.5 rounded">Concept · no UI yet</span>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-900 group-hover:text-violet-600 transition-colors">Firm-Level Reconciliations</h2>
+                        <p class="text-gray-500 mt-1">One view across the whole portfolio of clients. Status at a glance (clean · discrepancy · missing · pending), bulk-run reconciliations, ownership assignment, deadline tracking. Designed against the firm view that Burkland sees today.</p>
+                        <div class="flex gap-4 mt-3 text-sm text-gray-400">
+                            <span>🎯 Vote item</span>
+                            <span>🧪 Interactive concept mock · 14 client portfolio</span>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 group-hover:text-violet-500 mt-1 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+        </div>
+
+        <div class="mt-10 p-5 bg-amber-50 border border-amber-200 rounded-xl">
+            <div class="text-xs font-bold text-amber-900 uppercase tracking-wider mb-2">A note on the concept mocks</div>
+            <p class="text-sm text-amber-900 leading-relaxed">Matching Rules and Firm-Level Reconciliations are <strong>concept-level</strong> — they exist to test ideas with customers and the team. Reality may diverge meaningfully from what's drawn here. The Balance Summary block is further along (in scope for delivery) and the mock there reflects what we plan to ship.</p>
+        </div>
+
+        <p class="text-center text-gray-400 text-sm mt-12">Synder Product</p>
+    </div>
+</body>
+</html>
