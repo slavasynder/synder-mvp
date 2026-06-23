@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How to Automate Revenue Recognition for SaaS — Synder Webinar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], mono: ['JetBrains Mono', 'Courier New', 'monospace'] },
+      colors: {
+        'gray-850': '#18212f',
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #111827; color: #f9fafb; font-family: 'Inter', system-ui, sans-serif; }
+
+  /* Progress bar */
+  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: #3b82f6; transition: width 0.3s ease; z-index: 100; }
+
+  /* Slide wrapper */
+  #slide-deck { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 56px 32px 72px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+  }
+  .slide.active { opacity: 1; pointer-events: all; }
+
+  .slide-inner {
+    width: 100%; max-width: 1140px;
+    display: flex; flex-direction: column;
+    gap: 0;
+    overflow-y: auto;
+    max-height: calc(100vh - 130px);
+    scrollbar-width: none;
+  }
+  .slide-inner::-webkit-scrollbar { display: none; }
+
+  /* Navigation dots */
+  #nav-dots { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 5px; z-index: 100; max-width: 80vw; flex-wrap: wrap; justify-content: center; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #374151; cursor: pointer; transition: background 0.2s, transform 0.2s; }
+  .dot.active { background: #3b82f6; transform: scale(1.4); }
+  .dot:hover:not(.active) { background: #6b7280; }
+
+  /* Slide counter */
+  #slide-counter { position: fixed; bottom: 20px; right: 28px; font-size: 12px; color: #6b7280; font-variant-numeric: tabular-nums; z-index: 100; }
+
+  /* Overview grid */
+  #overview {
+    position: fixed; inset: 0; background: rgba(17,24,39,0.97);
+    display: none; z-index: 200;
+    overflow-y: auto; padding: 40px 32px;
+  }
+  #overview.visible { display: block; }
+  #overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; max-width: 1280px; margin: 0 auto; }
+  #overview h2 { text-align: center; color: #9ca3af; margin-bottom: 24px; letter-spacing: 0.05em; text-transform: uppercase; font-size: 12px; }
+  .thumb {
+    background: #1f2937; border: 2px solid #374151; border-radius: 10px;
+    padding: 12px; cursor: pointer; transition: border-color 0.15s, transform 0.15s;
+    aspect-ratio: 16/9; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; overflow: hidden;
+  }
+  .thumb:hover { border-color: #3b82f6; transform: scale(1.03); }
+  .thumb.active-thumb { border-color: #3b82f6; }
+  .thumb-num { font-size: 10px; color: #6b7280; margin-bottom: 4px; }
+  .thumb-title { font-size: 11px; font-weight: 600; color: #d1d5db; line-height: 1.3; }
+  #overview-close { position: fixed; top: 24px; right: 32px; color: #6b7280; cursor: pointer; font-size: 24px; z-index: 210; }
+  #overview-close:hover { color: #f9fafb; }
+
+  /* Utility classes */
+  .card { background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 18px 22px; }
+  .card-sm { background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 12px 16px; }
+  .accent { color: #3b82f6; }
+  .success { color: #22c55e; }
+  .warning { color: #f59e0b; }
+  .danger { color: #ef4444; }
+  .violet { color: #a78bfa; }
+  .muted { color: #9ca3af; }
+  .mono { font-family: 'JetBrains Mono', 'Courier New', monospace; font-variant-numeric: tabular-nums; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .tag-violet { background: rgba(167,139,250,0.15); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.3); }
+  .tag-gray { background: rgba(107,114,128,0.15); color: #9ca3af; border: 1px solid rgba(107,114,128,0.3); }
+
+  .slide-title { font-size: 2rem; font-weight: 800; line-height: 1.15; color: #f9fafb; }
+  .slide-subtitle { font-size: 0.95rem; color: #9ca3af; font-weight: 400; margin-top: 6px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+
+  .check-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+  .check-icon { flex-shrink: 0; margin-top: 1px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+  .h-divider { border: none; border-top: 1px solid #374151; margin: 12px 0; }
+
+  /* Highlight boxes */
+  .highlight-box { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: 10px; padding: 12px 16px; }
+  .warning-box { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 12px 16px; }
+  .danger-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 12px 16px; }
+  .success-box { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 12px 16px; }
+  .violet-box { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.3); border-radius: 10px; padding: 12px 16px; }
+
+  /* Keyboard hint */
+  #keyboard-hint { position: fixed; bottom: 20px; left: 28px; font-size: 11px; color: #4b5563; z-index: 100; }
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.4s ease both; }
+
+  /* Tables */
+  table.je-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.je-table th { text-align: left; padding: 8px 10px; background: #1a2332; color: #9ca3af; font-weight: 600; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; border-bottom: 1px solid #374151; }
+  table.je-table td { padding: 7px 10px; border-bottom: 1px solid rgba(55,65,81,0.4); color: #d1d5db; }
+  table.je-table tr:last-child td { border-bottom: none; }
+  table.je-table td.mono, table.je-table td.num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+  table.je-table .row-final td { background: rgba(34,197,94,0.06); font-weight: 600; }
+  table.je-table .row-neg td { color: #fca5a5; }
+
+  /* Mock UI panel */
+  .mock-ui { background: #0f172a; border: 1px solid #374151; border-radius: 10px; overflow: hidden; }
+  .mock-ui-header { background: #1a2332; padding: 8px 14px; font-size: 12px; color: #9ca3af; border-bottom: 1px solid #374151; display: flex; align-items: center; gap: 10px; }
+  .mock-ui-header::before { content: ''; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; box-shadow: 14px 0 0 #f59e0b, 28px 0 0 #22c55e; margin-right: 14px; }
+  .mock-ui-body { padding: 14px; }
+
+  /* Screenshot placeholder pill */
+  .screenshot-note {
+    border: 1px dashed #4b5563;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 12px;
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* Pill (available today) */
+  .pill-live {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(34,197,94,0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34,197,94,0.35);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .pill-live::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(34,197,94,0.6);
+  }
+
+  .formula-bar {
+    background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(59,130,246,0.10));
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 12px;
+    padding: 18px 24px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.05rem;
+    color: #f9fafb;
+    font-weight: 600;
+  }
+  .formula-bar .op { color: #4ade80; margin: 0 4px; }
+  .formula-bar .eq { color: #fbbf24; margin: 0 4px; }
+  .formula-bar .term { color: #f9fafb; }
+  .formula-bar .term-final { color: #4ade80; }
+
+  /* Bar chart */
+  .barchart { display: flex; align-items: flex-end; gap: 6px; height: 140px; padding: 0 6px; }
+  .barchart .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .barchart .bar { width: 100%; border-radius: 3px 3px 0 0; transition: height 0.3s; }
+  .barchart .bar-label { font-size: 10px; color: #6b7280; }
+
+  /* Demo badge */
+  .demo-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59,130,246,0.15); border: 2px solid rgba(59,130,246,0.4);
+    border-radius: 12px; padding: 12px 28px; font-size: 1.8rem; font-weight: 800;
+    color: #60a5fa; letter-spacing: 0.05em;
+  }
+
+  /* Title slide gradient */
+  .title-gradient {
+    background: linear-gradient(120deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  :fullscreen body, :-webkit-full-screen body { background: #111827; }
+</style>
+</head>
+<body>
+
+<!-- Progress Bar -->
+<div id="progress-bar"></div>
+
+<!-- Slide Deck -->
+<div id="slide-deck">
+
+  <!-- ─────────────────── SLIDE 1: TITLE ─────────────────── -->
+  <div class="slide" data-slide="1" data-title="Title">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-blue" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Synder Webinar</div>
+        <h1 style="font-size:2.8rem; font-weight:800; line-height:1.1; color:#f9fafb; margin-bottom:18px;">
+          How to Automate<br/>
+          <span class="title-gradient">Revenue Recognition</span><br/>
+          for SaaS Businesses
+        </h1>
+        <p style="font-size:1.2rem; color:#9ca3af; margin-bottom:14px; font-weight:400;">From cash spikes to clean accrual books — without spreadsheets</p>
+        <p style="font-size:1rem; color:#6b7280; margin-bottom:42px;">Concepts · Use cases · Live demo · Q&amp;A</p>
+        <div style="width:60px; height:2px; background:#374151; margin:0 auto 36px;"></div>
+        <div style="display:flex; gap:32px; justify-content:center; flex-wrap:wrap;">
+          <div>
+            <p style="font-size:13px; color:#d1d5db; font-weight:600;">Speaker</p>
+            <p style="font-size:11px; color:#6b7280; letter-spacing:0.06em; text-transform:uppercase;">Synder Product</p>
+          </div>
+          <div style="width:1px; background:#374151;"></div>
+          <div>
+            <p style="font-size:13px; color:#d1d5db; font-weight:600;">Host</p>
+            <p style="font-size:11px; color:#6b7280; letter-spacing:0.06em; text-transform:uppercase;">Synder Marketing</p>
+          </div>
+        </div>
+        <p style="font-size:12px; color:#4b5563; margin-top:24px;">For founders, CFOs, controllers &amp; bookkeepers running SaaS on Stripe</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 2: REVENUE RECOGNITION IS… ─────────────────── -->
+  <div class="slide" data-slide="2" data-title="Revenue Recognition is…">
+    <div class="slide-inner">
+      <div class="section-label">The Basics</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Revenue Recognition is…</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">The GAAP-compliant rule for <em>when</em> revenue actually counts</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card" style="border-top:3px solid #3b82f6;">
+          <div class="section-label" style="margin-bottom:10px;">The Idea</div>
+          <p style="font-size:14px; color:#d1d5db; line-height:1.6; margin-bottom:12px;">A part of <strong>accrual accounting</strong> that defines <em>when</em> and <em>how</em> revenue is recognized.</p>
+          <div class="highlight-box">
+            <span style="font-size:13px; color:#93c5fd;">💡 Cash reaching your hand <strong>≠</strong> revenue. Receiving the money and <em>earning</em> it are two different events.</span>
+          </div>
+        </div>
+
+        <div class="card" style="border-top:3px solid #a78bfa;">
+          <div class="section-label" style="margin-bottom:10px;">The Standards</div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="card-sm" style="border-left:3px solid #60a5fa;">
+              <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">ASC 606</div>
+              <div style="font-size:12px; color:#9ca3af;">United States — FASB standard</div>
+            </div>
+            <div class="card-sm" style="border-left:3px solid #a78bfa;">
+              <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">IFRS 15</div>
+              <div style="font-size:12px; color:#9ca3af;">International — IASB standard</div>
+            </div>
+          </div>
+          <hr class="h-divider" />
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Today we focus on SaaS — but the concept applies to any business that collects money upfront for service delivered over time.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 3: CASH VS ACCRUAL ─────────────────── -->
+  <div class="slide" data-slide="3" data-title="Cash vs accrual">
+    <div class="slide-inner">
+      <div class="section-label">The Canonical Example</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Cash vs Accrual</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Same $1,200 yearly subscription paid in March — two very different revenue pictures</p>
+
+      <div class="card" style="margin-bottom:14px;">
+        <div style="display:flex; gap:24px; align-items:center; margin-bottom:14px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:8px;"><span style="width:14px; height:14px; background:#3b82f6; border-radius:3px;"></span><span style="font-size:13px; color:#d1d5db;"><strong>Cash basis</strong> — full $1,200 in March</span></div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="width:14px; height:2px; background:#ef4444; border-radius:1px;"></span><span style="font-size:13px; color:#d1d5db;"><strong>Accrual (GAAP)</strong> — $100/month, every month</span></div>
+        </div>
+
+        <svg viewBox="0 0 720 220" style="width:100%; height:auto; display:block;">
+          <!-- Y axis -->
+          <line x1="50" y1="20" x2="50" y2="180" stroke="#374151" stroke-width="1"/>
+          <line x1="50" y1="180" x2="700" y2="180" stroke="#374151" stroke-width="1"/>
+
+          <!-- Y axis labels -->
+          <text x="42" y="184" fill="#6b7280" font-size="10" text-anchor="end">$0</text>
+          <text x="42" y="142" fill="#6b7280" font-size="10" text-anchor="end">$300</text>
+          <text x="42" y="100" fill="#6b7280" font-size="10" text-anchor="end">$600</text>
+          <text x="42" y="58" fill="#6b7280" font-size="10" text-anchor="end">$900</text>
+          <text x="42" y="22" fill="#6b7280" font-size="10" text-anchor="end">$1,200</text>
+
+          <!-- Gridlines -->
+          <line x1="50" y1="138" x2="700" y2="138" stroke="#1f2937" stroke-width="1"/>
+          <line x1="50" y1="96" x2="700" y2="96" stroke="#1f2937" stroke-width="1"/>
+          <line x1="50" y1="54" x2="700" y2="54" stroke="#1f2937" stroke-width="1"/>
+
+          <!-- Bars: cash basis (only March spike) -->
+          <!-- 12 months Mar..Feb. bar width ~36px, gap 16px, start x=70 -->
+          <g>
+            <!-- Mar: full $1200 → height 160 (180-20) -->
+            <rect x="70"  y="20"  width="36" height="160" fill="#3b82f6" opacity="0.85"/>
+            <rect x="122" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
+            <rect x="174" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
+            <rect x="226" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
+            <rect x="278" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
+            <rect x="330" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
+            <rect x="382" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
+            <rect x="434" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
+            <rect x="486" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
+            <rect x="538" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
+            <rect x="590" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
+            <rect x="642" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
+          </g>
+
+          <!-- Accrual flat line at $100/month (y=166.7 ≈ 167) -->
+          <polyline points="88,167 140,167 192,167 244,167 296,167 348,167 400,167 452,167 504,167 556,167 608,167 660,167" stroke="#ef4444" stroke-width="2.5" fill="none"/>
+          <!-- Dots on each month -->
+          <g fill="#ef4444">
+            <circle cx="88"  cy="167" r="3.5"/>
+            <circle cx="140" cy="167" r="3.5"/>
+            <circle cx="192" cy="167" r="3.5"/>
+            <circle cx="244" cy="167" r="3.5"/>
+            <circle cx="296" cy="167" r="3.5"/>
+            <circle cx="348" cy="167" r="3.5"/>
+            <circle cx="400" cy="167" r="3.5"/>
+            <circle cx="452" cy="167" r="3.5"/>
+            <circle cx="504" cy="167" r="3.5"/>
+            <circle cx="556" cy="167" r="3.5"/>
+            <circle cx="608" cy="167" r="3.5"/>
+            <circle cx="660" cy="167" r="3.5"/>
+          </g>
+
+          <!-- Month labels -->
+          <g fill="#6b7280" font-size="10" text-anchor="middle" font-family="Inter">
+            <text x="88"  y="198">Mar</text>
+            <text x="140" y="198">Apr</text>
+            <text x="192" y="198">May</text>
+            <text x="244" y="198">Jun</text>
+            <text x="296" y="198">Jul</text>
+            <text x="348" y="198">Aug</text>
+            <text x="400" y="198">Sep</text>
+            <text x="452" y="198">Oct</text>
+            <text x="504" y="198">Nov</text>
+            <text x="556" y="198">Dec</text>
+            <text x="608" y="198">Jan</text>
+            <text x="660" y="198">Feb</text>
+          </g>
+
+          <!-- March callout -->
+          <text x="88" y="14" fill="#60a5fa" font-size="11" text-anchor="middle" font-weight="600">$1,200</text>
+        </svg>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;"><strong>Same money. Same customer.</strong> Accrual reflects reality — you've only earned what you've delivered.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 4: WHY BUSINESSES NEED IT ─────────────────── -->
+  <div class="slide" data-slide="4" data-title="Why businesses need it">
+    <div class="slide-inner">
+      <div class="section-label">Why It Matters</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Why Businesses Need It</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Sometimes required. Always more honest.</p>
+
+      <div class="grid-2" style="margin-bottom:14px;">
+        <div class="card" style="border-top:3px solid #ef4444;">
+          <div class="section-label" style="margin-bottom:10px; color:#fca5a5;">Hard Requirements</div>
+          <p style="font-size:13px; color:#d1d5db; line-height:1.6; margin-bottom:10px;">GAAP-compliant books are non-negotiable when you're:</p>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div class="check-item"><span class="danger check-icon">●</span><span style="font-size:13px; color:#d1d5db;">Preparing for an audit</span></div>
+            <div class="check-item"><span class="danger check-icon">●</span><span style="font-size:13px; color:#d1d5db;">Applying for a bank loan</span></div>
+            <div class="check-item"><span class="danger check-icon">●</span><span style="font-size:13px; color:#d1d5db;">Raising venture capital</span></div>
+            <div class="check-item"><span class="danger check-icon">●</span><span style="font-size:13px; color:#d1d5db;">Going public (IPO prep)</span></div>
+            <div class="check-item"><span class="danger check-icon">●</span><span style="font-size:13px; color:#d1d5db;">Hitting revenue thresholds</span></div>
+          </div>
+        </div>
+
+        <div class="card" style="border-top:3px solid #22c55e;">
+          <div class="section-label" style="margin-bottom:10px; color:#86efac;">Beyond Compliance</div>
+          <p style="font-size:13px; color:#d1d5db; line-height:1.6; margin-bottom:10px;">Even when not required, RevRec gives you:</p>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div class="check-item"><span class="success check-icon">✓</span><span style="font-size:13px; color:#d1d5db;">An honest view of the business</span></div>
+            <div class="check-item"><span class="success check-icon">✓</span><span style="font-size:13px; color:#d1d5db;">Forecasts built on real numbers</span></div>
+            <div class="check-item"><span class="success check-icon">✓</span><span style="font-size:13px; color:#d1d5db;">No paying bills with unearned cash</span></div>
+            <div class="check-item"><span class="success check-icon">✓</span><span style="font-size:13px; color:#d1d5db;">Real revenue trajectory, not cash spikes</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">🎯 RevRec isn't just compliance — it's the difference between guessing and knowing.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 5: WHY SAAS BREAKS WITHOUT REVREC ─────────────────── -->
+  <div class="slide" data-slide="5" data-title="Why SaaS breaks without RevRec">
+    <div class="slide-inner">
+      <div class="section-label">The SaaS Problem</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Why Subscription Revenue Breaks Without RevRec</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Cash basis breaks four things — and they compound</p>
+
+      <div class="grid-2" style="margin-bottom:14px;">
+        <div class="card" style="border-left:4px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <div style="background:rgba(239,68,68,0.15); color:#f87171; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;">1</div>
+            <div style="font-weight:700; color:#f9fafb;">Front-loaded income</div>
+          </div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.5;">Every annual contract becomes a giant spike in month one. Nothing afterward — even though service continues.</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #f59e0b;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <div style="background:rgba(245,158,11,0.15); color:#fbbf24; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;">2</div>
+            <div style="font-weight:700; color:#f9fafb;">Spiky monthly revenue</div>
+          </div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.5;">Subscription base is stable, but your P&amp;L looks volatile. The business hasn't changed — your numbers just look that way.</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #a78bfa;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <div style="background:rgba(167,139,250,0.15); color:#c4b5fd; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;">3</div>
+            <div style="font-weight:700; color:#f9fafb;">Distorted profit signals</div>
+          </div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.5;">Profit looks higher or lower for <em>timing</em> reasons, not business performance. You make decisions on noise.</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid #3b82f6;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+            <div style="background:rgba(59,130,246,0.15); color:#60a5fa; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;">4</div>
+            <div style="font-weight:700; color:#f9fafb;">Bad forecasts &amp; plans</div>
+          </div>
+          <p style="font-size:13px; color:#9ca3af; line-height:1.5;">Hiring plans, runway math, fundraising — all built on distorted numbers. The errors compound.</p>
+        </div>
+      </div>
+
+      <div class="success-box">
+        <span style="font-size:13px; color:#86efac;">✅ <strong>Revenue recognition fixes all four.</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 6: AGENDA ─────────────────── -->
+  <div class="slide" data-slide="6" data-title="Today's agenda">
+    <div class="slide-inner">
+      <div class="section-label">Today's Agenda</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Revenue Recognition (RevRec)</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Here's what we'll cover</p>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="card" style="border-left:4px solid #3b82f6; display:flex; align-items:center; gap:18px; padding:14px 18px;">
+          <div style="width:38px; height:38px; background:rgba(59,130,246,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">1</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Deferred revenue flow</div>
+            <div style="font-size:13px; color:#9ca3af;">The accounting foundation — once you've seen it, everything else clicks</div>
+          </div>
+          <span class="tag tag-blue">Foundation</span>
+        </div>
+
+        <div class="card" style="border-left:4px solid #22c55e; display:flex; align-items:center; gap:18px; padding:14px 18px;">
+          <div style="width:38px; height:38px; background:rgba(34,197,94,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">2</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Synder RevRec automation</div>
+            <div style="font-size:13px; color:#9ca3af;">What's automated, what's mapped, what's reported</div>
+          </div>
+          <span class="tag tag-green">Product</span>
+        </div>
+
+        <div class="card" style="border-left:4px solid #a78bfa; display:flex; align-items:center; gap:18px; padding:14px 18px;">
+          <div style="width:38px; height:38px; background:rgba(167,139,250,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">3</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Recognition methods &amp; use cases</div>
+            <div style="font-size:13px; color:#9ca3af;">Schedules, refunds, cancellations, upgrades, bad debt, multi-line</div>
+          </div>
+          <span class="tag tag-violet">Use cases</span>
+        </div>
+
+        <div class="card" style="border-left:4px solid #f59e0b; display:flex; align-items:center; gap:18px; padding:14px 18px;">
+          <div style="width:38px; height:38px; background:rgba(245,158,11,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">4</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Setup, journal entries &amp; reports</div>
+            <div style="font-size:13px; color:#9ca3af;">Mapping, automatic JEs, and the reports you'll use every month</div>
+          </div>
+          <span class="tag tag-amber">Output</span>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="margin-top:18px;">
+        <span style="font-size:13px; color:#93c5fd;">💬 Drop questions in the chat anytime — we'll address them at the end.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 7: DEFERRED REVENUE MECHANISM ─────────────────── -->
+  <div class="slide" data-slide="7" data-title="What is Deferred Revenue?">
+    <div class="slide-inner">
+      <div class="section-label">The Foundation</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">What is Deferred Revenue?</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">A liability account: money collected, not yet earned. $1,200 invoice → 12 JEs → $0.</p>
+
+      <div class="grid-2" style="gap:16px; margin-bottom:12px;">
+        <div>
+          <div class="card-sm" style="margin-bottom:10px;">
+            <div style="font-size:12px; color:#9ca3af; margin-bottom:4px;">On invoice creation</div>
+            <div style="font-size:14px; color:#f9fafb;">Full $1,200 goes into <strong class="violet">Deferred Revenue</strong>. Nothing into income yet.</div>
+          </div>
+          <div class="card-sm" style="margin-bottom:10px;">
+            <div style="font-size:12px; color:#9ca3af; margin-bottom:4px;">On invoice payment</div>
+            <div style="font-size:14px; color:#f9fafb;"><strong>Deferred revenue doesn't change.</strong> Cash and revenue are separate events.</div>
+          </div>
+          <div class="card-sm">
+            <div style="font-size:12px; color:#9ca3af; margin-bottom:4px;">Each month, automatically</div>
+            <div style="font-size:14px; color:#f9fafb;">A journal entry moves $100 from Deferred Revenue → Income.</div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:14px;">
+          <div class="section-label" style="margin-bottom:8px;">Monthly Journal Entries ($1,200 / 12)</div>
+          <table class="je-table">
+            <thead>
+              <tr><th>Month</th><th style="text-align:right;">JE</th><th style="text-align:right;">Def. Rev.</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Invoice</td><td class="num" style="text-align:right;">—</td><td class="num" style="text-align:right; color:#c4b5fd;">$1,200</td></tr>
+              <tr><td>Month 1</td><td class="num" style="text-align:right;">JE 1 — $100</td><td class="num" style="text-align:right;">$1,100</td></tr>
+              <tr><td>Month 2</td><td class="num" style="text-align:right;">JE 2 — $100</td><td class="num" style="text-align:right;">$1,000</td></tr>
+              <tr><td>Month 3</td><td class="num" style="text-align:right;">JE 3 — $100</td><td class="num" style="text-align:right;">$900</td></tr>
+              <tr><td>Month 4</td><td class="num" style="text-align:right;">JE 4 — $100</td><td class="num" style="text-align:right;">$800</td></tr>
+              <tr><td>Month 5</td><td class="num" style="text-align:right;">JE 5 — $100</td><td class="num" style="text-align:right;">$700</td></tr>
+              <tr><td>Month 6</td><td class="num" style="text-align:right;">JE 6 — $100</td><td class="num" style="text-align:right;">$600</td></tr>
+              <tr><td>Month 7</td><td class="num" style="text-align:right;">JE 7 — $100</td><td class="num" style="text-align:right;">$500</td></tr>
+              <tr><td>Month 8</td><td class="num" style="text-align:right;">JE 8 — $100</td><td class="num" style="text-align:right;">$400</td></tr>
+              <tr><td>Month 9</td><td class="num" style="text-align:right;">JE 9 — $100</td><td class="num" style="text-align:right;">$300</td></tr>
+              <tr><td>Month 10</td><td class="num" style="text-align:right;">JE 10 — $100</td><td class="num" style="text-align:right;">$200</td></tr>
+              <tr><td>Month 11</td><td class="num" style="text-align:right;">JE 11 — $100</td><td class="num" style="text-align:right;">$100</td></tr>
+              <tr class="row-final"><td>Month 12</td><td class="num" style="text-align:right;">JE 12 — $100</td><td class="num" style="text-align:right;">$0</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="violet-box">
+        <span style="font-size:13px; color:#c4b5fd;">⚙️ <strong>Synder automates every one of those journal entries.</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 8: SYNDER REVREC AUTOMATION ─────────────────── -->
+  <div class="slide" data-slide="8" data-title="Synder RevRec automation">
+    <div class="slide-inner">
+      <div class="section-label">What Synder Does</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Synder RevRec Automation</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Fully automated recognition of subscription revenue from Stripe — and more</p>
+
+      <div class="card" style="margin-bottom:14px; border-top:3px solid #3b82f6;">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:12px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:8px;"><span style="font-size:22px;">⚡</span><span style="font-weight:700; color:#f9fafb;">Stripe is the source of truth</span></div>
+          <span class="tag tag-blue">No spreadsheets · No manual exports</span>
+        </div>
+        <p style="font-size:13px; color:#9ca3af; line-height:1.5;">Synder reads your subscription data directly from Stripe. For subscriptions in other platforms — there's an Excel upload option.</p>
+      </div>
+
+      <div class="grid-2" style="gap:12px;">
+        <div class="card-sm" style="display:flex; align-items:flex-start; gap:12px;">
+          <span class="success" style="font-size:18px; flex-shrink:0;">✓</span>
+          <div>
+            <div style="font-weight:700; color:#f9fafb; font-size:14px; margin-bottom:2px;">Automated modification tracking</div>
+            <div style="font-size:12px; color:#9ca3af;">Upgrades, downgrades, cancellations, refunds — all from Stripe</div>
+          </div>
+        </div>
+
+        <div class="card-sm" style="display:flex; align-items:flex-start; gap:12px;">
+          <span class="success" style="font-size:18px; flex-shrink:0;">✓</span>
+          <div>
+            <div style="font-weight:700; color:#f9fafb; font-size:14px; margin-bottom:2px;">Direct QBO + Stripe integration</div>
+            <div style="font-size:12px; color:#9ca3af;">Plug-and-play, no middleware</div>
+          </div>
+        </div>
+
+        <div class="card-sm" style="display:flex; align-items:flex-start; gap:12px;">
+          <span class="success" style="font-size:18px; flex-shrink:0;">✓</span>
+          <div>
+            <div style="font-weight:700; color:#f9fafb; font-size:14px; margin-bottom:2px;">GAAP-compliant recognition</div>
+            <div style="font-size:12px; color:#9ca3af;">ASC 606 / IFRS 15 out of the box</div>
+          </div>
+        </div>
+
+        <div class="card-sm" style="display:flex; align-items:flex-start; gap:12px;">
+          <span class="success" style="font-size:18px; flex-shrink:0;">✓</span>
+          <div>
+            <div style="font-weight:700; color:#f9fafb; font-size:14px; margin-bottom:2px;">Visibility on recognition schedules</div>
+            <div style="font-size:12px; color:#9ca3af;">Every subscription, every month</div>
+          </div>
+        </div>
+
+        <div class="card-sm" style="display:flex; align-items:flex-start; gap:12px;">
+          <span class="success" style="font-size:18px; flex-shrink:0;">✓</span>
+          <div>
+            <div style="font-weight:700; color:#f9fafb; font-size:14px; margin-bottom:2px;">Extensive reporting suite</div>
+            <div style="font-size:12px; color:#9ca3af;">Reconciliation, per-invoice, waterfall — covered later</div>
+          </div>
+        </div>
+
+        <div class="card-sm" style="display:flex; align-items:flex-start; gap:12px; background:rgba(34,197,94,0.06); border-color:rgba(34,197,94,0.35);">
+          <span class="success" style="font-size:18px; flex-shrink:0;">✓</span>
+          <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+              <span style="font-weight:700; color:#f9fafb; font-size:14px;">Deferred revenue reconciliation</span>
+              <span class="pill-live">Available today</span>
+            </div>
+            <div style="font-size:12px; color:#86efac;">In production — your month-end close just got simpler</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 9: USE CASES ─────────────────── -->
+  <div class="slide" data-slide="9" data-title="RevRec use cases">
+    <div class="slide-inner">
+      <div class="section-label">What We'll Cover Today</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">RevRec Use Cases</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">The SaaS scenarios that show up in real life</p>
+
+      <div class="grid-3" style="margin-bottom:14px;">
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="font-size:18px; margin-bottom:6px;">↩️</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Subscription refunds</div>
+          <div style="font-size:11px; color:#9ca3af; margin-top:2px;">Partial &amp; full</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #f59e0b;">
+          <div style="font-size:18px; margin-bottom:6px;">🚫</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Cancellations</div>
+          <div style="font-size:11px; color:#9ca3af; margin-top:2px;">Mid-cycle stops</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #a78bfa;">
+          <div style="font-size:18px; margin-bottom:6px;">⬆️⬇️</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Modifications</div>
+          <div style="font-size:11px; color:#9ca3af; margin-top:2px;">Upgrades &amp; downgrades</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #3b82f6;">
+          <div style="font-size:18px; margin-bottom:6px;">🌐</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Multi-currency</div>
+          <div style="font-size:11px; color:#9ca3af; margin-top:2px;">Contracts in any currency</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="font-size:18px; margin-bottom:6px;">💸</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Unpaid invoices</div>
+          <div style="font-size:11px; color:#9ca3af; margin-top:2px;">Bad debt flow</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #22c55e;">
+          <div style="font-size:18px; margin-bottom:6px;">📦</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">One-time items</div>
+          <div style="font-size:11px; color:#9ca3af; margin-top:2px;">Inside subscriptions</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #f59e0b;">
+          <div style="font-size:18px; margin-bottom:6px;">🏷️</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Discounts</div>
+          <div style="font-size:11px; color:#9ca3af; margin-top:2px;">Coupons &amp; promos</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #a78bfa;">
+          <div style="font-size:18px; margin-bottom:6px;">🧾</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Subscriptions with taxes</div>
+          <div style="font-size:11px; color:#9ca3af; margin-top:2px;">Tax-inclusive lines</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #6b7280; background:rgba(107,114,128,0.04);">
+          <div style="font-size:18px; margin-bottom:6px;">➕</div>
+          <div style="font-weight:700; color:#9ca3af; font-size:13px;">…and more</div>
+          <div style="font-size:11px; color:#6b7280; margin-top:2px;">Too many to list — ask us</div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">📍 First stop: <strong>recognition schedules</strong> — the foundation under every use case.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 10: DAILY RATABLE ─────────────────── -->
+  <div class="slide" data-slide="10" data-title="Schedule: Daily ratable">
+    <div class="slide-inner">
+      <div class="section-label">Recognition Schedule · Method 1 of 3</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Daily Ratable</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Most precise — every month recognizes its exact share of days. Closest to strict GAAP.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <div class="section-label" style="margin-bottom:10px;">Example: $1,200 yearly subscription, started late May</div>
+        <table class="je-table">
+          <thead>
+            <tr><th>Month</th><th style="text-align:center;">Days covered</th><th style="text-align:right;">Recognized</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>May</td><td class="num" style="text-align:center;">23</td><td class="num" style="text-align:right; color:#fbbf24;">$75.62</td></tr>
+            <tr><td>Jun</td><td class="num" style="text-align:center;">30</td><td class="num" style="text-align:right;">$98.63</td></tr>
+            <tr><td>Jul</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
+            <tr><td>Aug</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
+            <tr><td>Sep</td><td class="num" style="text-align:center;">30</td><td class="num" style="text-align:right;">$98.63</td></tr>
+            <tr><td>Oct</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
+            <tr><td>Nov</td><td class="num" style="text-align:center;">30</td><td class="num" style="text-align:right;">$98.63</td></tr>
+            <tr><td>Dec</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
+            <tr><td>Jan</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
+            <tr><td>Feb</td><td class="num" style="text-align:center;">28</td><td class="num" style="text-align:right;">$92.05</td></tr>
+            <tr><td>Mar</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
+            <tr><td>Apr</td><td class="num" style="text-align:center;">30</td><td class="num" style="text-align:right;">$98.63</td></tr>
+            <tr><td>May</td><td class="num" style="text-align:center;">8</td><td class="num" style="text-align:right; color:#fbbf24;">$26.29</td></tr>
+            <tr class="row-final"><td><strong>Total</strong></td><td class="num" style="text-align:center;"><strong>365</strong></td><td class="num" style="text-align:right;"><strong>$1,200.00</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">💡 Amounts fluctuate by calendar. May = 23 days only → $75.62, not a full $100.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 11: MONTHLY RATABLE ─────────────────── -->
+  <div class="slide" data-slide="11" data-title="Schedule: Monthly ratable">
+    <div class="slide-inner">
+      <div class="section-label">Recognition Schedule · Method 2 of 3</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Monthly Ratable</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Straight-line. Divide the invoice amount by the number of months — same amount every month.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <div class="section-label" style="margin-bottom:10px;">Example: $1,200 ÷ 12 = $100/month</div>
+        <table class="je-table">
+          <thead>
+            <tr><th>Month</th><th style="text-align:right;">Recognized</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Month 1</td><td class="num" style="text-align:right;">$100.00</td></tr>
+            <tr><td>Month 2</td><td class="num" style="text-align:right;">$100.00</td></tr>
+            <tr><td>Month 3</td><td class="num" style="text-align:right;">$100.00</td></tr>
+            <tr><td>Month 4–11</td><td class="num" style="text-align:right;">$100.00 each</td></tr>
+            <tr><td>Month 12</td><td class="num" style="text-align:right;">$100.00</td></tr>
+            <tr class="row-final"><td><strong>Total</strong></td><td class="num" style="text-align:right;"><strong>$1,200.00</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid-2">
+        <div class="success-box">
+          <span style="font-size:13px; color:#86efac;">✅ <strong>Pro:</strong> Dead simple to explain. Predictable lines on the P&amp;L.</span>
+        </div>
+        <div class="warning-box">
+          <span style="font-size:13px; color:#fcd34d;">⚠️ <strong>Catch:</strong> Sub starts June 30? You still recognize $100 for June — even if only 1 day was delivered. Less accurate at the edges.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 12: MONTHLY PRORATED ─────────────────── -->
+  <div class="slide" data-slide="12" data-title="Schedule: Monthly ratable, prorated edges">
+    <div class="slide-inner">
+      <div class="section-label">Recognition Schedule · Method 3 of 3</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Monthly Ratable, Prorated First &amp; Last Months</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Best of both worlds: clean middle months, accurate at the edges. Recommended default.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <div class="section-label" style="margin-bottom:10px;">Example: $1,200 yearly, started Feb 6</div>
+        <table class="je-table">
+          <thead>
+            <tr><th>Month</th><th style="text-align:center;">Days</th><th style="text-align:right;">Recognized</th><th style="text-align:left;">Type</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Feb (start)</td><td class="num" style="text-align:center;">23</td><td class="num" style="text-align:right; color:#fbbf24;">$79.31</td><td><span class="tag tag-amber">Prorated</span></td></tr>
+            <tr><td>Mar</td><td class="num" style="text-align:center;">—</td><td class="num" style="text-align:right;">$100.00</td><td><span class="tag tag-blue">Flat</span></td></tr>
+            <tr><td>Apr</td><td class="num" style="text-align:center;">—</td><td class="num" style="text-align:right;">$100.00</td><td><span class="tag tag-blue">Flat</span></td></tr>
+            <tr><td>May – Dec</td><td class="num" style="text-align:center;">—</td><td class="num" style="text-align:right;">$100.00 × 8</td><td><span class="tag tag-blue">Flat</span></td></tr>
+            <tr><td>Jan</td><td class="num" style="text-align:center;">—</td><td class="num" style="text-align:right;">$100.00</td><td><span class="tag tag-blue">Flat</span></td></tr>
+            <tr><td>Feb (stub)</td><td class="num" style="text-align:center;">6</td><td class="num" style="text-align:right; color:#fbbf24;">$20.69</td><td><span class="tag tag-amber">Prorated</span></td></tr>
+            <tr class="row-final"><td><strong>Total</strong></td><td class="num" style="text-align:center;"><strong>365</strong></td><td class="num" style="text-align:right;"><strong>$1,200.00</strong></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="success-box">
+        <span style="font-size:13px; color:#86efac;">🏆 <strong>Synder's recommended default.</strong> Clean to read, accurate at the edges, easy to audit.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 13: REFUNDS ─────────────────── -->
+  <div class="slide" data-slide="13" data-title="Recognition of refunds">
+    <div class="slide-inner">
+      <div class="section-label">Use Case 1 · Refunds</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Recognition of Refunds</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Scenario: $300 three-month sub. $100 recognized in August. Full refund in September.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <table class="je-table">
+          <thead>
+            <tr><th>Month</th><th style="text-align:right;">Billed</th><th style="text-align:right;">Recognized</th><th style="text-align:right;">Deferred Bal.</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Aug</td><td class="num" style="text-align:right;">$300.00</td><td class="num" style="text-align:right;">$100.00</td><td class="num" style="text-align:right;">$200.00</td></tr>
+            <tr class="row-neg"><td>Sep <span class="tag tag-red" style="margin-left:6px;">Full refund</span></td><td class="num" style="text-align:right;">–$300.00</td><td class="num" style="text-align:right;">–$100.00</td><td class="num" style="text-align:right;">$0.00</td></tr>
+            <tr class="row-final"><td><strong>Net</strong></td><td class="num" style="text-align:right;"><strong>$0.00</strong></td><td class="num" style="text-align:right;"><strong>$0.00</strong></td><td class="num" style="text-align:right;"><strong>$0.00</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid-2">
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="font-weight:700; color:#f9fafb; font-size:13px; margin-bottom:6px;">Full refund</div>
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;">August's $100 has to come <strong>out of P&amp;L</strong>. You didn't keep the money — you can't keep the revenue.</p>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #f59e0b;">
+          <div style="font-weight:700; color:#f9fafb; font-size:13px; margin-bottom:6px;">Partial refund (unused 2 months only)</div>
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;">First month was earned legitimately — <strong>nothing to claw back</strong>. Only the unused portion gets refunded. Synder handles both.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 14: P&L (REFUND) ─────────────────── -->
+  <div class="slide" data-slide="14" data-title="Profit &amp; Loss (refund)">
+    <div class="slide-inner">
+      <div class="section-label">Use Case 1 · In QuickBooks</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Profit &amp; Loss (Refund Example)</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">August +$100, September –$100. Net zero — exactly correct.</p>
+
+      <div class="mock-ui" style="margin-bottom:12px;">
+        <div class="mock-ui-header">QuickBooks Online · Profit &amp; Loss</div>
+        <div class="mock-ui-body">
+          <table class="je-table">
+            <thead>
+              <tr><th>Income Account</th><th style="text-align:right;">Aug</th><th style="text-align:right;">Sep</th><th style="text-align:right;">Net</th></tr>
+            </thead>
+            <tbody>
+              <tr style="background:rgba(59,130,246,0.06);"><td><strong style="color:#60a5fa;">Subscription revenue</strong></td><td class="num" style="text-align:right;">$100.00</td><td class="num" style="text-align:right; color:#fca5a5;">–$100.00</td><td class="num" style="text-align:right;"><strong>$0.00</strong></td></tr>
+              <tr><td style="color:#9ca3af;">Other income</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right; color:#6b7280;">—</td></tr>
+              <tr class="row-final"><td><strong>Total income</strong></td><td class="num" style="text-align:right;"><strong>$100.00</strong></td><td class="num" style="text-align:right;"><strong>–$100.00</strong></td><td class="num" style="text-align:right;"><strong>$0.00</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">🎯 The customer got their money back. Net of both months you provided no paid service. <strong>Books reflect reality.</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 15: CANCELLATION ─────────────────── -->
+  <div class="slide" data-slide="15" data-title="Subscription cancellation">
+    <div class="slide-inner">
+      <div class="section-label">Use Case 2 · Cancellation</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Subscription Cancellation</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Cancellations ≠ refunds. As long as service is delivered, recognition continues.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <div class="section-label" style="margin-bottom:8px;">Example: Cancelled Feb 16, billing cycle runs through end of Feb</div>
+        <table class="je-table">
+          <thead>
+            <tr><th>Date</th><th>Event</th><th style="text-align:right;">Recognized</th><th style="text-align:right;">Deferred Bal.</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Feb 1</td><td>Start of period</td><td class="num" style="text-align:right;">—</td><td class="num" style="text-align:right;">$7.51</td></tr>
+            <tr><td>Feb 16</td><td><span class="tag tag-amber">Customer cancels</span></td><td class="num" style="text-align:right;">in progress</td><td class="num" style="text-align:right;">in progress</td></tr>
+            <tr class="row-final"><td>Feb 28</td><td>End of cycle — service ends</td><td class="num" style="text-align:right;">$7.51</td><td class="num" style="text-align:right;">$0.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid-2">
+        <div class="success-box">
+          <span style="font-size:13px; color:#86efac;">📐 <strong>The rule:</strong> as long as you're providing the service, you keep recognizing. The schedule doesn't change.</span>
+        </div>
+        <div class="warning-box">
+          <span style="font-size:13px; color:#fcd34d;">⚠️ Only exception: if you <em>also</em> stop service immediately AND refund the unused portion — that's the refund case (Slide 13).</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 16: DISCOUNTED SUB ─────────────────── -->
+  <div class="slide" data-slide="16" data-title="Discounted subscription">
+    <div class="slide-inner">
+      <div class="section-label">Use Case 3 · Discounts</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Discounted Subscription</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">$1,200 yearly with a $240 discount → $960 invoice. Discounts recognize the same way as the product.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <div class="section-label" style="margin-bottom:8px;">October recognition — expanded</div>
+        <table class="je-table">
+          <thead>
+            <tr><th>Line item</th><th style="text-align:right;">Amount</th><th>Account</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Scale subscription</td><td class="num" style="text-align:right; color:#60a5fa;">$101.92</td><td>Subscription revenue</td></tr>
+            <tr class="row-neg"><td>Discount for: Scale subscription</td><td class="num" style="text-align:right;">–$20.38</td><td>Discounts given</td></tr>
+            <tr class="row-final"><td><strong>Net October</strong></td><td class="num" style="text-align:right;"><strong>$81.54</strong></td><td><strong>Combined</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid-2">
+        <div class="card-sm" style="border-left:3px solid #22c55e;">
+          <div style="font-weight:700; color:#f9fafb; font-size:13px; margin-bottom:6px;">Principle</div>
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;"><strong>Recognize the discount the same way as the product</strong> — straight-line, same period, same method.</p>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #3b82f6;">
+          <div style="font-weight:700; color:#f9fafb; font-size:13px; margin-bottom:6px;">Result</div>
+          <p style="font-size:12px; color:#9ca3af; line-height:1.5;">Clean P&amp;L split between gross subscription revenue and discounts — line-item level.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 17: P&L (DISCOUNT) ─────────────────── -->
+  <div class="slide" data-slide="17" data-title="Profit &amp; Loss (discount)">
+    <div class="slide-inner">
+      <div class="section-label">Use Case 3 · In QuickBooks</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Profit &amp; Loss (Discount Example)</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;"><strong>Discounts given</strong> appears as a separate income line — distinct from <strong>Stripe sales</strong>.</p>
+
+      <div class="mock-ui" style="margin-bottom:12px;">
+        <div class="mock-ui-header">QuickBooks Online · Profit &amp; Loss</div>
+        <div class="mock-ui-body">
+          <table class="je-table">
+            <thead>
+              <tr><th>Income Account</th><th style="text-align:right;">Oct</th><th style="text-align:right;">Nov</th><th style="text-align:right;">Dec</th></tr>
+            </thead>
+            <tbody>
+              <tr style="background:rgba(59,130,246,0.06);"><td><strong style="color:#60a5fa;">Stripe sales</strong> <span style="color:#6b7280; font-size:11px;">(list price)</span></td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.92</td></tr>
+              <tr class="row-neg"><td><strong>Discounts given</strong></td><td class="num" style="text-align:right;">–$20.38</td><td class="num" style="text-align:right;">–$19.73</td><td class="num" style="text-align:right;">–$20.38</td></tr>
+              <tr class="row-final"><td><strong>Net income</strong></td><td class="num" style="text-align:right;"><strong>$81.54</strong></td><td class="num" style="text-align:right;"><strong>$78.90</strong></td><td class="num" style="text-align:right;"><strong>$81.54</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">🔍 Useful for pricing analysis later — no hunting through invoice details to find where the discounts went.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 18: CONTRACT MODIFICATIONS ─────────────────── -->
+  <div class="slide" data-slide="18" data-title="Contract modifications">
+    <div class="slide-inner">
+      <div class="section-label">Use Case 4 · Contract Modifications</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Upgrade / Downgrade Mechanics</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Stripe handles proration. Synder reads it and recognizes at the product level.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <div class="section-label" style="margin-bottom:8px;">Scenario: Monthly $199.99 sub → upgrade to 3-month $300 plan (days in)</div>
+        <table class="je-table">
+          <thead>
+            <tr><th>Invoice</th><th>Line item</th><th style="text-align:right;">Amount</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Invoice 1</td><td>Original monthly subscription</td><td class="num" style="text-align:right;">$199.99</td></tr>
+            <tr><td rowspan="2" style="vertical-align:top;">Invoice 2</td><td>Proration credit (unused portion)</td><td class="num" style="text-align:right; color:#fca5a5;">–$103.22</td></tr>
+            <tr><td>3-month plan</td><td class="num" style="text-align:right;">$300.00</td></tr>
+            <tr class="row-final"><td colspan="2"><strong>Net customer pays</strong></td><td class="num" style="text-align:right;"><strong>$196.78</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">🔄 The customer ends up with <strong>two invoices in the system</strong>. Synder splits recognition across both — see next slide.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 19: MODIFICATION SCHEDULE ─────────────────── -->
+  <div class="slide" data-slide="19" data-title="Modification schedule">
+    <div class="slide-inner">
+      <div class="section-label">Use Case 4 · Schedule</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Recognition Through the Modification</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Recognize at the <strong>product</strong> level, not the invoice level — clean audit trail.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <table class="je-table">
+          <thead>
+            <tr><th>Month</th><th>Golden subscription</th><th>3-month plan</th><th style="text-align:right;">Total recognized</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Aug</td><td class="num">10 days · $64.51</td><td class="num">—</td><td class="num" style="text-align:right;">$64.51</td></tr>
+            <tr style="background:rgba(245,158,11,0.06);"><td>Sep <span class="tag tag-amber" style="margin-left:6px;">Upgrade month</span></td><td class="num">5 days · $32.26</td><td class="num">25 days · $82.42</td><td class="num" style="text-align:right;">$114.68</td></tr>
+            <tr><td>Oct</td><td>—</td><td class="num">31 days · ~$102</td><td class="num" style="text-align:right;">~$102</td></tr>
+            <tr><td>Nov</td><td>—</td><td class="num">30 days · ~$98</td><td class="num" style="text-align:right;">~$98</td></tr>
+            <tr><td>Dec</td><td>—</td><td class="num">stub · remaining</td><td class="num" style="text-align:right;">remaining</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="success-box">
+        <span style="font-size:13px; color:#86efac;">🏗️ <strong>Best practice (generalizes):</strong> recognize at the product level. Each line item, each period — tracked separately, automatically.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 20: INVOICE-DATE RECOGNITION ─────────────────── -->
+  <div class="slide" data-slide="20" data-title="Recognition from invoice date">
+    <div class="slide-inner">
+      <div class="section-label">Use Case 5 · Recognition Start</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Recognition from an Invoice Date</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Recognition starts when service starts — not when cash arrives. Default for B2B with net terms.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <div class="section-label" style="margin-bottom:8px;">$2,400 yearly subscription, billed early August (net-30)</div>
+        <table class="je-table">
+          <thead>
+            <tr><th>Month</th><th>Status</th><th style="text-align:right;">Recognized</th></tr>
+          </thead>
+          <tbody>
+            <tr style="background:rgba(59,130,246,0.06);"><td>Aug</td><td><span class="tag tag-blue">Invoice issued · service starts</span></td><td class="num" style="text-align:right;">$157.81</td></tr>
+            <tr><td>Sep</td><td>Service delivering</td><td class="num" style="text-align:right;">$197.26</td></tr>
+            <tr><td>Oct</td><td>Service delivering</td><td class="num" style="text-align:right;">$203.84</td></tr>
+            <tr><td>…</td><td>—</td><td class="num" style="text-align:right;">~$197–203</td></tr>
+            <tr><td>Aug 2025</td><td>End of cycle</td><td class="num" style="text-align:right;">stub</td></tr>
+            <tr class="row-final"><td><strong>Total</strong></td><td></td><td class="num" style="text-align:right;"><strong>$2,400.00</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">⏱️ Net-30 / net-60 terms common in B2B. Clock starts when service starts — not when payment arrives.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 21: BAD DEBT ─────────────────── -->
+  <div class="slide" data-slide="21" data-title="Uncollectible / Bad Debt">
+    <div class="slide-inner">
+      <div class="section-label">Use Case 6 · Bad Debt</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Uncollectible / Voided Invoices — Bad Debt</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">$1,200 subscription, July start. Marked uncollectible in September after $121.65 recognized.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <table class="je-table">
+          <thead>
+            <tr><th>Month</th><th>Event</th><th style="text-align:right;">Recognized</th><th style="text-align:right;">Cumul. P&amp;L</th><th style="text-align:right;">Bad Debt</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Jul</td><td>Service delivered</td><td class="num" style="text-align:right;">$19.73</td><td class="num" style="text-align:right;">$19.73</td><td class="num" style="text-align:right;">—</td></tr>
+            <tr><td>Aug</td><td>Service delivered</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$121.65</td><td class="num" style="text-align:right;">—</td></tr>
+            <tr style="background:rgba(239,68,68,0.06);"><td>Sep</td><td><span class="tag tag-red">Invoice voided</span></td><td class="num" style="text-align:right;">—</td><td class="num" style="text-align:right;">$121.65 <span style="color:#9ca3af;">(unchanged)</span></td><td class="num" style="text-align:right; color:#fca5a5;">$121.65</td></tr>
+            <tr><td>Oct →</td><td>Nothing more recognized</td><td class="num" style="text-align:right;">$0.00</td><td class="num" style="text-align:right;">$121.65</td><td class="num" style="text-align:right;">$121.65</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="warning-box">
+        <span style="font-size:13px; color:#fcd34d;">🧠 <strong>The logic:</strong> Jul + Aug service was real — you can't undeliver it. So you don't reverse P&amp;L. Instead, the unrecoverable amount goes to a <strong>Bad Debt expense account</strong>.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 22: PAYMENT-DATE RECOGNITION ─────────────────── -->
+  <div class="slide" data-slide="22" data-title="Recognition from payment date">
+    <div class="slide-inner">
+      <div class="section-label">Use Case 7 · Alternative Start</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Recognition from a Payment Date</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">For businesses where service delivery is gated on payment received.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <div class="section-label" style="margin-bottom:8px;">Same subscription as Slide 20 — invoice early Aug, but payment arrives in October</div>
+        <table class="je-table">
+          <thead>
+            <tr><th>Month</th><th>Status</th><th style="text-align:right;">Recognized</th></tr>
+          </thead>
+          <tbody>
+            <tr style="background:rgba(107,114,128,0.06);"><td>Aug</td><td><span class="tag tag-gray">Invoiced · unpaid</span></td><td class="num" style="text-align:right;">$0.00</td></tr>
+            <tr style="background:rgba(107,114,128,0.06);"><td>Sep</td><td><span class="tag tag-gray">Still unpaid</span></td><td class="num" style="text-align:right;">$0.00</td></tr>
+            <tr style="background:rgba(34,197,94,0.06);"><td>Oct</td><td><span class="tag tag-green">Payment received · catch-up</span></td><td class="num" style="text-align:right; color:#4ade80;">$558.91</td></tr>
+            <tr><td>Nov</td><td>Service delivering</td><td class="num" style="text-align:right;">~$197</td></tr>
+            <tr><td>…</td><td>—</td><td class="num" style="text-align:right;">standard amounts</td></tr>
+            <tr><td>Aug 2025</td><td>End</td><td class="num" style="text-align:right;">stub</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">📅 Same principle, applied to a different moment of service start. Recognition kicks off retroactively from the payment date.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 23: MULTI-LINE INVOICES ─────────────────── -->
+  <div class="slide" data-slide="23" data-title="Multi-line invoices">
+    <div class="slide-inner">
+      <div class="section-label">Use Case 8 · Multi-line Invoices</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Multi-Line Invoices</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Customer with two simultaneous subs — yearly $1,200 + 6-month $600. Each on its own schedule.</p>
+
+      <div class="card" style="margin-bottom:12px; padding:14px;">
+        <table class="je-table">
+          <thead>
+            <tr><th>Month</th><th>Scale subscription <span style="color:#6b7280; font-size:11px;">(yearly $1,200)</span></th><th>6-month plan <span style="color:#6b7280; font-size:11px;">($600)</span></th><th style="text-align:right;">Total</th></tr>
+          </thead>
+          <tbody>
+            <tr style="background:rgba(59,130,246,0.06);"><td>Jul (start)</td><td class="num">6 days · $19.73</td><td class="num">6 days · $19.57</td><td class="num" style="text-align:right;">$39.30</td></tr>
+            <tr><td>Aug</td><td class="num">~$203</td><td class="num">~$101</td><td class="num" style="text-align:right;">~$304</td></tr>
+            <tr><td>Sep</td><td class="num">~$197</td><td class="num">~$98</td><td class="num" style="text-align:right;">~$295</td></tr>
+            <tr><td>Oct – Dec</td><td class="num">~$203</td><td class="num">~$101</td><td class="num" style="text-align:right;">~$304</td></tr>
+            <tr><td>Jan</td><td class="num">~$203</td><td class="num">stub</td><td class="num" style="text-align:right;">~$203 + stub</td></tr>
+            <tr><td>…</td><td class="num">~$197–$203</td><td>—</td><td class="num" style="text-align:right;">solo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="success-box">
+        <span style="font-size:13px; color:#86efac;">📊 <strong>Best practice:</strong> map each product to its own income account → track revenue by product line in your P&amp;L.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 24: SETUP ─────────────────── -->
+  <div class="slide" data-slide="24" data-title="Setup">
+    <div class="slide-inner">
+      <div class="section-label">Section 3 · Configuration</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Synder RevRec: Setup</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Plug-and-play. Connect, map, then it runs on its own.</p>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="card" style="display:flex; align-items:center; gap:18px;">
+          <div style="background:#3b82f6; color:white; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0;">1</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Connect Stripe</div>
+            <div style="font-size:13px; color:#9ca3af;">OAuth — read subscription, invoice, and proration data directly</div>
+          </div>
+          <span class="tag tag-blue">~2 min</span>
+        </div>
+
+        <div class="card" style="display:flex; align-items:center; gap:18px;">
+          <div style="background:#22c55e; color:white; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0;">2</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Connect QuickBooks Online</div>
+            <div style="font-size:13px; color:#9ca3af;">Direct integration — no middleware, no CSVs in between</div>
+          </div>
+          <span class="tag tag-green">~2 min</span>
+        </div>
+
+        <div class="card" style="display:flex; align-items:center; gap:18px;">
+          <div style="background:#a78bfa; color:white; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0;">3</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Map products (one time)</div>
+            <div style="font-size:13px; color:#9ca3af;">Each Stripe plan → QBO product + income account. Covered next slide.</div>
+          </div>
+          <span class="tag tag-violet">~10 min</span>
+        </div>
+
+        <div class="card" style="display:flex; align-items:center; gap:18px; background:rgba(34,197,94,0.04); border-color:rgba(34,197,94,0.25);">
+          <div style="background:#22c55e; color:white; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0;">✓</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb;">Then it runs on its own</div>
+            <div style="font-size:13px; color:#9ca3af;">Schedules, journal entries, reports — all automatic, every month</div>
+          </div>
+          <span class="tag tag-green">Done</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 25: PLAN MAPPING ─────────────────── -->
+  <div class="slide" data-slide="25" data-title="Mapping of products">
+    <div class="slide-inner">
+      <div class="section-label">Setup · Step 3</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Mapping of Products</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">For each Stripe plan: assign a QBO product + an income account. One-time configuration.</p>
+
+      <div class="mock-ui" style="margin-bottom:8px;">
+        <div class="mock-ui-header">Synder · Plan mapping</div>
+        <div class="mock-ui-body">
+          <div style="display:flex; gap:8px; margin-bottom:10px;">
+            <span class="tag tag-blue" style="padding:4px 12px;">Mapped (4)</span>
+            <span class="tag tag-amber" style="padding:4px 12px;">Not mapped (2)</span>
+          </div>
+          <table class="je-table">
+            <thead>
+              <tr><th>Stripe plan</th><th>→</th><th>QBO product</th><th>Income account</th><th style="text-align:right;">Status</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1 yr subscription / 1,200 USD / yearly</td><td style="color:#6b7280; text-align:center;">→</td><td>Scale subscription</td><td>1 Yearly income</td><td style="text-align:right;"><span class="tag tag-green">✓ Mapped</span></td></tr>
+              <tr><td>3 mo subscription / 100 USD / every 3 months</td><td style="color:#6b7280; text-align:center;">→</td><td>3-month plan</td><td>3 mo income</td><td style="text-align:right;"><span class="tag tag-green">✓ Mapped</span></td></tr>
+              <tr><td>6 mo subscription / 600 USD / every 6 months</td><td style="color:#6b7280; text-align:center;">→</td><td>6-month plan</td><td>6 mo income</td><td style="text-align:right;"><span class="tag tag-green">✓ Mapped</span></td></tr>
+              <tr><td>Monthly subscription / 199.99 USD / monthly</td><td style="color:#6b7280; text-align:center;">→</td><td>Golden subscription</td><td>Stripe sales</td><td style="text-align:right;"><span class="tag tag-green">✓ Mapped</span></td></tr>
+              <tr style="background:rgba(245,158,11,0.04);"><td>Enterprise tier / 24,000 USD / yearly</td><td style="color:#6b7280; text-align:center;">→</td><td style="color:#fbbf24;">— select —</td><td style="color:#fbbf24;">— select —</td><td style="text-align:right;"><span class="tag tag-amber">Pending</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">🔗 Each mapped item is also linked to your <strong>deferred revenue account</strong> on the back end — that's the mechanism that makes the JEs work.</span>
+      </div>
+
+      <div class="screenshot-note">Screenshot: Synder Plan Mapping UI with mapped &amp; not-mapped tabs — to be added</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 26: PER-SUB JE ─────────────────── -->
+  <div class="slide" data-slide="26" data-title="JE: Per subscription">
+    <div class="slide-inner">
+      <div class="section-label">Auto-Generated JEs · Mode A</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Auto-Generated JE: Per Subscription</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">One journal entry per active subscription. Maximum traceability — every dollar tied to a customer.</p>
+
+      <div class="mock-ui" style="margin-bottom:8px;">
+        <div class="mock-ui-header">QuickBooks Online · Journal Entry · Oct 31, 2026</div>
+        <div class="mock-ui-body">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; color:#9ca3af;">
+            <span>Description: <strong style="color:#d1d5db;">Acme Corp — sub_1Q7yMzXa9 — Oct 2026 recognition</strong></span>
+            <span>Total: <strong style="color:#d1d5db;" class="mono">$203.84</strong></span>
+          </div>
+          <table class="je-table">
+            <thead>
+              <tr><th>Account</th><th style="text-align:right;">Debit</th><th style="text-align:right;">Credit</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Deferred Revenue</td><td class="num" style="text-align:right;">$203.84</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td>Acme Corp — sub_1Q7yMzXa9</td></tr>
+              <tr><td>1 Yearly income</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right;">$101.92</td><td>Scale subscription</td></tr>
+              <tr><td>3 mo income</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right;">$101.92</td><td>3-month plan</td></tr>
+              <tr class="row-final"><td><strong>Totals</strong></td><td class="num" style="text-align:right;"><strong>$203.84</strong></td><td class="num" style="text-align:right;"><strong>$203.84</strong></td><td></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="success-box">
+        <span style="font-size:13px; color:#86efac;">🔎 QBO becomes a full audit trail by customer. Every recognized dollar tied to a specific subscription ID.</span>
+      </div>
+
+      <div class="screenshot-note">Screenshot: Synder-generated per-sub JE inside QBO with customer + sub_id in description — to be added</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 27: AGGREGATED JE ─────────────────── -->
+  <div class="slide" data-slide="27" data-title="JE: Aggregated">
+    <div class="slide-inner">
+      <div class="section-label">Auto-Generated JEs · Mode B</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Auto-Generated JE: Single Aggregated Entry</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">One JE per month across all subscriptions. Cleaner for higher-volume businesses.</p>
+
+      <div class="mock-ui" style="margin-bottom:8px;">
+        <div class="mock-ui-header">QuickBooks Online · Journal Entry · Oct 31, 2026</div>
+        <div class="mock-ui-body">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; color:#9ca3af;">
+            <span>Description: <strong style="color:#d1d5db;">Synder — October 2026 revenue recognition (aggregated)</strong></span>
+            <span>Total: <strong style="color:#d1d5db;" class="mono">$48,712.50</strong></span>
+          </div>
+          <table class="je-table">
+            <thead>
+              <tr><th>Account</th><th style="text-align:right;">Debit</th><th style="text-align:right;">Credit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Deferred Revenue</td><td class="num" style="text-align:right;">$48,712.50</td><td class="num" style="text-align:right; color:#6b7280;">—</td></tr>
+              <tr><td>1 Yearly income</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right;">$22,415.20</td></tr>
+              <tr><td>3 mo income</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right;">$13,200.00</td></tr>
+              <tr><td>Stripe sales</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right;">$15,440.30</td></tr>
+              <tr class="row-neg"><td>Discounts given</td><td class="num" style="text-align:right;">$2,343.00</td><td class="num" style="text-align:right; color:#6b7280;">—</td></tr>
+              <tr class="row-final"><td><strong>Totals</strong></td><td class="num" style="text-align:right;"><strong>$51,055.50</strong></td><td class="num" style="text-align:right;"><strong>$51,055.50</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">📎 You don't lose the detail — the per-subscription breakdown is attached. See next slide.</span>
+      </div>
+
+      <div class="screenshot-note">Screenshot: Aggregated monthly JE in QBO with discount &amp; multiple income lines — to be added</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 28: JE LOG ATTACHED ─────────────────── -->
+  <div class="slide" data-slide="28" data-title="JE log attached">
+    <div class="slide-inner">
+      <div class="section-label">Auditor's Best Friend</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Journal Entry Log Attached</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Every Synder JE has a detailed CSV file attached automatically inside QBO.</p>
+
+      <div class="mock-ui" style="margin-bottom:8px;">
+        <div class="mock-ui-header">QBO Journal Entry · Attachments</div>
+        <div class="mock-ui-body">
+          <div class="card-sm" style="display:flex; align-items:center; gap:14px; margin-bottom:10px; background:#1f2937;">
+            <div style="font-size:24px;">📎</div>
+            <div style="flex:1;">
+              <div style="font-weight:700; color:#f9fafb;">synder-revrec-2026-10-detail.csv</div>
+              <div style="font-size:12px; color:#9ca3af;">142 rows · Every subscription, customer, invoice that contributed</div>
+            </div>
+            <span class="tag tag-blue">CSV</span>
+          </div>
+
+          <div class="section-label" style="margin-bottom:6px;">Preview (first 5 rows)</div>
+          <table class="je-table">
+            <thead>
+              <tr><th>Customer</th><th>Sub ID</th><th>Invoice ID</th><th>Product</th><th style="text-align:right;">Recognized</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Acme Corp</td><td class="mono">sub_1Q7yMzXa9</td><td class="mono">in_1QA8</td><td>Scale subscription</td><td class="num" style="text-align:right;">$101.92</td></tr>
+              <tr><td>Acme Corp</td><td class="mono">sub_1Q7yMzXa9</td><td class="mono">in_1QA8</td><td>3-month plan</td><td class="num" style="text-align:right;">$101.92</td></tr>
+              <tr><td>Globex LLC</td><td class="mono">sub_1QbgKLm2</td><td class="mono">in_1QbB</td><td>Scale subscription</td><td class="num" style="text-align:right;">$203.84</td></tr>
+              <tr><td>Initech Inc</td><td class="mono">sub_1QkPpQa4</td><td class="mono">in_1QkC</td><td>6-month plan</td><td class="num" style="text-align:right;">$98.63</td></tr>
+              <tr><td>Stark Industries</td><td class="mono">sub_1QvFwT9</td><td class="mono">in_1QvD</td><td>1-year subscription</td><td class="num" style="text-align:right;">$203.84</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="success-box">
+        <span style="font-size:13px; color:#86efac;">🎯 Even on aggregated mode, the underlying detail is <strong>one click away</strong>. Auditors love this.</span>
+      </div>
+
+      <div class="screenshot-note">Screenshot: QBO Attachments section on a Synder JE — to be added</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 29: RECONCILIATION REPORT ─────────────────── -->
+  <div class="slide" data-slide="29" data-title="Reconciliation report">
+    <div class="slide-inner">
+      <div class="section-label">Reports · 1 of 5</div>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap;">
+        <h1 class="slide-title">Reconciliation Report</h1>
+        <span class="pill-live">Available today</span>
+      </div>
+      <p class="slide-subtitle" style="margin-bottom:18px;">The report you'll run every month at close. Reconcile your Deferred Revenue account against Synder.</p>
+
+      <div class="formula-bar" style="margin-bottom:14px;">
+        <span class="term">Beginning balance</span><span class="op">+</span><span class="term">Incoming revenue</span><span class="op">−</span><span class="term">Recognized revenue</span><span class="eq">=</span><span class="term-final">Ending balance</span>
+      </div>
+
+      <div class="mock-ui" style="margin-bottom:8px;">
+        <div class="mock-ui-header">Synder · Deferred Revenue Reconciliation</div>
+        <div class="mock-ui-body">
+          <table class="je-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th style="text-align:right;">Beginning balance</th>
+                <th style="text-align:right; color:#60a5fa;">+ Incoming</th>
+                <th style="text-align:right; color:#fca5a5;">− Recognized</th>
+                <th style="text-align:right;">Ending balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Aug 2026</td><td class="num" style="text-align:right;">$42,150.00</td><td class="num" style="text-align:right; color:#60a5fa;">$18,400.00</td><td class="num" style="text-align:right; color:#fca5a5;">$12,860.00</td><td class="num" style="text-align:right;">$47,690.00</td></tr>
+              <tr><td>Sep 2026</td><td class="num" style="text-align:right;">$47,690.00</td><td class="num" style="text-align:right; color:#60a5fa;">$15,200.00</td><td class="num" style="text-align:right; color:#fca5a5;">$13,940.00</td><td class="num" style="text-align:right;">$48,950.00</td></tr>
+              <tr class="row-final"><td><strong>Oct 2026</strong></td><td class="num" style="text-align:right;">$48,950.00</td><td class="num" style="text-align:right; color:#60a5fa;">$22,800.00</td><td class="num" style="text-align:right; color:#fca5a5;">$14,138.00</td><td class="num" style="text-align:right;"><strong>$57,612.00</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="success-box">
+          <span style="font-size:13px; color:#86efac;">✅ <strong>QBO Deferred Rev (Oct):</strong> $57,612.00 → matches → clean month.</span>
+        </div>
+        <div class="danger-box">
+          <span style="font-size:13px; color:#fca5a5;">🔍 If it doesn't match → Synder gives you granular data to find the gap.</span>
+        </div>
+      </div>
+
+      <div class="screenshot-note">Screenshot: Synder Deferred Revenue Reconciliation report — to be added</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 30: REVENUE PER INVOICE ─────────────────── -->
+  <div class="slide" data-slide="30" data-title="Recognized revenue per invoice">
+    <div class="slide-inner">
+      <div class="section-label">Reports · 2 of 5</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Recognized Revenue per Invoice</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Most granular view available — every transaction listed, downloadable to Excel.</p>
+
+      <div class="mock-ui" style="margin-bottom:8px;">
+        <div class="mock-ui-header">Synder · Recognized Revenue per Invoice · Oct 2026</div>
+        <div class="mock-ui-body">
+          <table class="je-table">
+            <thead>
+              <tr>
+                <th>Entry date</th>
+                <th>Customer</th>
+                <th>Invoice ID</th>
+                <th>Product</th>
+                <th>Billing period</th>
+                <th style="text-align:right;">Recognized</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="mono">2026-10-31</td><td>Acme Corp</td><td class="mono">in_1QA8</td><td>Scale subscription</td><td>Aug 2026 – Aug 2027</td><td class="num" style="text-align:right;">$101.92</td><td><span class="tag tag-green">Paid</span></td></tr>
+              <tr><td class="mono">2026-10-31</td><td>Globex LLC</td><td class="mono">in_1QbB</td><td>3-month plan</td><td>Sep 2026 – Dec 2026</td><td class="num" style="text-align:right;">$98.63</td><td><span class="tag tag-green">Paid</span></td></tr>
+              <tr class="row-neg"><td class="mono">2026-10-15</td><td>Initech Inc</td><td class="mono">cm_1QkD</td><td>Credit memo (refund)</td><td>Sep 2026</td><td class="num" style="text-align:right;">–$50.00</td><td><span class="tag tag-red">Refund</span></td></tr>
+              <tr><td class="mono">2026-10-31</td><td>Stark Industries</td><td class="mono">in_1QvD</td><td>1-year subscription</td><td>Jul 2026 – Jul 2027</td><td class="num" style="text-align:right;">$203.84</td><td><span class="tag tag-green">Paid</span></td></tr>
+              <tr><td class="mono">2026-10-12</td><td>Wayne Enterprises</td><td class="mono">in_1QwE</td><td>6-month plan</td><td>Oct 2026 – Apr 2027</td><td class="num" style="text-align:right;">$32.21</td><td><span class="tag tag-amber">Net-30</span></td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:10px; font-size:11px; color:#6b7280;">Columns shown: <em>entry date, customer, subscription ID, invoice ID, transaction date, product, billing period, recognized amount, invoice status, payment platform.</em></div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">📤 <strong>Excel export.</strong> Disputes? Audit questions? Trace any number back to its source transaction in seconds.</span>
+      </div>
+
+      <div class="screenshot-note">Screenshot: Recognized Revenue per Invoice export — to be added</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 31: WATERFALL IN APP ─────────────────── -->
+  <div class="slide" data-slide="31" data-title="Revenue waterfall (in app)">
+    <div class="slide-inner">
+      <div class="section-label">Reports · 3 of 5</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Revenue Waterfall Report (In App)</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Rows = booked month. Columns = recognized month. Watch every booking earn out over time.</p>
+
+      <div class="mock-ui" style="margin-bottom:8px;">
+        <div class="mock-ui-header">Synder · Revenue Waterfall · Feb 2024 – Jul 2024</div>
+        <div class="mock-ui-body" style="overflow-x:auto;">
+          <table class="je-table" style="min-width:760px;">
+            <thead>
+              <tr>
+                <th>Booked ↓ / Recognized →</th>
+                <th style="text-align:right;">Feb 24</th>
+                <th style="text-align:right;">Mar 24</th>
+                <th style="text-align:right;">Apr 24</th>
+                <th style="text-align:right;">May 24</th>
+                <th style="text-align:right;">Jun 24</th>
+                <th style="text-align:right;">Jul 24</th>
+                <th style="text-align:right;">…</th>
+                <th style="text-align:right;">Booked total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background:rgba(59,130,246,0.06);"><td><strong>Feb 2024</strong></td><td class="num" style="text-align:right;">$157</td><td class="num" style="text-align:right;">$205</td><td class="num" style="text-align:right;">$198</td><td class="num" style="text-align:right;">$205</td><td class="num" style="text-align:right;">$198</td><td class="num" style="text-align:right;">$205</td><td class="num" style="text-align:right; color:#6b7280;">…</td><td class="num" style="text-align:right;"><strong>$2,457</strong></td></tr>
+              <tr><td><strong>Mar 2024</strong></td><td>—</td><td class="num" style="text-align:right;">$210</td><td class="num" style="text-align:right;">$320</td><td class="num" style="text-align:right;">$310</td><td class="num" style="text-align:right;">$320</td><td class="num" style="text-align:right;">$310</td><td class="num" style="text-align:right; color:#6b7280;">…</td><td class="num" style="text-align:right;"><strong>$3,840</strong></td></tr>
+              <tr><td><strong>Apr 2024</strong></td><td>—</td><td>—</td><td class="num" style="text-align:right;">$190</td><td class="num" style="text-align:right;">$285</td><td class="num" style="text-align:right;">$280</td><td class="num" style="text-align:right;">$285</td><td class="num" style="text-align:right; color:#6b7280;">…</td><td class="num" style="text-align:right;"><strong>$3,420</strong></td></tr>
+              <tr><td><strong>May 2024</strong></td><td>—</td><td>—</td><td>—</td><td class="num" style="text-align:right;">$240</td><td class="num" style="text-align:right;">$380</td><td class="num" style="text-align:right;">$370</td><td class="num" style="text-align:right; color:#6b7280;">…</td><td class="num" style="text-align:right;"><strong>$4,560</strong></td></tr>
+              <tr><td><strong>Jun 2024</strong></td><td>—</td><td>—</td><td>—</td><td>—</td><td class="num" style="text-align:right;">$165</td><td class="num" style="text-align:right;">$265</td><td class="num" style="text-align:right; color:#6b7280;">…</td><td class="num" style="text-align:right;"><strong>$3,180</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <span style="font-size:13px; color:#93c5fd;">📈 Feb 2024 booked $2,457 → recognition flows across the next 12 months. Useful for long-term contracts at a glance.</span>
+      </div>
+
+      <div class="screenshot-note">Screenshot: Synder in-app Waterfall report (booked × recognized grid) — to be added</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 32: WATERFALL EXCEL ─────────────────── -->
+  <div class="slide" data-slide="32" data-title="Revenue waterfall (Excel)">
+    <div class="slide-inner">
+      <div class="section-label">Reports · 4 of 5</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Revenue Waterfall Report (Excel)</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Same report — downloadable. Plug into your board models, FP&amp;A workbooks, fundraising decks.</p>
+
+      <div class="grid-2" style="margin-bottom:14px;">
+        <div class="mock-ui">
+          <div class="mock-ui-header">📊 waterfall-q3-2026.xlsx</div>
+          <div class="mock-ui-body">
+            <div style="font-family:'JetBrains Mono', monospace; font-size:11px; color:#d1d5db; line-height:1.7;">
+              <div style="display:grid; grid-template-columns: 80px 80px 80px 80px 80px; gap:0; border-bottom:1px solid #374151; padding-bottom:6px; font-weight:700; color:#9ca3af;">
+                <span>Booked</span><span style="text-align:right;">Feb</span><span style="text-align:right;">Mar</span><span style="text-align:right;">Apr</span><span style="text-align:right;">…</span>
+              </div>
+              <div style="display:grid; grid-template-columns: 80px 80px 80px 80px 80px; gap:0; padding:4px 0;">
+                <span>Feb 24</span><span style="text-align:right;">157</span><span style="text-align:right;">205</span><span style="text-align:right;">198</span><span style="text-align:right; color:#6b7280;">…</span>
+              </div>
+              <div style="display:grid; grid-template-columns: 80px 80px 80px 80px 80px; gap:0; padding:4px 0;">
+                <span>Mar 24</span><span style="text-align:right;">—</span><span style="text-align:right;">210</span><span style="text-align:right;">320</span><span style="text-align:right; color:#6b7280;">…</span>
+              </div>
+              <div style="display:grid; grid-template-columns: 80px 80px 80px 80px 80px; gap:0; padding:4px 0;">
+                <span>Apr 24</span><span style="text-align:right;">—</span><span style="text-align:right;">—</span><span style="text-align:right;">190</span><span style="text-align:right; color:#6b7280;">…</span>
+              </div>
+              <div style="display:grid; grid-template-columns: 80px 80px 80px 80px 80px; gap:0; padding:4px 0; color:#6b7280;">
+                <span>…</span><span style="text-align:right;">…</span><span style="text-align:right;">…</span><span style="text-align:right;">…</span><span style="text-align:right;">…</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-label" style="margin-bottom:10px;">Why download?</div>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="card-sm" style="border-left:3px solid #3b82f6;">
+              <div style="font-weight:700; color:#f9fafb; font-size:13px; margin-bottom:2px;">Board reporting</div>
+              <div style="font-size:12px; color:#9ca3af;">Drop into investor updates or board decks</div>
+            </div>
+            <div class="card-sm" style="border-left:3px solid #22c55e;">
+              <div style="font-weight:700; color:#f9fafb; font-size:13px; margin-bottom:2px;">Financial modeling</div>
+              <div style="font-size:12px; color:#9ca3af;">Build forecast scenarios on top of actuals</div>
+            </div>
+            <div class="card-sm" style="border-left:3px solid #a78bfa;">
+              <div style="font-weight:700; color:#f9fafb; font-size:13px; margin-bottom:2px;">Custom analysis</div>
+              <div style="font-size:12px; color:#9ca3af;">Whatever your CFO needs — outside the app</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="screenshot-note">Screenshot: Excel waterfall export — to be added</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 33: WATERFALL BY CUSTOMER ─────────────────── -->
+  <div class="slide" data-slide="33" data-title="Waterfall by customer">
+    <div class="slide-inner">
+      <div class="section-label">Reports · 5 of 5</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Revenue Waterfall by Customer</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Same concept, one level deeper — every row is an individual subscription.</p>
+
+      <div class="mock-ui" style="margin-bottom:8px;">
+        <div class="mock-ui-header">Synder · Waterfall by Customer · Oct 2026</div>
+        <div class="mock-ui-body" style="overflow-x:auto;">
+          <table class="je-table" style="min-width:780px;">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Sub ID</th>
+                <th style="text-align:right;">Booked total</th>
+                <th style="text-align:right;">Oct 26</th>
+                <th style="text-align:right;">Nov 26</th>
+                <th style="text-align:right;">Dec 26</th>
+                <th style="text-align:right;">Jan 27</th>
+                <th style="text-align:right;">…</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Acme Corp</td><td class="mono">sub_1Q7yMz</td><td class="num" style="text-align:right;">$1,200</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right; color:#6b7280;">…</td></tr>
+              <tr><td>Globex LLC</td><td class="mono">sub_1QbgKL</td><td class="num" style="text-align:right;">$300</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.37</td><td>—</td><td>—</td><td class="num" style="text-align:right; color:#6b7280;">—</td></tr>
+              <tr><td>Initech Inc</td><td class="mono">sub_1QkPpQ</td><td class="num" style="text-align:right;">$600</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right; color:#6b7280;">…</td></tr>
+              <tr style="background:rgba(167,139,250,0.06);"><td>Stark Industries <span class="tag tag-violet" style="margin-left:6px;">Enterprise</span></td><td class="mono">sub_1QvFwT</td><td class="num" style="text-align:right;">$24,000</td><td class="num" style="text-align:right;">$2,038.46</td><td class="num" style="text-align:right;">$1,972.60</td><td class="num" style="text-align:right;">$2,038.46</td><td class="num" style="text-align:right;">$2,038.46</td><td class="num" style="text-align:right; color:#6b7280;">…</td></tr>
+              <tr><td>Wayne Enterprises</td><td class="mono">sub_1QwEzF</td><td class="num" style="text-align:right;">$600</td><td class="num" style="text-align:right;">$32.21</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right; color:#6b7280;">…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="success-box">
+        <span style="font-size:13px; color:#86efac;">🎯 Most granular view of the recognition pipeline. Identify largest contracts → understand exactly what's sitting in deferred revenue.</span>
+      </div>
+
+      <div class="screenshot-note">Screenshot: Synder Waterfall by Customer report — to be added</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 34: Q&A ─────────────────── -->
+  <div class="slide" data-slide="34" data-title="Q&amp;A">
+    <div class="slide-inner">
+      <div class="section-label">Q&amp;A</div>
+      <h1 class="slide-title" style="margin-bottom:8px; text-align:center;">Questions? 🙋</h1>
+      <p class="slide-subtitle" style="margin-bottom:32px; text-align:center;">Drop your scenarios, edge cases &amp; setup questions in the chat</p>
+
+      <div style="display:flex; flex-direction:column; gap:14px; max-width:900px; margin:0 auto;">
+        <div class="card" style="border-left:4px solid #3b82f6;">
+          <div style="display:flex; align-items:flex-start; gap:12px;">
+            <div style="width:28px; height:28px; background:rgba(59,130,246,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; margin-top:2px;">Q</div>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; margin-bottom:6px;">Common: a specific use case we covered</div>
+              <div style="font-size:13px; color:#9ca3af; line-height:1.6;">Refunds, cancellations, upgrades, bad debt — happy to walk through your exact scenario.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #22c55e;">
+          <div style="display:flex; align-items:flex-start; gap:12px;">
+            <div style="width:28px; height:28px; background:rgba(34,197,94,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; margin-top:2px;">Q</div>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; margin-bottom:6px;">Common: the setup process</div>
+              <div style="font-size:13px; color:#9ca3af; line-height:1.6;">Stripe connection, QBO mapping, recognition method choice, going-live with historical data.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #a78bfa;">
+          <div style="display:flex; align-items:flex-start; gap:12px;">
+            <div style="width:28px; height:28px; background:rgba(167,139,250,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; margin-top:2px;">Q</div>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; margin-bottom:6px;">Common: edge cases in your business</div>
+              <div style="font-size:13px; color:#9ca3af; line-height:1.6;">Multi-currency, taxes, non-Stripe sources, mixed billing models — bring your real scenarios.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────────── SLIDE 35: THANK YOU / DEMO ─────────────────── -->
+  <div class="slide" data-slide="35" data-title="Thank you / Book a demo">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div style="font-size:3.5rem; margin-bottom:18px;">🎉</div>
+        <h1 style="font-size:2.6rem; font-weight:800; line-height:1.1; color:#f9fafb; margin-bottom:14px;">
+          Thank You!
+        </h1>
+        <p style="font-size:1.2rem; color:#9ca3af; margin-bottom:32px; font-weight:400;">
+          Automate revenue recognition. Trust your numbers.
+        </p>
+
+        <div class="card" style="max-width:520px; margin:0 auto 18px; padding:24px 28px; border:2px solid rgba(59,130,246,0.4); background:rgba(59,130,246,0.04);">
+          <div class="section-label" style="margin-bottom:6px; color:#60a5fa;">Book a Personalized Demo</div>
+          <div style="font-size:1.6rem; font-weight:800; color:#f9fafb; margin-bottom:6px;">synder.com</div>
+          <p style="font-size:13px; color:#9ca3af;">We'll walk you through Synder running on your own data.</p>
+        </div>
+
+        <div class="card" style="max-width:520px; margin:0 auto 28px; padding:18px 24px; border:2px solid rgba(34,197,94,0.4); background:rgba(34,197,94,0.06);">
+          <div class="section-label" style="margin-bottom:8px; color:#4ade80;">Ready Today? Promo Code</div>
+          <div style="display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;">
+            <div class="mono" style="font-size:1.6rem; font-weight:800; color:#4ade80; letter-spacing:0.1em; background:#0f172a; padding:8px 20px; border-radius:8px; border:1px dashed rgba(34,197,94,0.4);">REVREC100</div>
+            <div style="font-size:13px; color:#9ca3af; text-align:left;">$100 discount<br/><span style="color:#6b7280;">when you subscribe</span></div>
+          </div>
+        </div>
+
+        <div style="width:60px; height:2px; background:#374151; margin:0 auto 18px;"></div>
+
+        <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
+          <p style="font-size:13px; color:#9ca3af;">📧 <strong style="color:#d1d5db;">support@synder.com</strong></p>
+          <p style="font-size:13px; color:#9ca3af;">📚 <strong style="color:#d1d5db;">synder.com/help</strong> — knowledge base</p>
+        </div>
+
+        <p style="font-size:11px; color:#4b5563; margin-top:28px; letter-spacing:0.08em; text-transform:uppercase;">Synder &nbsp;•&nbsp; Have a wonderful day</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Navigation Dots -->
+<div id="nav-dots"></div>
+
+<!-- Slide Counter -->
+<div id="slide-counter">1 / 35</div>
+
+<!-- Keyboard hint -->
+<div id="keyboard-hint">← → navigate &nbsp;·&nbsp; O overview &nbsp;·&nbsp; Esc close &nbsp;·&nbsp; F fullscreen</div>
+
+<!-- Overview Grid -->
+<div id="overview">
+  <div style="max-width:1280px; margin:0 auto;">
+    <h2>SLIDE OVERVIEW</h2>
+    <div id="overview-grid"></div>
+  </div>
+  <div id="overview-close" title="Close overview">✕</div>
+</div>
+
+<script>
+const slides = Array.from(document.querySelectorAll('.slide'));
+const TOTAL = slides.length;
+const TITLES = slides.map(s => s.dataset.title || `Slide ${s.dataset.slide}`);
+
+let current = 1;
+
+// Build dots
+const dotsEl = document.getElementById('nav-dots');
+for (let i = 1; i <= TOTAL; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.dataset.slide = i;
+  d.title = `${i}. ${TITLES[i-1]}`;
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+// Build overview grid
+const grid = document.getElementById('overview-grid');
+for (let i = 1; i <= TOTAL; i++) {
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb' + (i === 1 ? ' active-thumb' : '');
+  thumb.dataset.slide = i;
+  thumb.innerHTML = `<div class="thumb-num">Slide ${i}</div><div class="thumb-title">${TITLES[i-1]}</div>`;
+  thumb.addEventListener('click', () => { goTo(i); hideOverview(); });
+  grid.appendChild(thumb);
+}
+
+function goTo(n) {
+  if (n < 1 || n > TOTAL) return;
+  const prev = document.querySelector('.slide.active');
+  if (prev) prev.classList.remove('active');
+  const prevDot = document.querySelector('.dot.active');
+  if (prevDot) prevDot.classList.remove('active');
+  const prevThumb = document.querySelector('.thumb.active-thumb');
+  if (prevThumb) prevThumb.classList.remove('active-thumb');
+
+  current = n;
+  const next = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (next) next.classList.add('active');
+  const dots = document.querySelectorAll('.dot');
+  if (dots[n-1]) dots[n-1].classList.add('active');
+  const thumbs = document.querySelectorAll('.thumb');
+  if (thumbs[n-1]) thumbs[n-1].classList.add('active-thumb');
+
+  document.getElementById('slide-counter').textContent = `${n} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = ((n / TOTAL) * 100) + '%';
+}
+
+goTo(1);
+
+document.addEventListener('keydown', (e) => {
+  const ov = document.getElementById('overview');
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+    if (ov.classList.contains('visible')) return;
+    e.preventDefault();
+    goTo(current + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    if (ov.classList.contains('visible')) return;
+    e.preventDefault();
+    goTo(current - 1);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    if (ov.classList.contains('visible')) hideOverview();
+  } else if (e.key === 'o' || e.key === 'O') {
+    e.preventDefault();
+    if (ov.classList.contains('visible')) hideOverview();
+    else showOverview();
+  } else if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault();
+    toggleFullscreen();
+  }
+});
+
+function showOverview() { document.getElementById('overview').classList.add('visible'); }
+function hideOverview() { document.getElementById('overview').classList.remove('visible'); }
+document.getElementById('overview-close').addEventListener('click', hideOverview);
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+  else document.exitFullscreen().catch(() => {});
+}
+
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    if (dx < 0) goTo(current + 1);
+    else goTo(current - 1);
+  }
+}, { passive: true });
+</script>
+</body>
+</html>
