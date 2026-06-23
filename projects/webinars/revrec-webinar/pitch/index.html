@@ -298,78 +298,7 @@ tailwind.config = {
           <div style="display:flex; align-items:center; gap:8px;"><span style="width:14px; height:2px; background:#ef4444; border-radius:1px;"></span><span style="font-size:13px; color:#d1d5db;"><strong>Accrual (GAAP)</strong> — $100/month, every month</span></div>
         </div>
 
-        <svg viewBox="0 0 720 220" style="width:100%; height:auto; display:block;">
-          <!-- Y axis -->
-          <line x1="50" y1="20" x2="50" y2="180" stroke="#374151" stroke-width="1"/>
-          <line x1="50" y1="180" x2="700" y2="180" stroke="#374151" stroke-width="1"/>
-
-          <!-- Y axis labels -->
-          <text x="42" y="184" fill="#6b7280" font-size="10" text-anchor="end">$0</text>
-          <text x="42" y="142" fill="#6b7280" font-size="10" text-anchor="end">$300</text>
-          <text x="42" y="100" fill="#6b7280" font-size="10" text-anchor="end">$600</text>
-          <text x="42" y="58" fill="#6b7280" font-size="10" text-anchor="end">$900</text>
-          <text x="42" y="22" fill="#6b7280" font-size="10" text-anchor="end">$1,200</text>
-
-          <!-- Gridlines -->
-          <line x1="50" y1="138" x2="700" y2="138" stroke="#1f2937" stroke-width="1"/>
-          <line x1="50" y1="96" x2="700" y2="96" stroke="#1f2937" stroke-width="1"/>
-          <line x1="50" y1="54" x2="700" y2="54" stroke="#1f2937" stroke-width="1"/>
-
-          <!-- Bars: cash basis (only March spike) -->
-          <!-- 12 months Mar..Feb. bar width ~36px, gap 16px, start x=70 -->
-          <g>
-            <!-- Mar: full $1200 → height 160 (180-20) -->
-            <rect x="70"  y="20"  width="36" height="160" fill="#3b82f6" opacity="0.85"/>
-            <rect x="122" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
-            <rect x="174" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
-            <rect x="226" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
-            <rect x="278" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
-            <rect x="330" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
-            <rect x="382" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
-            <rect x="434" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
-            <rect x="486" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
-            <rect x="538" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
-            <rect x="590" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
-            <rect x="642" y="178" width="36" height="2"   fill="#3b82f6" opacity="0.3"/>
-          </g>
-
-          <!-- Accrual flat line at $100/month (y=166.7 ≈ 167) -->
-          <polyline points="88,167 140,167 192,167 244,167 296,167 348,167 400,167 452,167 504,167 556,167 608,167 660,167" stroke="#ef4444" stroke-width="2.5" fill="none"/>
-          <!-- Dots on each month -->
-          <g fill="#ef4444">
-            <circle cx="88"  cy="167" r="3.5"/>
-            <circle cx="140" cy="167" r="3.5"/>
-            <circle cx="192" cy="167" r="3.5"/>
-            <circle cx="244" cy="167" r="3.5"/>
-            <circle cx="296" cy="167" r="3.5"/>
-            <circle cx="348" cy="167" r="3.5"/>
-            <circle cx="400" cy="167" r="3.5"/>
-            <circle cx="452" cy="167" r="3.5"/>
-            <circle cx="504" cy="167" r="3.5"/>
-            <circle cx="556" cy="167" r="3.5"/>
-            <circle cx="608" cy="167" r="3.5"/>
-            <circle cx="660" cy="167" r="3.5"/>
-          </g>
-
-          <!-- Month labels -->
-          <g fill="#6b7280" font-size="10" text-anchor="middle" font-family="Inter">
-            <text x="88"  y="198">Mar</text>
-            <text x="140" y="198">Apr</text>
-            <text x="192" y="198">May</text>
-            <text x="244" y="198">Jun</text>
-            <text x="296" y="198">Jul</text>
-            <text x="348" y="198">Aug</text>
-            <text x="400" y="198">Sep</text>
-            <text x="452" y="198">Oct</text>
-            <text x="504" y="198">Nov</text>
-            <text x="556" y="198">Dec</text>
-            <text x="608" y="198">Jan</text>
-            <text x="660" y="198">Feb</text>
-          </g>
-
-          <!-- March callout -->
-          <text x="88" y="14" fill="#60a5fa" font-size="11" text-anchor="middle" font-weight="600">$1,200</text>
-        </svg>
+        <img src="assets/slide-03.jpg" alt="Cash vs accrual bar chart" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff;">
       </div>
 
       <div class="highlight-box">
@@ -706,30 +635,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Daily Ratable</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Most precise — every month recognizes its exact share of days. Closest to strict GAAP.</p>
 
-      <div class="card" style="margin-bottom:12px; padding:14px;">
-        <div class="section-label" style="margin-bottom:10px;">Example: $1,200 yearly subscription, started late May</div>
-        <table class="je-table">
-          <thead>
-            <tr><th>Month</th><th style="text-align:center;">Days covered</th><th style="text-align:right;">Recognized</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>May</td><td class="num" style="text-align:center;">23</td><td class="num" style="text-align:right; color:#fbbf24;">$75.62</td></tr>
-            <tr><td>Jun</td><td class="num" style="text-align:center;">30</td><td class="num" style="text-align:right;">$98.63</td></tr>
-            <tr><td>Jul</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
-            <tr><td>Aug</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
-            <tr><td>Sep</td><td class="num" style="text-align:center;">30</td><td class="num" style="text-align:right;">$98.63</td></tr>
-            <tr><td>Oct</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
-            <tr><td>Nov</td><td class="num" style="text-align:center;">30</td><td class="num" style="text-align:right;">$98.63</td></tr>
-            <tr><td>Dec</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
-            <tr><td>Jan</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
-            <tr><td>Feb</td><td class="num" style="text-align:center;">28</td><td class="num" style="text-align:right;">$92.05</td></tr>
-            <tr><td>Mar</td><td class="num" style="text-align:center;">31</td><td class="num" style="text-align:right;">$101.92</td></tr>
-            <tr><td>Apr</td><td class="num" style="text-align:center;">30</td><td class="num" style="text-align:right;">$98.63</td></tr>
-            <tr><td>May</td><td class="num" style="text-align:center;">8</td><td class="num" style="text-align:right; color:#fbbf24;">$26.29</td></tr>
-            <tr class="row-final"><td><strong>Total</strong></td><td class="num" style="text-align:center;"><strong>365</strong></td><td class="num" style="text-align:right;"><strong>$1,200.00</strong></td></tr>
-          </tbody>
-        </table>
-      </div>
+      <img src="assets/slide-10.jpg" alt="Daily ratable recognition schedule" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="highlight-box">
         <span style="font-size:13px; color:#93c5fd;">💡 Amounts fluctuate by calendar. May = 23 days only → $75.62, not a full $100.</span>
@@ -744,22 +650,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Monthly Ratable</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Straight-line. Divide the invoice amount by the number of months — same amount every month.</p>
 
-      <div class="card" style="margin-bottom:12px; padding:14px;">
-        <div class="section-label" style="margin-bottom:10px;">Example: $1,200 ÷ 12 = $100/month</div>
-        <table class="je-table">
-          <thead>
-            <tr><th>Month</th><th style="text-align:right;">Recognized</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Month 1</td><td class="num" style="text-align:right;">$100.00</td></tr>
-            <tr><td>Month 2</td><td class="num" style="text-align:right;">$100.00</td></tr>
-            <tr><td>Month 3</td><td class="num" style="text-align:right;">$100.00</td></tr>
-            <tr><td>Month 4–11</td><td class="num" style="text-align:right;">$100.00 each</td></tr>
-            <tr><td>Month 12</td><td class="num" style="text-align:right;">$100.00</td></tr>
-            <tr class="row-final"><td><strong>Total</strong></td><td class="num" style="text-align:right;"><strong>$1,200.00</strong></td></tr>
-          </tbody>
-        </table>
-      </div>
+      <img src="assets/slide-11.jpg" alt="Monthly ratable recognition schedule" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="grid-2">
         <div class="success-box">
@@ -779,23 +670,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Monthly Ratable, Prorated First &amp; Last Months</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Best of both worlds: clean middle months, accurate at the edges. Recommended default.</p>
 
-      <div class="card" style="margin-bottom:12px; padding:14px;">
-        <div class="section-label" style="margin-bottom:10px;">Example: $1,200 yearly, started Feb 6</div>
-        <table class="je-table">
-          <thead>
-            <tr><th>Month</th><th style="text-align:center;">Days</th><th style="text-align:right;">Recognized</th><th style="text-align:left;">Type</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Feb (start)</td><td class="num" style="text-align:center;">23</td><td class="num" style="text-align:right; color:#fbbf24;">$79.31</td><td><span class="tag tag-amber">Prorated</span></td></tr>
-            <tr><td>Mar</td><td class="num" style="text-align:center;">—</td><td class="num" style="text-align:right;">$100.00</td><td><span class="tag tag-blue">Flat</span></td></tr>
-            <tr><td>Apr</td><td class="num" style="text-align:center;">—</td><td class="num" style="text-align:right;">$100.00</td><td><span class="tag tag-blue">Flat</span></td></tr>
-            <tr><td>May – Dec</td><td class="num" style="text-align:center;">—</td><td class="num" style="text-align:right;">$100.00 × 8</td><td><span class="tag tag-blue">Flat</span></td></tr>
-            <tr><td>Jan</td><td class="num" style="text-align:center;">—</td><td class="num" style="text-align:right;">$100.00</td><td><span class="tag tag-blue">Flat</span></td></tr>
-            <tr><td>Feb (stub)</td><td class="num" style="text-align:center;">6</td><td class="num" style="text-align:right; color:#fbbf24;">$20.69</td><td><span class="tag tag-amber">Prorated</span></td></tr>
-            <tr class="row-final"><td><strong>Total</strong></td><td class="num" style="text-align:center;"><strong>365</strong></td><td class="num" style="text-align:right;"><strong>$1,200.00</strong></td><td></td></tr>
-          </tbody>
-        </table>
-      </div>
+      <img src="assets/slide-12.jpg" alt="Monthly ratable prorated recognition schedule" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="success-box">
         <span style="font-size:13px; color:#86efac;">🏆 <strong>Synder's recommended default.</strong> Clean to read, accurate at the edges, easy to audit.</span>
@@ -810,18 +685,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Recognition of Refunds</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Scenario: $300 three-month sub. $100 recognized in August. Full refund in September.</p>
 
-      <div class="card" style="margin-bottom:12px; padding:14px;">
-        <table class="je-table">
-          <thead>
-            <tr><th>Month</th><th style="text-align:right;">Billed</th><th style="text-align:right;">Recognized</th><th style="text-align:right;">Deferred Bal.</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Aug</td><td class="num" style="text-align:right;">$300.00</td><td class="num" style="text-align:right;">$100.00</td><td class="num" style="text-align:right;">$200.00</td></tr>
-            <tr class="row-neg"><td>Sep <span class="tag tag-red" style="margin-left:6px;">Full refund</span></td><td class="num" style="text-align:right;">–$300.00</td><td class="num" style="text-align:right;">–$100.00</td><td class="num" style="text-align:right;">$0.00</td></tr>
-            <tr class="row-final"><td><strong>Net</strong></td><td class="num" style="text-align:right;"><strong>$0.00</strong></td><td class="num" style="text-align:right;"><strong>$0.00</strong></td><td class="num" style="text-align:right;"><strong>$0.00</strong></td></tr>
-          </tbody>
-        </table>
-      </div>
+      <img src="assets/slide-13.jpg" alt="Refund recognition schedule" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="grid-2">
         <div class="card-sm" style="border-left:3px solid #ef4444;">
@@ -843,21 +707,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Profit &amp; Loss (Refund Example)</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">August +$100, September –$100. Net zero — exactly correct.</p>
 
-      <div class="mock-ui" style="margin-bottom:12px;">
-        <div class="mock-ui-header">QuickBooks Online · Profit &amp; Loss</div>
-        <div class="mock-ui-body">
-          <table class="je-table">
-            <thead>
-              <tr><th>Income Account</th><th style="text-align:right;">Aug</th><th style="text-align:right;">Sep</th><th style="text-align:right;">Net</th></tr>
-            </thead>
-            <tbody>
-              <tr style="background:rgba(59,130,246,0.06);"><td><strong style="color:#60a5fa;">Subscription revenue</strong></td><td class="num" style="text-align:right;">$100.00</td><td class="num" style="text-align:right; color:#fca5a5;">–$100.00</td><td class="num" style="text-align:right;"><strong>$0.00</strong></td></tr>
-              <tr><td style="color:#9ca3af;">Other income</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right; color:#6b7280;">—</td></tr>
-              <tr class="row-final"><td><strong>Total income</strong></td><td class="num" style="text-align:right;"><strong>$100.00</strong></td><td class="num" style="text-align:right;"><strong>–$100.00</strong></td><td class="num" style="text-align:right;"><strong>$0.00</strong></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <img src="assets/slide-14.jpg" alt="QuickBooks Profit and Loss showing refund recognition" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="highlight-box">
         <span style="font-size:13px; color:#93c5fd;">🎯 The customer got their money back. Net of both months you provided no paid service. <strong>Books reflect reality.</strong></span>
@@ -872,19 +722,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Subscription Cancellation</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Cancellations ≠ refunds. As long as service is delivered, recognition continues.</p>
 
-      <div class="card" style="margin-bottom:12px; padding:14px;">
-        <div class="section-label" style="margin-bottom:8px;">Example: Cancelled Feb 16, billing cycle runs through end of Feb</div>
-        <table class="je-table">
-          <thead>
-            <tr><th>Date</th><th>Event</th><th style="text-align:right;">Recognized</th><th style="text-align:right;">Deferred Bal.</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Feb 1</td><td>Start of period</td><td class="num" style="text-align:right;">—</td><td class="num" style="text-align:right;">$7.51</td></tr>
-            <tr><td>Feb 16</td><td><span class="tag tag-amber">Customer cancels</span></td><td class="num" style="text-align:right;">in progress</td><td class="num" style="text-align:right;">in progress</td></tr>
-            <tr class="row-final"><td>Feb 28</td><td>End of cycle — service ends</td><td class="num" style="text-align:right;">$7.51</td><td class="num" style="text-align:right;">$0.00</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <img src="assets/slide-15.jpg" alt="Subscription cancellation recognition schedule" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="grid-2">
         <div class="success-box">
@@ -904,19 +742,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Discounted Subscription</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">$1,200 yearly with a $240 discount → $960 invoice. Discounts recognize the same way as the product.</p>
 
-      <div class="card" style="margin-bottom:12px; padding:14px;">
-        <div class="section-label" style="margin-bottom:8px;">October recognition — expanded</div>
-        <table class="je-table">
-          <thead>
-            <tr><th>Line item</th><th style="text-align:right;">Amount</th><th>Account</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Scale subscription</td><td class="num" style="text-align:right; color:#60a5fa;">$101.92</td><td>Subscription revenue</td></tr>
-            <tr class="row-neg"><td>Discount for: Scale subscription</td><td class="num" style="text-align:right;">–$20.38</td><td>Discounts given</td></tr>
-            <tr class="row-final"><td><strong>Net October</strong></td><td class="num" style="text-align:right;"><strong>$81.54</strong></td><td><strong>Combined</strong></td></tr>
-          </tbody>
-        </table>
-      </div>
+      <img src="assets/slide-16.jpg" alt="Discounted subscription recognition" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="grid-2">
         <div class="card-sm" style="border-left:3px solid #22c55e;">
@@ -938,21 +764,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Profit &amp; Loss (Discount Example)</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;"><strong>Discounts given</strong> appears as a separate income line — distinct from <strong>Stripe sales</strong>.</p>
 
-      <div class="mock-ui" style="margin-bottom:12px;">
-        <div class="mock-ui-header">QuickBooks Online · Profit &amp; Loss</div>
-        <div class="mock-ui-body">
-          <table class="je-table">
-            <thead>
-              <tr><th>Income Account</th><th style="text-align:right;">Oct</th><th style="text-align:right;">Nov</th><th style="text-align:right;">Dec</th></tr>
-            </thead>
-            <tbody>
-              <tr style="background:rgba(59,130,246,0.06);"><td><strong style="color:#60a5fa;">Stripe sales</strong> <span style="color:#6b7280; font-size:11px;">(list price)</span></td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.92</td></tr>
-              <tr class="row-neg"><td><strong>Discounts given</strong></td><td class="num" style="text-align:right;">–$20.38</td><td class="num" style="text-align:right;">–$19.73</td><td class="num" style="text-align:right;">–$20.38</td></tr>
-              <tr class="row-final"><td><strong>Net income</strong></td><td class="num" style="text-align:right;"><strong>$81.54</strong></td><td class="num" style="text-align:right;"><strong>$78.90</strong></td><td class="num" style="text-align:right;"><strong>$81.54</strong></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <img src="assets/slide-17.jpg" alt="QuickBooks Profit and Loss showing discount line" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="highlight-box">
         <span style="font-size:13px; color:#93c5fd;">🔍 Useful for pricing analysis later — no hunting through invoice details to find where the discounts went.</span>
@@ -995,20 +807,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Recognition Through the Modification</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Recognize at the <strong>product</strong> level, not the invoice level — clean audit trail.</p>
 
-      <div class="card" style="margin-bottom:12px; padding:14px;">
-        <table class="je-table">
-          <thead>
-            <tr><th>Month</th><th>Golden subscription</th><th>3-month plan</th><th style="text-align:right;">Total recognized</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Aug</td><td class="num">10 days · $64.51</td><td class="num">—</td><td class="num" style="text-align:right;">$64.51</td></tr>
-            <tr style="background:rgba(245,158,11,0.06);"><td>Sep <span class="tag tag-amber" style="margin-left:6px;">Upgrade month</span></td><td class="num">5 days · $32.26</td><td class="num">25 days · $82.42</td><td class="num" style="text-align:right;">$114.68</td></tr>
-            <tr><td>Oct</td><td>—</td><td class="num">31 days · ~$102</td><td class="num" style="text-align:right;">~$102</td></tr>
-            <tr><td>Nov</td><td>—</td><td class="num">30 days · ~$98</td><td class="num" style="text-align:right;">~$98</td></tr>
-            <tr><td>Dec</td><td>—</td><td class="num">stub · remaining</td><td class="num" style="text-align:right;">remaining</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <img src="assets/slide-19.jpg" alt="Modification schedule across two products" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="success-box">
         <span style="font-size:13px; color:#86efac;">🏗️ <strong>Best practice (generalizes):</strong> recognize at the product level. Each line item, each period — tracked separately, automatically.</span>
@@ -1023,22 +822,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Recognition from an Invoice Date</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Recognition starts when service starts — not when cash arrives. Default for B2B with net terms.</p>
 
-      <div class="card" style="margin-bottom:12px; padding:14px;">
-        <div class="section-label" style="margin-bottom:8px;">$2,400 yearly subscription, billed early August (net-30)</div>
-        <table class="je-table">
-          <thead>
-            <tr><th>Month</th><th>Status</th><th style="text-align:right;">Recognized</th></tr>
-          </thead>
-          <tbody>
-            <tr style="background:rgba(59,130,246,0.06);"><td>Aug</td><td><span class="tag tag-blue">Invoice issued · service starts</span></td><td class="num" style="text-align:right;">$157.81</td></tr>
-            <tr><td>Sep</td><td>Service delivering</td><td class="num" style="text-align:right;">$197.26</td></tr>
-            <tr><td>Oct</td><td>Service delivering</td><td class="num" style="text-align:right;">$203.84</td></tr>
-            <tr><td>…</td><td>—</td><td class="num" style="text-align:right;">~$197–203</td></tr>
-            <tr><td>Aug 2025</td><td>End of cycle</td><td class="num" style="text-align:right;">stub</td></tr>
-            <tr class="row-final"><td><strong>Total</strong></td><td></td><td class="num" style="text-align:right;"><strong>$2,400.00</strong></td></tr>
-          </tbody>
-        </table>
-      </div>
+      <img src="assets/slide-20.jpg" alt="Recognition from invoice date schedule" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="highlight-box">
         <span style="font-size:13px; color:#93c5fd;">⏱️ Net-30 / net-60 terms common in B2B. Clock starts when service starts — not when payment arrives.</span>
@@ -1053,19 +837,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Uncollectible / Voided Invoices — Bad Debt</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">$1,200 subscription, July start. Marked uncollectible in September after $121.65 recognized.</p>
 
-      <div class="card" style="margin-bottom:12px; padding:14px;">
-        <table class="je-table">
-          <thead>
-            <tr><th>Month</th><th>Event</th><th style="text-align:right;">Recognized</th><th style="text-align:right;">Cumul. P&amp;L</th><th style="text-align:right;">Bad Debt</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Jul</td><td>Service delivered</td><td class="num" style="text-align:right;">$19.73</td><td class="num" style="text-align:right;">$19.73</td><td class="num" style="text-align:right;">—</td></tr>
-            <tr><td>Aug</td><td>Service delivered</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$121.65</td><td class="num" style="text-align:right;">—</td></tr>
-            <tr style="background:rgba(239,68,68,0.06);"><td>Sep</td><td><span class="tag tag-red">Invoice voided</span></td><td class="num" style="text-align:right;">—</td><td class="num" style="text-align:right;">$121.65 <span style="color:#9ca3af;">(unchanged)</span></td><td class="num" style="text-align:right; color:#fca5a5;">$121.65</td></tr>
-            <tr><td>Oct →</td><td>Nothing more recognized</td><td class="num" style="text-align:right;">$0.00</td><td class="num" style="text-align:right;">$121.65</td><td class="num" style="text-align:right;">$121.65</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <img src="assets/slide-21.jpg" alt="Bad debt recognition schedule" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="warning-box">
         <span style="font-size:13px; color:#fcd34d;">🧠 <strong>The logic:</strong> Jul + Aug service was real — you can't undeliver it. So you don't reverse P&amp;L. Instead, the unrecoverable amount goes to a <strong>Bad Debt expense account</strong>.</span>
@@ -1080,22 +852,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Recognition from a Payment Date</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">For businesses where service delivery is gated on payment received.</p>
 
-      <div class="card" style="margin-bottom:12px; padding:14px;">
-        <div class="section-label" style="margin-bottom:8px;">Same subscription as Slide 20 — invoice early Aug, but payment arrives in October</div>
-        <table class="je-table">
-          <thead>
-            <tr><th>Month</th><th>Status</th><th style="text-align:right;">Recognized</th></tr>
-          </thead>
-          <tbody>
-            <tr style="background:rgba(107,114,128,0.06);"><td>Aug</td><td><span class="tag tag-gray">Invoiced · unpaid</span></td><td class="num" style="text-align:right;">$0.00</td></tr>
-            <tr style="background:rgba(107,114,128,0.06);"><td>Sep</td><td><span class="tag tag-gray">Still unpaid</span></td><td class="num" style="text-align:right;">$0.00</td></tr>
-            <tr style="background:rgba(34,197,94,0.06);"><td>Oct</td><td><span class="tag tag-green">Payment received · catch-up</span></td><td class="num" style="text-align:right; color:#4ade80;">$558.91</td></tr>
-            <tr><td>Nov</td><td>Service delivering</td><td class="num" style="text-align:right;">~$197</td></tr>
-            <tr><td>…</td><td>—</td><td class="num" style="text-align:right;">standard amounts</td></tr>
-            <tr><td>Aug 2025</td><td>End</td><td class="num" style="text-align:right;">stub</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <img src="assets/slide-22.jpg" alt="Recognition from payment date schedule" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="highlight-box">
         <span style="font-size:13px; color:#93c5fd;">📅 Same principle, applied to a different moment of service start. Recognition kicks off retroactively from the payment date.</span>
@@ -1110,21 +867,7 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Multi-Line Invoices</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Customer with two simultaneous subs — yearly $1,200 + 6-month $600. Each on its own schedule.</p>
 
-      <div class="card" style="margin-bottom:12px; padding:14px;">
-        <table class="je-table">
-          <thead>
-            <tr><th>Month</th><th>Scale subscription <span style="color:#6b7280; font-size:11px;">(yearly $1,200)</span></th><th>6-month plan <span style="color:#6b7280; font-size:11px;">($600)</span></th><th style="text-align:right;">Total</th></tr>
-          </thead>
-          <tbody>
-            <tr style="background:rgba(59,130,246,0.06);"><td>Jul (start)</td><td class="num">6 days · $19.73</td><td class="num">6 days · $19.57</td><td class="num" style="text-align:right;">$39.30</td></tr>
-            <tr><td>Aug</td><td class="num">~$203</td><td class="num">~$101</td><td class="num" style="text-align:right;">~$304</td></tr>
-            <tr><td>Sep</td><td class="num">~$197</td><td class="num">~$98</td><td class="num" style="text-align:right;">~$295</td></tr>
-            <tr><td>Oct – Dec</td><td class="num">~$203</td><td class="num">~$101</td><td class="num" style="text-align:right;">~$304</td></tr>
-            <tr><td>Jan</td><td class="num">~$203</td><td class="num">stub</td><td class="num" style="text-align:right;">~$203 + stub</td></tr>
-            <tr><td>…</td><td class="num">~$197–$203</td><td>—</td><td class="num" style="text-align:right;">solo</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <img src="assets/slide-23.jpg" alt="Multi-line invoice recognition schedule" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="success-box">
         <span style="font-size:13px; color:#86efac;">📊 <strong>Best practice:</strong> map each product to its own income account → track revenue by product line in your P&amp;L.</span>
@@ -1186,33 +929,11 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Mapping of Products</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">For each Stripe plan: assign a QBO product + an income account. One-time configuration.</p>
 
-      <div class="mock-ui" style="margin-bottom:8px;">
-        <div class="mock-ui-header">Synder · Plan mapping</div>
-        <div class="mock-ui-body">
-          <div style="display:flex; gap:8px; margin-bottom:10px;">
-            <span class="tag tag-blue" style="padding:4px 12px;">Mapped (4)</span>
-            <span class="tag tag-amber" style="padding:4px 12px;">Not mapped (2)</span>
-          </div>
-          <table class="je-table">
-            <thead>
-              <tr><th>Stripe plan</th><th>→</th><th>QBO product</th><th>Income account</th><th style="text-align:right;">Status</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>1 yr subscription / 1,200 USD / yearly</td><td style="color:#6b7280; text-align:center;">→</td><td>Scale subscription</td><td>1 Yearly income</td><td style="text-align:right;"><span class="tag tag-green">✓ Mapped</span></td></tr>
-              <tr><td>3 mo subscription / 100 USD / every 3 months</td><td style="color:#6b7280; text-align:center;">→</td><td>3-month plan</td><td>3 mo income</td><td style="text-align:right;"><span class="tag tag-green">✓ Mapped</span></td></tr>
-              <tr><td>6 mo subscription / 600 USD / every 6 months</td><td style="color:#6b7280; text-align:center;">→</td><td>6-month plan</td><td>6 mo income</td><td style="text-align:right;"><span class="tag tag-green">✓ Mapped</span></td></tr>
-              <tr><td>Monthly subscription / 199.99 USD / monthly</td><td style="color:#6b7280; text-align:center;">→</td><td>Golden subscription</td><td>Stripe sales</td><td style="text-align:right;"><span class="tag tag-green">✓ Mapped</span></td></tr>
-              <tr style="background:rgba(245,158,11,0.04);"><td>Enterprise tier / 24,000 USD / yearly</td><td style="color:#6b7280; text-align:center;">→</td><td style="color:#fbbf24;">— select —</td><td style="color:#fbbf24;">— select —</td><td style="text-align:right;"><span class="tag tag-amber">Pending</span></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <img src="assets/slide-25.jpg" alt="Synder plan mapping UI" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="highlight-box">
         <span style="font-size:13px; color:#93c5fd;">🔗 Each mapped item is also linked to your <strong>deferred revenue account</strong> on the back end — that's the mechanism that makes the JEs work.</span>
       </div>
-
-      <div class="screenshot-note">Screenshot: Synder Plan Mapping UI with mapped &amp; not-mapped tabs — to be added</div>
     </div>
   </div>
 
@@ -1223,32 +944,11 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Auto-Generated JE: Per Subscription</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">One journal entry per active subscription. Maximum traceability — every dollar tied to a customer.</p>
 
-      <div class="mock-ui" style="margin-bottom:8px;">
-        <div class="mock-ui-header">QuickBooks Online · Journal Entry · Oct 31, 2026</div>
-        <div class="mock-ui-body">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; color:#9ca3af;">
-            <span>Description: <strong style="color:#d1d5db;">Acme Corp — sub_1Q7yMzXa9 — Oct 2026 recognition</strong></span>
-            <span>Total: <strong style="color:#d1d5db;" class="mono">$203.84</strong></span>
-          </div>
-          <table class="je-table">
-            <thead>
-              <tr><th>Account</th><th style="text-align:right;">Debit</th><th style="text-align:right;">Credit</th><th>Description</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Deferred Revenue</td><td class="num" style="text-align:right;">$203.84</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td>Acme Corp — sub_1Q7yMzXa9</td></tr>
-              <tr><td>1 Yearly income</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right;">$101.92</td><td>Scale subscription</td></tr>
-              <tr><td>3 mo income</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right;">$101.92</td><td>3-month plan</td></tr>
-              <tr class="row-final"><td><strong>Totals</strong></td><td class="num" style="text-align:right;"><strong>$203.84</strong></td><td class="num" style="text-align:right;"><strong>$203.84</strong></td><td></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <img src="assets/slide-26.jpg" alt="Synder-generated per-subscription journal entry in QBO" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="success-box">
         <span style="font-size:13px; color:#86efac;">🔎 QBO becomes a full audit trail by customer. Every recognized dollar tied to a specific subscription ID.</span>
       </div>
-
-      <div class="screenshot-note">Screenshot: Synder-generated per-sub JE inside QBO with customer + sub_id in description — to be added</div>
     </div>
   </div>
 
@@ -1259,34 +959,11 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Auto-Generated JE: Single Aggregated Entry</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">One JE per month across all subscriptions. Cleaner for higher-volume businesses.</p>
 
-      <div class="mock-ui" style="margin-bottom:8px;">
-        <div class="mock-ui-header">QuickBooks Online · Journal Entry · Oct 31, 2026</div>
-        <div class="mock-ui-body">
-          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; color:#9ca3af;">
-            <span>Description: <strong style="color:#d1d5db;">Synder — October 2026 revenue recognition (aggregated)</strong></span>
-            <span>Total: <strong style="color:#d1d5db;" class="mono">$48,712.50</strong></span>
-          </div>
-          <table class="je-table">
-            <thead>
-              <tr><th>Account</th><th style="text-align:right;">Debit</th><th style="text-align:right;">Credit</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Deferred Revenue</td><td class="num" style="text-align:right;">$48,712.50</td><td class="num" style="text-align:right; color:#6b7280;">—</td></tr>
-              <tr><td>1 Yearly income</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right;">$22,415.20</td></tr>
-              <tr><td>3 mo income</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right;">$13,200.00</td></tr>
-              <tr><td>Stripe sales</td><td class="num" style="text-align:right; color:#6b7280;">—</td><td class="num" style="text-align:right;">$15,440.30</td></tr>
-              <tr class="row-neg"><td>Discounts given</td><td class="num" style="text-align:right;">$2,343.00</td><td class="num" style="text-align:right; color:#6b7280;">—</td></tr>
-              <tr class="row-final"><td><strong>Totals</strong></td><td class="num" style="text-align:right;"><strong>$51,055.50</strong></td><td class="num" style="text-align:right;"><strong>$51,055.50</strong></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <img src="assets/slide-27.jpg" alt="Aggregated monthly journal entry in QBO" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="highlight-box">
         <span style="font-size:13px; color:#93c5fd;">📎 You don't lose the detail — the per-subscription breakdown is attached. See next slide.</span>
       </div>
-
-      <div class="screenshot-note">Screenshot: Aggregated monthly JE in QBO with discount &amp; multiple income lines — to be added</div>
     </div>
   </div>
 
@@ -1297,39 +974,11 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Journal Entry Log Attached</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Every Synder JE has a detailed CSV file attached automatically inside QBO.</p>
 
-      <div class="mock-ui" style="margin-bottom:8px;">
-        <div class="mock-ui-header">QBO Journal Entry · Attachments</div>
-        <div class="mock-ui-body">
-          <div class="card-sm" style="display:flex; align-items:center; gap:14px; margin-bottom:10px; background:#1f2937;">
-            <div style="font-size:24px;">📎</div>
-            <div style="flex:1;">
-              <div style="font-weight:700; color:#f9fafb;">synder-revrec-2026-10-detail.csv</div>
-              <div style="font-size:12px; color:#9ca3af;">142 rows · Every subscription, customer, invoice that contributed</div>
-            </div>
-            <span class="tag tag-blue">CSV</span>
-          </div>
-
-          <div class="section-label" style="margin-bottom:6px;">Preview (first 5 rows)</div>
-          <table class="je-table">
-            <thead>
-              <tr><th>Customer</th><th>Sub ID</th><th>Invoice ID</th><th>Product</th><th style="text-align:right;">Recognized</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Acme Corp</td><td class="mono">sub_1Q7yMzXa9</td><td class="mono">in_1QA8</td><td>Scale subscription</td><td class="num" style="text-align:right;">$101.92</td></tr>
-              <tr><td>Acme Corp</td><td class="mono">sub_1Q7yMzXa9</td><td class="mono">in_1QA8</td><td>3-month plan</td><td class="num" style="text-align:right;">$101.92</td></tr>
-              <tr><td>Globex LLC</td><td class="mono">sub_1QbgKLm2</td><td class="mono">in_1QbB</td><td>Scale subscription</td><td class="num" style="text-align:right;">$203.84</td></tr>
-              <tr><td>Initech Inc</td><td class="mono">sub_1QkPpQa4</td><td class="mono">in_1QkC</td><td>6-month plan</td><td class="num" style="text-align:right;">$98.63</td></tr>
-              <tr><td>Stark Industries</td><td class="mono">sub_1QvFwT9</td><td class="mono">in_1QvD</td><td>1-year subscription</td><td class="num" style="text-align:right;">$203.84</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <img src="assets/slide-28.jpg" alt="QBO journal entry attachments section showing CSV log" style="display:block; width:100%; max-height:55vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="success-box">
         <span style="font-size:13px; color:#86efac;">🎯 Even on aggregated mode, the underlying detail is <strong>one click away</strong>. Auditors love this.</span>
       </div>
-
-      <div class="screenshot-note">Screenshot: QBO Attachments section on a Synder JE — to be added</div>
     </div>
   </div>
 
@@ -1347,29 +996,12 @@ tailwind.config = {
         <span class="term">Beginning balance</span><span class="op">+</span><span class="term">Incoming revenue</span><span class="op">−</span><span class="term">Recognized revenue</span><span class="eq">=</span><span class="term-final">Ending balance</span>
       </div>
 
-      <div class="mock-ui" style="margin-bottom:8px;">
-        <div class="mock-ui-header">Synder · Deferred Revenue Reconciliation</div>
-        <div class="mock-ui-body">
-          <table class="je-table">
-            <thead>
-              <tr>
-                <th>Month</th>
-                <th style="text-align:right;">Beginning balance</th>
-                <th style="text-align:right; color:#60a5fa;">+ Incoming</th>
-                <th style="text-align:right; color:#fca5a5;">− Recognized</th>
-                <th style="text-align:right;">Ending balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Aug 2026</td><td class="num" style="text-align:right;">$42,150.00</td><td class="num" style="text-align:right; color:#60a5fa;">$18,400.00</td><td class="num" style="text-align:right; color:#fca5a5;">$12,860.00</td><td class="num" style="text-align:right;">$47,690.00</td></tr>
-              <tr><td>Sep 2026</td><td class="num" style="text-align:right;">$47,690.00</td><td class="num" style="text-align:right; color:#60a5fa;">$15,200.00</td><td class="num" style="text-align:right; color:#fca5a5;">$13,940.00</td><td class="num" style="text-align:right;">$48,950.00</td></tr>
-              <tr class="row-final"><td><strong>Oct 2026</strong></td><td class="num" style="text-align:right;">$48,950.00</td><td class="num" style="text-align:right; color:#60a5fa;">$22,800.00</td><td class="num" style="text-align:right; color:#fca5a5;">$14,138.00</td><td class="num" style="text-align:right;"><strong>$57,612.00</strong></td></tr>
-            </tbody>
-          </table>
-        </div>
+      <img src="assets/slide-29.jpg" alt="Synder Deferred Revenue Reconciliation report" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff;">
+      <div style="font-size:11px; color:#9ca3af; margin-top:8px; text-align:center; font-style:italic;">
+        Note: screenshot from pre-launch deck — current Deferred Revenue Reconciliation UI may differ slightly.
       </div>
 
-      <div class="grid-2">
+      <div class="grid-2" style="margin-top:12px;">
         <div class="success-box">
           <span style="font-size:13px; color:#86efac;">✅ <strong>QBO Deferred Rev (Oct):</strong> $57,612.00 → matches → clean month.</span>
         </div>
@@ -1377,8 +1009,6 @@ tailwind.config = {
           <span style="font-size:13px; color:#fca5a5;">🔍 If it doesn't match → Synder gives you granular data to find the gap.</span>
         </div>
       </div>
-
-      <div class="screenshot-note">Screenshot: Synder Deferred Revenue Reconciliation report — to be added</div>
     </div>
   </div>
 
@@ -1389,38 +1019,11 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Recognized Revenue per Invoice</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Most granular view available — every transaction listed, downloadable to Excel.</p>
 
-      <div class="mock-ui" style="margin-bottom:8px;">
-        <div class="mock-ui-header">Synder · Recognized Revenue per Invoice · Oct 2026</div>
-        <div class="mock-ui-body">
-          <table class="je-table">
-            <thead>
-              <tr>
-                <th>Entry date</th>
-                <th>Customer</th>
-                <th>Invoice ID</th>
-                <th>Product</th>
-                <th>Billing period</th>
-                <th style="text-align:right;">Recognized</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td class="mono">2026-10-31</td><td>Acme Corp</td><td class="mono">in_1QA8</td><td>Scale subscription</td><td>Aug 2026 – Aug 2027</td><td class="num" style="text-align:right;">$101.92</td><td><span class="tag tag-green">Paid</span></td></tr>
-              <tr><td class="mono">2026-10-31</td><td>Globex LLC</td><td class="mono">in_1QbB</td><td>3-month plan</td><td>Sep 2026 – Dec 2026</td><td class="num" style="text-align:right;">$98.63</td><td><span class="tag tag-green">Paid</span></td></tr>
-              <tr class="row-neg"><td class="mono">2026-10-15</td><td>Initech Inc</td><td class="mono">cm_1QkD</td><td>Credit memo (refund)</td><td>Sep 2026</td><td class="num" style="text-align:right;">–$50.00</td><td><span class="tag tag-red">Refund</span></td></tr>
-              <tr><td class="mono">2026-10-31</td><td>Stark Industries</td><td class="mono">in_1QvD</td><td>1-year subscription</td><td>Jul 2026 – Jul 2027</td><td class="num" style="text-align:right;">$203.84</td><td><span class="tag tag-green">Paid</span></td></tr>
-              <tr><td class="mono">2026-10-12</td><td>Wayne Enterprises</td><td class="mono">in_1QwE</td><td>6-month plan</td><td>Oct 2026 – Apr 2027</td><td class="num" style="text-align:right;">$32.21</td><td><span class="tag tag-amber">Net-30</span></td></tr>
-            </tbody>
-          </table>
-          <div style="margin-top:10px; font-size:11px; color:#6b7280;">Columns shown: <em>entry date, customer, subscription ID, invoice ID, transaction date, product, billing period, recognized amount, invoice status, payment platform.</em></div>
-        </div>
-      </div>
+      <img src="assets/slide-30.jpg" alt="Recognized Revenue per Invoice report" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="highlight-box">
         <span style="font-size:13px; color:#93c5fd;">📤 <strong>Excel export.</strong> Disputes? Audit questions? Trace any number back to its source transaction in seconds.</span>
       </div>
-
-      <div class="screenshot-note">Screenshot: Recognized Revenue per Invoice export — to be added</div>
     </div>
   </div>
 
@@ -1431,39 +1034,11 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Revenue Waterfall Report (In App)</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Rows = booked month. Columns = recognized month. Watch every booking earn out over time.</p>
 
-      <div class="mock-ui" style="margin-bottom:8px;">
-        <div class="mock-ui-header">Synder · Revenue Waterfall · Feb 2024 – Jul 2024</div>
-        <div class="mock-ui-body" style="overflow-x:auto;">
-          <table class="je-table" style="min-width:760px;">
-            <thead>
-              <tr>
-                <th>Booked ↓ / Recognized →</th>
-                <th style="text-align:right;">Feb 24</th>
-                <th style="text-align:right;">Mar 24</th>
-                <th style="text-align:right;">Apr 24</th>
-                <th style="text-align:right;">May 24</th>
-                <th style="text-align:right;">Jun 24</th>
-                <th style="text-align:right;">Jul 24</th>
-                <th style="text-align:right;">…</th>
-                <th style="text-align:right;">Booked total</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style="background:rgba(59,130,246,0.06);"><td><strong>Feb 2024</strong></td><td class="num" style="text-align:right;">$157</td><td class="num" style="text-align:right;">$205</td><td class="num" style="text-align:right;">$198</td><td class="num" style="text-align:right;">$205</td><td class="num" style="text-align:right;">$198</td><td class="num" style="text-align:right;">$205</td><td class="num" style="text-align:right; color:#6b7280;">…</td><td class="num" style="text-align:right;"><strong>$2,457</strong></td></tr>
-              <tr><td><strong>Mar 2024</strong></td><td>—</td><td class="num" style="text-align:right;">$210</td><td class="num" style="text-align:right;">$320</td><td class="num" style="text-align:right;">$310</td><td class="num" style="text-align:right;">$320</td><td class="num" style="text-align:right;">$310</td><td class="num" style="text-align:right; color:#6b7280;">…</td><td class="num" style="text-align:right;"><strong>$3,840</strong></td></tr>
-              <tr><td><strong>Apr 2024</strong></td><td>—</td><td>—</td><td class="num" style="text-align:right;">$190</td><td class="num" style="text-align:right;">$285</td><td class="num" style="text-align:right;">$280</td><td class="num" style="text-align:right;">$285</td><td class="num" style="text-align:right; color:#6b7280;">…</td><td class="num" style="text-align:right;"><strong>$3,420</strong></td></tr>
-              <tr><td><strong>May 2024</strong></td><td>—</td><td>—</td><td>—</td><td class="num" style="text-align:right;">$240</td><td class="num" style="text-align:right;">$380</td><td class="num" style="text-align:right;">$370</td><td class="num" style="text-align:right; color:#6b7280;">…</td><td class="num" style="text-align:right;"><strong>$4,560</strong></td></tr>
-              <tr><td><strong>Jun 2024</strong></td><td>—</td><td>—</td><td>—</td><td>—</td><td class="num" style="text-align:right;">$165</td><td class="num" style="text-align:right;">$265</td><td class="num" style="text-align:right; color:#6b7280;">…</td><td class="num" style="text-align:right;"><strong>$3,180</strong></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <img src="assets/slide-31.jpg" alt="Synder in-app Revenue Waterfall report" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="highlight-box">
         <span style="font-size:13px; color:#93c5fd;">📈 Feb 2024 booked $2,457 → recognition flows across the next 12 months. Useful for long-term contracts at a glance.</span>
       </div>
-
-      <div class="screenshot-note">Screenshot: Synder in-app Waterfall report (booked × recognized grid) — to be added</div>
     </div>
   </div>
 
@@ -1475,28 +1050,7 @@ tailwind.config = {
       <p class="slide-subtitle" style="margin-bottom:18px;">Same report — downloadable. Plug into your board models, FP&amp;A workbooks, fundraising decks.</p>
 
       <div class="grid-2" style="margin-bottom:14px;">
-        <div class="mock-ui">
-          <div class="mock-ui-header">📊 waterfall-q3-2026.xlsx</div>
-          <div class="mock-ui-body">
-            <div style="font-family:'JetBrains Mono', monospace; font-size:11px; color:#d1d5db; line-height:1.7;">
-              <div style="display:grid; grid-template-columns: 80px 80px 80px 80px 80px; gap:0; border-bottom:1px solid #374151; padding-bottom:6px; font-weight:700; color:#9ca3af;">
-                <span>Booked</span><span style="text-align:right;">Feb</span><span style="text-align:right;">Mar</span><span style="text-align:right;">Apr</span><span style="text-align:right;">…</span>
-              </div>
-              <div style="display:grid; grid-template-columns: 80px 80px 80px 80px 80px; gap:0; padding:4px 0;">
-                <span>Feb 24</span><span style="text-align:right;">157</span><span style="text-align:right;">205</span><span style="text-align:right;">198</span><span style="text-align:right; color:#6b7280;">…</span>
-              </div>
-              <div style="display:grid; grid-template-columns: 80px 80px 80px 80px 80px; gap:0; padding:4px 0;">
-                <span>Mar 24</span><span style="text-align:right;">—</span><span style="text-align:right;">210</span><span style="text-align:right;">320</span><span style="text-align:right; color:#6b7280;">…</span>
-              </div>
-              <div style="display:grid; grid-template-columns: 80px 80px 80px 80px 80px; gap:0; padding:4px 0;">
-                <span>Apr 24</span><span style="text-align:right;">—</span><span style="text-align:right;">—</span><span style="text-align:right;">190</span><span style="text-align:right; color:#6b7280;">…</span>
-              </div>
-              <div style="display:grid; grid-template-columns: 80px 80px 80px 80px 80px; gap:0; padding:4px 0; color:#6b7280;">
-                <span>…</span><span style="text-align:right;">…</span><span style="text-align:right;">…</span><span style="text-align:right;">…</span><span style="text-align:right;">…</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <img src="assets/slide-32.jpg" alt="Excel waterfall export" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff;">
 
         <div class="card">
           <div class="section-label" style="margin-bottom:10px;">Why download?</div>
@@ -1516,8 +1070,6 @@ tailwind.config = {
           </div>
         </div>
       </div>
-
-      <div class="screenshot-note">Screenshot: Excel waterfall export — to be added</div>
     </div>
   </div>
 
@@ -1528,38 +1080,11 @@ tailwind.config = {
       <h1 class="slide-title" style="margin-bottom:8px;">Revenue Waterfall by Customer</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Same concept, one level deeper — every row is an individual subscription.</p>
 
-      <div class="mock-ui" style="margin-bottom:8px;">
-        <div class="mock-ui-header">Synder · Waterfall by Customer · Oct 2026</div>
-        <div class="mock-ui-body" style="overflow-x:auto;">
-          <table class="je-table" style="min-width:780px;">
-            <thead>
-              <tr>
-                <th>Customer</th>
-                <th>Sub ID</th>
-                <th style="text-align:right;">Booked total</th>
-                <th style="text-align:right;">Oct 26</th>
-                <th style="text-align:right;">Nov 26</th>
-                <th style="text-align:right;">Dec 26</th>
-                <th style="text-align:right;">Jan 27</th>
-                <th style="text-align:right;">…</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>Acme Corp</td><td class="mono">sub_1Q7yMz</td><td class="num" style="text-align:right;">$1,200</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right; color:#6b7280;">…</td></tr>
-              <tr><td>Globex LLC</td><td class="mono">sub_1QbgKL</td><td class="num" style="text-align:right;">$300</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.37</td><td>—</td><td>—</td><td class="num" style="text-align:right; color:#6b7280;">—</td></tr>
-              <tr><td>Initech Inc</td><td class="mono">sub_1QkPpQ</td><td class="num" style="text-align:right;">$600</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right; color:#6b7280;">…</td></tr>
-              <tr style="background:rgba(167,139,250,0.06);"><td>Stark Industries <span class="tag tag-violet" style="margin-left:6px;">Enterprise</span></td><td class="mono">sub_1QvFwT</td><td class="num" style="text-align:right;">$24,000</td><td class="num" style="text-align:right;">$2,038.46</td><td class="num" style="text-align:right;">$1,972.60</td><td class="num" style="text-align:right;">$2,038.46</td><td class="num" style="text-align:right;">$2,038.46</td><td class="num" style="text-align:right; color:#6b7280;">…</td></tr>
-              <tr><td>Wayne Enterprises</td><td class="mono">sub_1QwEzF</td><td class="num" style="text-align:right;">$600</td><td class="num" style="text-align:right;">$32.21</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right;">$98.63</td><td class="num" style="text-align:right;">$101.92</td><td class="num" style="text-align:right; color:#6b7280;">…</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <img src="assets/slide-33.jpg" alt="Synder Waterfall by Customer report" style="display:block; width:100%; max-height:60vh; object-fit:contain; border-radius:8px; border:1px solid #374151; background:#fff; margin-bottom:12px;">
 
       <div class="success-box">
         <span style="font-size:13px; color:#86efac;">🎯 Most granular view of the recognition pipeline. Identify largest contracts → understand exactly what's sitting in deferred revenue.</span>
       </div>
-
-      <div class="screenshot-note">Screenshot: Synder Waterfall by Customer report — to be added</div>
     </div>
   </div>
 
