@@ -10,13 +10,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   body { font-family: 'Inter', system-ui, sans-serif; background: #f6f7f9; color: #111827; }
-  .ring-brand { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+
   .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
-  .chip-blue { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-  .chip-green { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
-  .chip-amber { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-  .chip-gray { background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
-  .chip-violet { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+  .chip-system { background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
+  .chip-custom { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
 
   .tag-mock {
     position: fixed; top: 12px; right: 12px; z-index: 50;
@@ -24,34 +21,46 @@
     border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
   }
 
+  .rule-card { transition: border-color 0.15s, background 0.15s; }
   .rule-card.active { border-color: #2563eb; background: #eff6ff; }
   .rule-card.active .rule-card-name { color: #1d4ed8; }
+  .rule-card:hover:not(.active) { border-color: #d1d5db; }
 
-  .strictness-bar {
-    display: flex; gap: 3px; align-items: center;
-  }
-  .strictness-bar .seg { width: 22px; height: 6px; border-radius: 2px; background: #e5e7eb; }
+  .strictness-bar { display: flex; gap: 3px; align-items: center; }
+  .strictness-bar .seg { width: 18px; height: 5px; border-radius: 2px; background: #e5e7eb; }
   .strictness-bar .seg.on { background: #2563eb; }
 
   /* Toggle switch */
   .switch { position: relative; width: 32px; height: 18px; background: #d1d5db; border-radius: 999px; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
   .switch.on { background: #2563eb; }
+  .switch.disabled { cursor: not-allowed; opacity: 0.6; }
   .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: white; border-radius: 50%; transition: left 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
   .switch.on::after { left: 16px; }
 
   /* Radio chips */
   .radio-row { display: flex; gap: 6px; flex-wrap: wrap; }
   .radio-chip { padding: 5px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; font-weight: 500; color: #4b5563; cursor: pointer; background: white; transition: all 0.15s; }
-  .radio-chip:hover { border-color: #9ca3af; }
+  .radio-chip:hover:not(.disabled) { border-color: #9ca3af; }
   .radio-chip.on { background: #2563eb; border-color: #2563eb; color: white; }
-  .radio-chip.disabled { opacity: 0.4; cursor: not-allowed; }
+  .radio-chip.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+  .radio-chip.dim { opacity: 0.4; }
 
-  .criteria-row { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; transition: border-color 0.15s; }
+  .criteria-row { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 16px; transition: border-color 0.15s, background 0.15s; }
   .criteria-row.enabled { border-color: #bfdbfe; background: #fafbff; }
-  .criteria-row.disabled { opacity: 0.6; }
-  .criteria-row.required { border-color: #d1d5db; background: #f9fafb; }
+  .criteria-row.disabled { opacity: 0.55; }
+  .criteria-row.readonly { background: #f9fafb; }
 
   .preview-card { background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px; }
+  .preview-card.empty { background: #fff7ed; border-color: #fed7aa; }
+
+  .readonly-banner {
+    background: #fffbeb; border: 1px solid #fcd34d; color: #92400e;
+    padding: 10px 14px; border-radius: 8px; font-size: 12.5px; display: flex; gap: 10px; align-items: center;
+  }
+
+  .delete-btn { color: #b91c1c; }
+  .delete-btn:hover { color: #7f1d1d; }
+  .delete-btn.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
 </style>
 </head>
 <body class="min-h-screen">
@@ -88,315 +97,534 @@
   <div class="flex items-end justify-between mb-7">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Matching rules</h1>
-      <p class="text-sm text-gray-500 mt-1 max-w-2xl">Define how Synder matches integration transactions to accounting entries when running a reconciliation. Rules apply per integration or across all integrations.</p>
+      <p class="text-sm text-gray-500 mt-1 max-w-2xl">Define how Synder matches integration transactions to accounting entries when running a reconciliation. Pick a system default or save your own preset.</p>
     </div>
-    <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2 rounded-md flex items-center gap-2">
-      <span>+</span> New rule set
+    <button onclick="newPreset()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2 rounded-md flex items-center gap-2">
+      <span>+</span> New custom preset
     </button>
   </div>
 
   <!-- Two-column layout -->
   <div class="grid grid-cols-12 gap-6">
 
-    <!-- Left: rule list -->
+    <!-- Left: preset list -->
     <div class="col-span-4">
       <div class="bg-white rounded-lg border border-gray-200">
+
+        <!-- System defaults -->
         <div class="px-4 py-3 border-b border-gray-200">
-          <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Rule sets</div>
+          <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">System defaults</div>
         </div>
-        <div class="p-3 space-y-2">
+        <div id="systemList" class="p-3 space-y-2"></div>
 
-          <div class="rule-card active border rounded-lg p-3 cursor-pointer transition-colors" onclick="selectRule(this, 'default')">
-            <div class="flex items-start justify-between mb-1">
-              <div class="rule-card-name font-semibold text-sm text-gray-900">Default rule set</div>
-              <span class="chip chip-gray">System</span>
-            </div>
-            <div class="text-xs text-gray-500 mb-2">All integrations · ID match only</div>
-            <div class="strictness-bar">
-              <div class="seg on"></div>
-              <div class="seg"></div>
-              <div class="seg"></div>
-              <div class="seg"></div>
-              <div class="seg"></div>
-            </div>
-            <div class="text-[10.5px] text-gray-400 mt-1.5">Strictness: Loose</div>
+        <!-- Custom presets -->
+        <div class="px-4 py-3 border-t border-gray-200 border-b">
+          <div class="flex items-center justify-between">
+            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Custom presets</div>
+            <button onclick="newPreset()" class="text-xs text-blue-600 hover:text-blue-700 font-semibold">+ New</button>
           </div>
-
-          <div class="rule-card border border-gray-200 hover:border-gray-300 rounded-lg p-3 cursor-pointer transition-colors" onclick="selectRule(this, 'stripe-strict')">
-            <div class="flex items-start justify-between mb-1">
-              <div class="rule-card-name font-semibold text-sm text-gray-900">Stripe Strict</div>
-              <span class="chip chip-blue">Stripe</span>
-            </div>
-            <div class="text-xs text-gray-500 mb-2">ID + amount exact + date ±1d</div>
-            <div class="strictness-bar">
-              <div class="seg on"></div>
-              <div class="seg on"></div>
-              <div class="seg on"></div>
-              <div class="seg on"></div>
-              <div class="seg"></div>
-            </div>
-            <div class="text-[10.5px] text-gray-400 mt-1.5">Used in 8 reconciliations</div>
-          </div>
-
-          <div class="rule-card border border-gray-200 hover:border-gray-300 rounded-lg p-3 cursor-pointer transition-colors" onclick="selectRule(this, 'shopify-lenient')">
-            <div class="flex items-start justify-between mb-1">
-              <div class="rule-card-name font-semibold text-sm text-gray-900">Shopify Lenient</div>
-              <span class="chip chip-green">Shopify</span>
-            </div>
-            <div class="text-xs text-gray-500 mb-2">ID + amount ±0.5% + date ±3d</div>
-            <div class="strictness-bar">
-              <div class="seg on"></div>
-              <div class="seg on"></div>
-              <div class="seg on"></div>
-              <div class="seg"></div>
-              <div class="seg"></div>
-            </div>
-            <div class="text-[10.5px] text-gray-400 mt-1.5">Used in 3 reconciliations</div>
-          </div>
-
-          <div class="rule-card border border-gray-200 hover:border-gray-300 rounded-lg p-3 cursor-pointer transition-colors" onclick="selectRule(this, 'paypal-flexible')">
-            <div class="flex items-start justify-between mb-1">
-              <div class="rule-card-name font-semibold text-sm text-gray-900">PayPal — Date Flexible</div>
-              <span class="chip chip-amber">PayPal</span>
-            </div>
-            <div class="text-xs text-gray-500 mb-2">Amount + customer + date ±7d</div>
-            <div class="strictness-bar">
-              <div class="seg on"></div>
-              <div class="seg on"></div>
-              <div class="seg"></div>
-              <div class="seg"></div>
-              <div class="seg"></div>
-            </div>
-            <div class="text-[10.5px] text-gray-400 mt-1.5">Used in 2 reconciliations</div>
-          </div>
-
-          <div class="rule-card border border-gray-200 hover:border-gray-300 rounded-lg p-3 cursor-pointer transition-colors" onclick="selectRule(this, 'audit-strict')">
-            <div class="flex items-start justify-between mb-1">
-              <div class="rule-card-name font-semibold text-sm text-gray-900">Audit-Ready Strict</div>
-              <span class="chip chip-violet">All integrations</span>
-            </div>
-            <div class="text-xs text-gray-500 mb-2">All criteria, exact match</div>
-            <div class="strictness-bar">
-              <div class="seg on"></div>
-              <div class="seg on"></div>
-              <div class="seg on"></div>
-              <div class="seg on"></div>
-              <div class="seg on"></div>
-            </div>
-            <div class="text-[10.5px] text-gray-400 mt-1.5">Used in 1 reconciliation</div>
-          </div>
-
         </div>
+        <div id="customList" class="p-3 space-y-2"></div>
+
       </div>
 
       <div class="mt-4 px-3 text-[11.5px] text-gray-500 leading-relaxed">
-        <strong>How it works:</strong> When you launch a reconciliation, Synder picks the rule set that matches the integration. The Default rule set is the fallback when no integration-specific rule exists.
+        <strong>How it works:</strong> When you launch a reconciliation, pick the matching preset you want to use. System defaults are read-only — duplicate one to start a custom preset.
       </div>
     </div>
 
     <!-- Right: rule editor -->
     <div class="col-span-8">
-
       <div class="bg-white rounded-lg border border-gray-200">
 
         <!-- Editor header -->
         <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
-          <div>
+          <div class="flex-1">
             <div class="flex items-center gap-2 mb-1">
-              <h2 id="editor-name" class="text-lg font-bold text-gray-900">Default rule set</h2>
-              <span class="chip chip-gray">System</span>
+              <h2 id="editorName" class="text-lg font-bold text-gray-900">ID strict match</h2>
+              <span id="editorChip" class="chip chip-system">System</span>
             </div>
-            <p class="text-xs text-gray-500">Applied to any reconciliation that doesn't match a more specific rule set.</p>
+            <p id="editorDesc" class="text-xs text-gray-500">Read-only system default. Duplicate to create an editable custom preset.</p>
           </div>
           <div class="flex items-center gap-2">
-            <button class="text-xs text-gray-600 hover:text-gray-900 px-3 py-1.5 border border-gray-200 rounded-md">Duplicate</button>
-            <button class="text-xs text-gray-600 hover:text-red-600 px-3 py-1.5 border border-gray-200 rounded-md" disabled title="System rule — cannot be deleted">Delete</button>
+            <button id="duplicateBtn" onclick="duplicatePreset()" class="text-xs text-gray-600 hover:text-gray-900 px-3 py-1.5 border border-gray-200 rounded-md">Duplicate</button>
+            <button id="deleteBtn" onclick="deletePreset()" class="text-xs delete-btn px-3 py-1.5 border border-gray-200 rounded-md disabled">Delete</button>
+          </div>
+        </div>
+
+        <!-- Read-only banner (shown for system defaults) -->
+        <div id="readonlyBanner" class="px-6 pt-4">
+          <div class="readonly-banner">
+            <span>🔒</span>
+            <span>This is a system default — its configuration is fixed. To customize, click <strong>Duplicate</strong>.</span>
           </div>
         </div>
 
         <!-- Editor body -->
         <div class="px-6 py-6 space-y-6">
 
-          <!-- Rule name + applies to -->
-          <div class="grid grid-cols-2 gap-5">
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1.5">Rule name</label>
-              <input type="text" value="Default rule set" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1.5">Applies to</label>
-              <select class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 bg-white">
-                <option>All integrations (fallback)</option>
-                <option>Stripe only</option>
-                <option>Shopify only</option>
-                <option>PayPal only</option>
-                <option>Specific account...</option>
-              </select>
-            </div>
+          <!-- Rule name -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Preset name</label>
+            <input id="nameInput" type="text" value="ID strict match" class="w-full text-sm border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:bg-gray-50 disabled:text-gray-500" />
           </div>
 
           <!-- Criteria stack -->
           <div>
             <div class="flex items-baseline justify-between mb-2">
-              <label class="block text-xs font-semibold text-gray-700">Match criteria · in priority order</label>
-              <span class="text-[11px] text-gray-500">Drag to reorder</span>
+              <label class="block text-xs font-semibold text-gray-700">Match criteria</label>
+              <span class="text-[11px] text-gray-500">Toggle each criterion. At least one must be on.</span>
             </div>
 
             <div class="space-y-2">
 
-              <!-- ID match (required) -->
-              <div class="criteria-row required flex items-center gap-4">
-                <div class="text-xs font-bold text-gray-400 w-5">1</div>
-                <div class="flex-1">
-                  <div class="flex items-center gap-2 mb-0.5">
-                    <span class="text-sm font-semibold text-gray-900">Transaction ID</span>
-                    <span class="chip chip-gray">Always on</span>
+              <!-- ID -->
+              <div id="row-id" class="criteria-row">
+                <div class="flex items-start gap-4">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-0.5">
+                      <span class="text-sm font-semibold text-gray-900">Transaction ID</span>
+                      <div id="sw-id" class="switch" onclick="toggleCriterion('id')"></div>
+                    </div>
+                    <div class="text-xs text-gray-500">Integration transaction ID matches the accounting reference field. Exact match — no tolerance.</div>
                   </div>
-                  <div class="text-xs text-gray-500">Integration transaction ID matches the accounting reference field</div>
                 </div>
-                <div class="text-xs text-gray-500">Exact match only</div>
               </div>
 
               <!-- Amount -->
-              <div class="criteria-row enabled flex items-center gap-4">
-                <div class="text-xs font-bold text-gray-400 w-5">2</div>
-                <div class="flex-1">
-                  <div class="flex items-center gap-2 mb-1.5">
-                    <span class="text-sm font-semibold text-gray-900">Amount</span>
-                    <div class="switch on" onclick="this.classList.toggle('on')"></div>
-                  </div>
-                  <div class="radio-row">
-                    <div class="radio-chip" onclick="setRadio(this)">Exact</div>
-                    <div class="radio-chip on" onclick="setRadio(this)">± $0.01</div>
-                    <div class="radio-chip" onclick="setRadio(this)">± $0.05</div>
-                    <div class="radio-chip" onclick="setRadio(this)">± 0.5%</div>
-                    <div class="radio-chip" onclick="setRadio(this)">± 1%</div>
-                  </div>
-                  <div class="text-[11px] text-gray-500 mt-1.5">Use a small tolerance for currency rounding. 0.5–1% helps with FX-converted transactions.</div>
+              <div id="row-amount" class="criteria-row">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <span class="text-sm font-semibold text-gray-900">Amount</span>
+                  <div id="sw-amount" class="switch" onclick="toggleCriterion('amount')"></div>
                 </div>
+                <div id="tol-amount" class="radio-row"></div>
+                <div class="text-[11px] text-gray-500 mt-1.5">Use a small tolerance for currency rounding. 0.5–1% helps with FX-converted transactions.</div>
               </div>
 
               <!-- Date -->
-              <div class="criteria-row enabled flex items-center gap-4">
-                <div class="text-xs font-bold text-gray-400 w-5">3</div>
-                <div class="flex-1">
-                  <div class="flex items-center gap-2 mb-1.5">
-                    <span class="text-sm font-semibold text-gray-900">Date</span>
-                    <div class="switch on" onclick="this.classList.toggle('on')"></div>
-                  </div>
-                  <div class="radio-row">
-                    <div class="radio-chip" onclick="setRadio(this)">Exact</div>
-                    <div class="radio-chip on" onclick="setRadio(this)">± 1 day</div>
-                    <div class="radio-chip" onclick="setRadio(this)">± 3 days</div>
-                    <div class="radio-chip" onclick="setRadio(this)">± 7 days</div>
-                  </div>
-                  <div class="text-[11px] text-gray-500 mt-1.5">Common when payouts settle a day or two after the underlying transaction.</div>
+              <div id="row-date" class="criteria-row">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <span class="text-sm font-semibold text-gray-900">Date</span>
+                  <div id="sw-date" class="switch" onclick="toggleCriterion('date')"></div>
                 </div>
+                <div id="tol-date" class="radio-row"></div>
+                <div class="text-[11px] text-gray-500 mt-1.5">Common when payouts settle a day or two after the underlying transaction.</div>
               </div>
 
               <!-- Customer -->
-              <div class="criteria-row disabled flex items-center gap-4">
-                <div class="text-xs font-bold text-gray-400 w-5">4</div>
-                <div class="flex-1">
-                  <div class="flex items-center gap-2 mb-1.5">
-                    <span class="text-sm font-semibold text-gray-900">Customer</span>
-                    <div class="switch" onclick="this.classList.toggle('on')"></div>
-                  </div>
-                  <div class="radio-row">
-                    <div class="radio-chip on disabled">Exact name</div>
-                    <div class="radio-chip disabled">Email match</div>
-                    <div class="radio-chip disabled">Customer ID</div>
-                  </div>
-                  <div class="text-[11px] text-gray-500 mt-1.5">Off by default — name spellings vary across integrations. Turn on for high-trust matches.</div>
+              <div id="row-customer" class="criteria-row">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <span class="text-sm font-semibold text-gray-900">Customer</span>
+                  <div id="sw-customer" class="switch" onclick="toggleCriterion('customer')"></div>
                 </div>
+                <div id="tol-customer" class="radio-row"></div>
+                <div class="text-[11px] text-gray-500 mt-1.5">Off by default — name spellings vary across integrations. Turn on for high-trust matches.</div>
               </div>
 
               <!-- Memo -->
-              <div class="criteria-row disabled flex items-center gap-4">
-                <div class="text-xs font-bold text-gray-400 w-5">5</div>
-                <div class="flex-1">
-                  <div class="flex items-center gap-2 mb-1.5">
-                    <span class="text-sm font-semibold text-gray-900">Memo / description</span>
-                    <div class="switch" onclick="this.classList.toggle('on')"></div>
-                  </div>
-                  <div class="radio-row">
-                    <div class="radio-chip on disabled">Contains keyword</div>
-                    <div class="radio-chip disabled">Exact</div>
-                    <div class="radio-chip disabled">Regex pattern</div>
-                  </div>
-                  <div class="text-[11px] text-gray-500 mt-1.5">Useful when a reference like "INV-####" lives in the memo on one side.</div>
+              <div id="row-memo" class="criteria-row">
+                <div class="flex items-center gap-2 mb-1.5">
+                  <span class="text-sm font-semibold text-gray-900">Memo / description</span>
+                  <div id="sw-memo" class="switch" onclick="toggleCriterion('memo')"></div>
                 </div>
+                <div id="tol-memo" class="radio-row"></div>
+                <div class="text-[11px] text-gray-500 mt-1.5">Useful when a reference like "INV-####" lives in the memo on one side.</div>
               </div>
 
-            </div>
-          </div>
-
-          <!-- Action when matched -->
-          <div>
-            <label class="block text-xs font-semibold text-gray-700 mb-2">When all enabled criteria match</label>
-            <div class="radio-row">
-              <div class="radio-chip on" onclick="setRadio(this)">Auto-match (no review)</div>
-              <div class="radio-chip" onclick="setRadio(this)">Suggest for review</div>
             </div>
           </div>
 
           <!-- Strictness preview -->
-          <div class="preview-card">
+          <div id="previewCard" class="preview-card">
             <div class="flex items-center justify-between mb-2">
               <div class="text-xs font-semibold text-blue-900 uppercase tracking-wider">Match preview</div>
               <div class="flex items-center gap-2">
                 <span class="text-xs font-semibold text-blue-900">Strictness</span>
-                <div class="strictness-bar">
-                  <div class="seg on"></div>
-                  <div class="seg on"></div>
-                  <div class="seg on"></div>
-                  <div class="seg"></div>
-                  <div class="seg"></div>
-                </div>
-                <span class="text-xs font-semibold text-blue-900">Medium</span>
+                <div id="previewStrictness" class="strictness-bar"></div>
+                <span id="previewStrictnessLabel" class="text-xs font-semibold text-blue-900">—</span>
               </div>
             </div>
-            <p class="text-sm text-gray-800 leading-relaxed">Match when <strong>transaction ID is exact</strong>, <strong>amount is within $0.01</strong>, and <strong>date is within 1 day</strong>. Auto-pair without review.</p>
-            <div class="mt-3 flex items-center gap-2 text-xs text-blue-800">
-              <span>📈</span>
-              <span>Estimated effect on the May 2026 Stripe reconciliation: <strong>+4 auto-matches</strong> currently sitting as Discrepancy.</span>
-            </div>
+            <p id="previewText" class="text-sm text-gray-800 leading-relaxed">—</p>
           </div>
 
         </div>
 
         <!-- Footer bar -->
         <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-between rounded-b-lg">
-          <div class="text-xs text-gray-500">Changes apply to all future reconciliations using this rule set.</div>
+          <div id="footerNote" class="text-xs text-gray-500">Read-only system default.</div>
           <div class="flex items-center gap-3">
-            <button class="text-sm text-gray-600 hover:text-gray-900 px-4 py-2">Cancel</button>
-            <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-5 py-2 rounded-md">Save changes</button>
+            <button id="cancelBtn" onclick="cancelEdit()" class="text-sm text-gray-600 hover:text-gray-900 px-4 py-2">Cancel</button>
+            <button id="saveBtn" onclick="savePreset()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-5 py-2 rounded-md disabled:bg-gray-300 disabled:cursor-not-allowed">Save changes</button>
           </div>
         </div>
 
       </div>
-
     </div>
   </div>
 
 </div>
 
 <script>
-  function selectRule(el, ruleId) {
-    document.querySelectorAll('.rule-card').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
 
-    const nameEl = el.querySelector('.rule-card-name');
-    if (nameEl) {
-      document.getElementById('editor-name').textContent = nameEl.textContent;
+// ───── Data model ─────
+
+const AMOUNT_OPTIONS = [
+  { v: 'exact', label: 'Exact' },
+  { v: '0.01',  label: '± $0.01' },
+  { v: '0.05',  label: '± $0.05' },
+  { v: '0.5%',  label: '± 0.5%' },
+  { v: '1%',    label: '± 1%' },
+];
+const DATE_OPTIONS = [
+  { v: 'exact', label: 'Exact' },
+  { v: '1d',    label: '± 1 day' },
+  { v: '3d',    label: '± 3 days' },
+  { v: '7d',    label: '± 7 days' },
+];
+const CUSTOMER_OPTIONS = [
+  { v: 'name',  label: 'Exact name' },
+  { v: 'email', label: 'Email match' },
+  { v: 'id',    label: 'Customer ID' },
+];
+const MEMO_OPTIONS = [
+  { v: 'contains', label: 'Contains keyword' },
+  { v: 'exact',    label: 'Exact' },
+  { v: 'regex',    label: 'Regex pattern' },
+];
+
+let presets = [
+  // ─── System defaults (non-editable) ───
+  {
+    id: 'sys-id-strict',
+    name: 'ID strict match',
+    type: 'system',
+    desc: 'Match by transaction ID only. The classic, the safest.',
+    criteria: {
+      id:       { on: true },
+      amount:   { on: false, tol: '0.01' },
+      date:     { on: false, tol: '1d' },
+      customer: { on: false, tol: 'name' },
+      memo:     { on: false, tol: 'contains' },
+    },
+  },
+  {
+    id: 'sys-amount-date',
+    name: 'Amount and date',
+    type: 'system',
+    desc: 'Match by amount + date with default tolerance. Useful when IDs don\'t line up across systems.',
+    criteria: {
+      id:       { on: false },
+      amount:   { on: true,  tol: '0.01' },
+      date:     { on: true,  tol: '1d' },
+      customer: { on: false, tol: 'name' },
+      memo:     { on: false, tol: 'contains' },
+    },
+  },
+  // ─── Custom (seeded examples) ───
+  {
+    id: 'custom-stripe-strict',
+    name: 'Stripe Strict',
+    type: 'custom',
+    desc: 'ID + amount exact + date ±1 day. Used by our default Stripe rule on multiple clients.',
+    criteria: {
+      id:       { on: true },
+      amount:   { on: true,  tol: 'exact' },
+      date:     { on: true,  tol: '1d' },
+      customer: { on: false, tol: 'name' },
+      memo:     { on: false, tol: 'contains' },
+    },
+  },
+  {
+    id: 'custom-shopify-lenient',
+    name: 'Shopify Lenient',
+    type: 'custom',
+    desc: 'Amount within 0.5% + date ±3 days. Built for marketplace rounding and slow settlement.',
+    criteria: {
+      id:       { on: true },
+      amount:   { on: true,  tol: '0.5%' },
+      date:     { on: true,  tol: '3d' },
+      customer: { on: false, tol: 'name' },
+      memo:     { on: false, tol: 'contains' },
+    },
+  },
+];
+
+let activeId = 'sys-id-strict';
+let dirty = false;   // track unsaved changes
+let nextCustomNum = 1;
+
+// ───── Helpers ─────
+
+function getPreset(id) { return presets.find(p => p.id === id); }
+
+function strictnessOf(criteria) {
+  // Score 0–5 based on how many criteria are enabled and how tight tolerances are.
+  let score = 0;
+  if (criteria.id.on) score += 1;
+  if (criteria.amount.on) {
+    score += 1;
+    if (criteria.amount.tol === 'exact') score += 0.5;
+  }
+  if (criteria.date.on) {
+    score += 1;
+    if (criteria.date.tol === 'exact') score += 0.5;
+  }
+  if (criteria.customer.on) score += 1;
+  if (criteria.memo.on) score += 0.5;
+  return Math.min(5, Math.round(score));
+}
+
+function strictnessLabel(n) {
+  return ['None', 'Loose', 'Light', 'Medium', 'Tight', 'Strict'][n] || 'None';
+}
+
+function describeRule(criteria) {
+  const parts = [];
+  if (criteria.id.on) parts.push('<strong>ID exact</strong>');
+  if (criteria.amount.on) {
+    const opt = AMOUNT_OPTIONS.find(o => o.v === criteria.amount.tol);
+    parts.push(`<strong>amount ${opt?.label.toLowerCase() ?? ''}</strong>`);
+  }
+  if (criteria.date.on) {
+    const opt = DATE_OPTIONS.find(o => o.v === criteria.date.tol);
+    parts.push(`<strong>date ${opt?.label.toLowerCase() ?? ''}</strong>`);
+  }
+  if (criteria.customer.on) {
+    const opt = CUSTOMER_OPTIONS.find(o => o.v === criteria.customer.tol);
+    parts.push(`<strong>customer (${opt?.label.toLowerCase() ?? ''})</strong>`);
+  }
+  if (criteria.memo.on) {
+    const opt = MEMO_OPTIONS.find(o => o.v === criteria.memo.tol);
+    parts.push(`<strong>memo (${opt?.label.toLowerCase() ?? ''})</strong>`);
+  }
+  if (parts.length === 0) return null;
+  return parts.join(' + ');
+}
+
+function summarizeForList(criteria) {
+  const parts = [];
+  if (criteria.id.on) parts.push('ID');
+  if (criteria.amount.on) parts.push('amount');
+  if (criteria.date.on) parts.push('date');
+  if (criteria.customer.on) parts.push('customer');
+  if (criteria.memo.on) parts.push('memo');
+  return parts.length ? parts.join(' + ') : 'No criteria selected';
+}
+
+// ───── Renderers ─────
+
+function renderLists() {
+  const sysEl = document.getElementById('systemList');
+  const cusEl = document.getElementById('customList');
+  sysEl.innerHTML = '';
+  cusEl.innerHTML = '';
+
+  presets.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'rule-card border border-gray-200 rounded-lg p-3 cursor-pointer' + (p.id === activeId ? ' active' : '');
+    card.onclick = () => selectPreset(p.id);
+    const s = strictnessOf(p.criteria);
+    card.innerHTML = `
+      <div class="flex items-start justify-between mb-1">
+        <div class="rule-card-name font-semibold text-sm text-gray-900">${p.name}</div>
+        <span class="chip ${p.type === 'system' ? 'chip-system' : 'chip-custom'}">${p.type === 'system' ? '🔒 System' : 'Custom'}</span>
+      </div>
+      <div class="text-xs text-gray-500 mb-2">${summarizeForList(p.criteria)}</div>
+      <div class="strictness-bar">
+        ${[1,2,3,4,5].map(i => `<div class="seg ${i <= s ? 'on' : ''}"></div>`).join('')}
+      </div>
+      <div class="text-[10.5px] text-gray-400 mt-1.5">Strictness: ${strictnessLabel(s)}</div>
+    `;
+    (p.type === 'system' ? sysEl : cusEl).appendChild(card);
+  });
+
+  if (presets.filter(p => p.type === 'custom').length === 0) {
+    cusEl.innerHTML = `<div class="text-xs text-gray-400 italic py-2 text-center">No custom presets yet. Click <strong>+ New</strong> above to create one.</div>`;
+  }
+}
+
+function renderTolerances(rowId, options, selected, locked) {
+  const el = document.getElementById('tol-' + rowId);
+  el.innerHTML = options.map(o =>
+    `<div class="radio-chip ${o.v === selected ? 'on' : ''} ${locked ? 'dim' : ''}" onclick="${locked ? '' : `setTolerance('${rowId}','${o.v}')`}">${o.label}</div>`
+  ).join('');
+}
+
+function renderEditor() {
+  const p = getPreset(activeId);
+  if (!p) return;
+  const isSystem = p.type === 'system';
+
+  // Header
+  document.getElementById('editorName').textContent = p.name;
+  document.getElementById('editorDesc').textContent = p.desc;
+  const chip = document.getElementById('editorChip');
+  chip.className = 'chip ' + (isSystem ? 'chip-system' : 'chip-custom');
+  chip.textContent = isSystem ? '🔒 System default' : 'Custom';
+
+  // Read-only banner
+  document.getElementById('readonlyBanner').style.display = isSystem ? 'block' : 'none';
+
+  // Name input
+  const nameInput = document.getElementById('nameInput');
+  nameInput.value = p.name;
+  nameInput.disabled = isSystem;
+  nameInput.oninput = () => { if (!isSystem) { p.name = nameInput.value; dirty = true; renderLists(); document.getElementById('editorName').textContent = nameInput.value; }};
+
+  // Criteria switches
+  ['id','amount','date','customer','memo'].forEach(k => {
+    const sw = document.getElementById('sw-' + k);
+    const row = document.getElementById('row-' + k);
+    if (p.criteria[k].on) sw.classList.add('on'); else sw.classList.remove('on');
+    sw.classList.toggle('disabled', isSystem);
+
+    if (p.criteria[k].on) {
+      row.classList.add('enabled');
+      row.classList.remove('disabled');
+    } else {
+      row.classList.add('disabled');
+      row.classList.remove('enabled');
     }
+    if (isSystem) row.classList.add('readonly'); else row.classList.remove('readonly');
+  });
+
+  // Tolerances (none for ID — exact only)
+  renderTolerances('amount',   AMOUNT_OPTIONS,   p.criteria.amount.tol,   isSystem || !p.criteria.amount.on);
+  renderTolerances('date',     DATE_OPTIONS,     p.criteria.date.tol,     isSystem || !p.criteria.date.on);
+  renderTolerances('customer', CUSTOMER_OPTIONS, p.criteria.customer.tol, isSystem || !p.criteria.customer.on);
+  renderTolerances('memo',     MEMO_OPTIONS,     p.criteria.memo.tol,     isSystem || !p.criteria.memo.on);
+
+  // Preview
+  const anyOn = ['id','amount','date','customer','memo'].some(k => p.criteria[k].on);
+  const preview = document.getElementById('previewCard');
+  const previewText = document.getElementById('previewText');
+  const previewLabel = document.getElementById('previewStrictnessLabel');
+  const previewBar = document.getElementById('previewStrictness');
+
+  if (anyOn) {
+    preview.classList.remove('empty');
+    previewText.innerHTML = `Match when ${describeRule(p.criteria)}.`;
+    const s = strictnessOf(p.criteria);
+    previewLabel.textContent = strictnessLabel(s);
+    previewBar.innerHTML = [1,2,3,4,5].map(i => `<div class="seg ${i <= s ? 'on' : ''}"></div>`).join('');
+  } else {
+    preview.classList.add('empty');
+    previewText.innerHTML = `<span style="color:#9a3412;">⚠ At least one criterion must be enabled — turn on ID, amount, date, customer, or memo above.</span>`;
+    previewLabel.textContent = '—';
+    previewBar.innerHTML = '';
   }
 
-  function setRadio(el) {
-    const row = el.parentElement;
-    row.querySelectorAll('.radio-chip').forEach(c => c.classList.remove('on'));
-    el.classList.add('on');
+  // Footer
+  document.getElementById('deleteBtn').classList.toggle('disabled', isSystem);
+  document.getElementById('saveBtn').classList.toggle('hidden', isSystem);
+  document.getElementById('cancelBtn').classList.toggle('hidden', isSystem);
+  document.getElementById('duplicateBtn').classList.toggle('hidden', false);
+
+  document.getElementById('footerNote').textContent = isSystem
+    ? 'Read-only system default.'
+    : (dirty ? 'Unsaved changes.' : 'Changes apply to any reconciliation using this preset.');
+}
+
+// ───── Interactions ─────
+
+function selectPreset(id) {
+  activeId = id;
+  dirty = false;
+  renderLists();
+  renderEditor();
+}
+
+function toggleCriterion(k) {
+  const p = getPreset(activeId);
+  if (p.type === 'system') return;
+  p.criteria[k].on = !p.criteria[k].on;
+  dirty = true;
+  renderEditor();
+  renderLists();
+}
+
+function setTolerance(k, v) {
+  const p = getPreset(activeId);
+  if (p.type === 'system' || !p.criteria[k].on) return;
+  p.criteria[k].tol = v;
+  dirty = true;
+  renderEditor();
+  renderLists();
+}
+
+function duplicatePreset() {
+  const src = getPreset(activeId);
+  const newId = 'custom-' + Date.now();
+  const copy = {
+    id: newId,
+    name: src.name + ' (copy)',
+    type: 'custom',
+    desc: src.desc,
+    criteria: JSON.parse(JSON.stringify(src.criteria)),
+  };
+  presets.push(copy);
+  activeId = newId;
+  dirty = false;
+  renderLists();
+  renderEditor();
+}
+
+function deletePreset() {
+  const p = getPreset(activeId);
+  if (p.type === 'system') return;
+  if (!confirm(`Delete "${p.name}"?`)) return;
+  presets = presets.filter(x => x.id !== activeId);
+  activeId = presets[0].id;
+  renderLists();
+  renderEditor();
+}
+
+function newPreset() {
+  const id = 'custom-' + Date.now();
+  const preset = {
+    id,
+    name: 'New custom preset ' + nextCustomNum++,
+    type: 'custom',
+    desc: 'Custom preset — configure the criteria below.',
+    criteria: {
+      id:       { on: true },
+      amount:   { on: false, tol: '0.01' },
+      date:     { on: false, tol: '1d' },
+      customer: { on: false, tol: 'name' },
+      memo:     { on: false, tol: 'contains' },
+    },
+  };
+  presets.push(preset);
+  activeId = id;
+  dirty = false;
+  renderLists();
+  renderEditor();
+}
+
+function savePreset() {
+  const p = getPreset(activeId);
+  if (p.type === 'system') return;
+  const anyOn = ['id','amount','date','customer','memo'].some(k => p.criteria[k].on);
+  if (!anyOn) {
+    alert('Enable at least one matching criterion before saving.');
+    return;
   }
+  dirty = false;
+  renderEditor();
+  // In a real product this would persist server-side; here it's just an indicator.
+  document.getElementById('footerNote').innerHTML = '<span style="color:#047857;">✓ Saved.</span>';
+}
+
+function cancelEdit() {
+  // For the mock, "cancel" just re-renders from current state.
+  dirty = false;
+  renderEditor();
+}
+
+// ───── Boot ─────
+
+renderLists();
+renderEditor();
 </script>
 
 </body>
