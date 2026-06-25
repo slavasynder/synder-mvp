@@ -173,8 +173,8 @@ tailwind.config = {
         <div class="card" style="border-left:4px solid #a78bfa; display:flex; align-items:center; gap:18px; padding:12px 18px;">
           <div style="width:36px; height:36px; background:rgba(167,139,250,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🚀</div>
           <div style="flex:1;">
-            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Demo of Prototypes</div>
-            <div style="font-size:12.5px; color:#9ca3af;">Six prototypes from our design team — JE-from-Synder, Balance Reconciliation, AI matching, firm-level reconciliation, matching rules, audit report.</div>
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Features Coming for Burkland</div>
+            <div style="font-size:12.5px; color:#9ca3af;">A look at how Transaction Reconciliation evolves next — six prototypes from our design team. You're the first ones seeing these.</div>
           </div>
           <div class="tag tag-violet">12 min</div>
         </div>
@@ -210,8 +210,8 @@ tailwind.config = {
   <!-- ─────────── SLIDE 3: WHY SYNDER ─────────── -->
   <div class="slide" data-slide="3">
     <div class="slide-inner">
-      <div class="section-label">The Problem · Why Synder</div>
-      <h1 class="slide-title" style="margin-bottom:6px;">Why Synder</h1>
+      <div class="section-label">The Problem · Why Synder for Reconciliation</div>
+      <h1 class="slide-title" style="margin-bottom:6px;">Why Reconciliation with Synder</h1>
       <p class="slide-subtitle" style="margin-bottom:18px;">Reconciliation is hard for a stack of reasons. Here's how Synder makes it less so.</p>
 
       <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Why reconciliation is hard</div>
@@ -267,7 +267,7 @@ tailwind.config = {
             <span style="font-size:18px;">🔍</span>
             <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Auditable</div>
           </div>
-          <p style="font-size:11.5px; color:#d1d5db; line-height:1.55;">See <strong>which row matched which row</strong>, side by side. Native QBO ties by totals — you can confirm numbers, not pairs.</p>
+          <p style="font-size:11.5px; color:#d1d5db; line-height:1.55;">See <strong>which row matched which row</strong>, side by side — <strong>1-to-many, many-to-one, many-to-many</strong>. The hard part is finding the several transactions that belong to a single integration report entry — Synder surfaces them. Native QBO ties by totals.</p>
         </div>
 
         <div class="card-sm" style="border-top:3px solid #3b82f6; padding:14px 16px;">
@@ -275,7 +275,7 @@ tailwind.config = {
             <span style="font-size:18px;">⚙️</span>
             <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Automated</div>
           </div>
-          <p style="font-size:11.5px; color:#d1d5db; line-height:1.55;">Synder matches and <strong>surgically points out what's wrong</strong> — which row, which side, which delta. Every fix is anchored in a transaction, not a guess.</p>
+          <p style="font-size:11.5px; color:#d1d5db; line-height:1.55;">Synder matches and <strong>surgically points out what's wrong</strong> — which row, which side, which delta. <strong>Normalizes reports across platforms</strong> — Stripe, Shopify, Amazon each have their own shape; Synder does the heavy lifting of unifying them.</p>
         </div>
 
         <div class="card-sm" style="border-top:3px solid #a78bfa; padding:14px 16px;">
@@ -360,6 +360,10 @@ tailwind.config = {
         </div>
       </div>
 
+      <div class="success-box" style="font-size:12.5px; color:#4ade80; margin-bottom:10px;">
+        <strong>Read-only.</strong> Transaction Reconciliation <strong>does not consume sync credits</strong>, doesn't write to your books, and doesn't write to the integration. Safe to run anytime — it only reads and compares.
+      </div>
+
       <div class="highlight-box" style="font-size:12.5px; color:#93c5fd;">
         <strong>Plus:</strong> reconcile accounts that aren't Synder-connected at all — by uploading any report or file (e.g. a bank statement export) and mapping it through. Demo coming up.
       </div>
@@ -408,10 +412,39 @@ tailwind.config = {
     <div class="slide-inner">
       <div class="section-label">Transaction Reconciliation</div>
       <h1 class="slide-title" style="margin-bottom:8px;">Resolution Paths Today</h1>
-      <p class="slide-subtitle" style="margin-bottom:22px;">Three workflow actions on the rows themselves, three hygiene checks before you run.</p>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Zero matches or a wall of mismatches isn't a bad outcome — it's <strong>clarity</strong>. The first thing reconciliation tells you is whether the setup is right.</p>
 
-      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">When the result needs action</div>
+      <div class="highlight-box" style="font-size:12.5px; color:#93c5fd; margin-bottom:16px;">
+        Before treating a result as "data problem", check the configuration first. The four hygiene items below catch most of what looks like a reconciliation failure.
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">First — check the setup</div>
       <div class="grid-3" style="gap:10px; margin-bottom:18px;">
+        <div class="card-sm" style="border-left:3px solid #3b82f6;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">🏦</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Clearing accounts</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Sales, refunds, fees, payouts all land in the same clearing account per integration.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #3b82f6;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">⚡</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Auto-import &amp; Auto-sync on</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Both need to be enabled. <strong>Auto-import</strong> pulls transactions into Synder; <strong>auto-sync</strong> pushes them through to accounting. Either off → Missing-in-Accounting gaps.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #3b82f6;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">🔄</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Sync hygiene</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">No Ready-to-Sync rows. No failed or cancelled rows. No deleted transactions left unresolved.</div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Then — when the result genuinely needs action</div>
+      <div class="grid-3" style="gap:10px;">
         <div class="card-sm" style="border-left:3px solid #f59e0b;">
           <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
             <span style="font-size:18px;">🛠</span>
@@ -434,35 +467,6 @@ tailwind.config = {
           <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">For rows that genuinely shouldn't be matched. Reconciliation math closes around them.</div>
         </div>
       </div>
-
-      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Hygiene checks before you run</div>
-      <div class="grid-3" style="gap:10px; margin-bottom:14px;">
-        <div class="card-sm" style="border-left:3px solid #3b82f6;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <span style="font-size:18px;">🏦</span>
-            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Clearing accounts</div>
-          </div>
-          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Sales, refunds, fees, payouts all land in the same clearing account per integration.</div>
-        </div>
-        <div class="card-sm" style="border-left:3px solid #3b82f6;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <span style="font-size:18px;">🔄</span>
-            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Sync hygiene</div>
-          </div>
-          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">No Ready-to-Sync rows. No failed or cancelled rows. No deleted transactions left unresolved.</div>
-        </div>
-        <div class="card-sm" style="border-left:3px solid #3b82f6;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <span style="font-size:18px;">⚡</span>
-            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Auto-import &amp; Auto-sync on</div>
-          </div>
-          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Both need to be enabled. <strong>Auto-import</strong> pulls transactions into Synder; <strong>auto-sync</strong> pushes them through to accounting. Either off → Missing-in-Accounting gaps at reconciliation time.</div>
-        </div>
-      </div>
-
-      <div class="highlight-box" style="font-size:12.5px; color:#93c5fd;">
-        Clean upstream = clean reconciliation. The hygiene items below the line catch the bulk of "Missing in Accounting" cases before they ever surface.
-      </div>
     </div>
   </div>
 
@@ -472,10 +476,10 @@ tailwind.config = {
       <div class="fade-up">
         <div class="tag tag-green" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Q&A</div>
         <h1 style="font-size:2.6rem; font-weight:800; line-height:1.15; color:#f9fafb; margin-bottom:18px;">
-          Your Questions
+          Any Questions on the Functionality?
         </h1>
         <p style="font-size:1.2rem; color:#d1d5db; max-width:760px; margin:0 auto 16px; line-height:1.5;">
-          Anything about what we just showed — how it works, how it fits, what's missing for you.
+          That's everything we wanted to show on Transaction Reconciliation as it exists today. Anything about the functionality before we move into what's coming next?
         </p>
         <p style="font-size:1rem; color:#9ca3af; max-width:680px; margin:0 auto 36px; line-height:1.6;">
           Drop questions in chat or unmute whenever. Barbara is watching both.
@@ -498,9 +502,9 @@ tailwind.config = {
   <!-- ─────────── SLIDE 8: DEMO OF PROTOTYPES ─────────── -->
   <div class="slide" data-slide="8">
     <div class="slide-inner">
-      <div class="section-label">Coming Next</div>
-      <h1 class="slide-title" style="margin-bottom:8px;">Demo of Prototypes</h1>
-      <p class="slide-subtitle" style="margin-bottom:24px;">Six prototypes from our design team. We'll walk each one live — react to the idea, the workflow, the shape.</p>
+      <div class="section-label">Coming Next · For Burkland</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Features Coming for Burkland</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Here's what's been done — and how Transaction Reconciliation evolves next. Six prototypes from our design team. You're the first ones seeing these, so this is your chance to shape them while they're still in progress.</p>
 
       <div class="grid-3" style="gap:12px; margin-bottom:18px;">
         <div class="card-sm" style="border-top:3px solid #a78bfa; padding:14px 16px;">
@@ -530,7 +534,7 @@ tailwind.config = {
       </div>
 
       <div class="violet-box" style="font-size:12.5px; color:#c4b5fd;">
-        Prototypes — not final designs. React to the idea, the workflow, the shape. Vote at the end on which ones we should ship sooner. Links coming in the follow-up email.
+        These are <strong>prototypes — not final designs</strong>. While they're still in progress, your input can adjust the workflow, the shape, and the priorities. Vote at the end on which ones we should ship sooner. Links coming in the follow-up email.
       </div>
     </div>
   </div>
@@ -639,12 +643,12 @@ const TOTAL = 10;
 const TITLES = [
   "Reconciliation Training Session for Burkland — Title",
   "How We'll Spend the Hour",
-  "Why Synder",
+  "Why Reconciliation with Synder",
   "Transaction Reconciliation — How It Works",
   "Live Demo",
   "Resolution Paths Today",
-  "Your Questions — Q&A",
-  "Demo of Prototypes",
+  "Any Questions on the Functionality?",
+  "Features Coming for Burkland",
   "What Should Ship Sooner? + Suggest a Feature",
   "Thank You & Next Steps"
 ];
