@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manual Matching — Internal Briefing · Synder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      colors: { 'gray-850': '#18212f' }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #111827; color: #f9fafb; font-family: 'Inter', system-ui, sans-serif; }
+
+  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: #3b82f6; transition: width 0.3s ease; z-index: 100; }
+  #slide-deck { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+  .slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 60px 32px 80px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+  .slide.active { opacity: 1; pointer-events: all; }
+  .slide-inner { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 0; overflow-y: auto; max-height: calc(100vh - 140px); scrollbar-width: none; }
+  .slide-inner::-webkit-scrollbar { display: none; }
+
+  #nav-dots { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 100; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #374151; cursor: pointer; transition: background 0.2s, transform 0.2s; }
+  .dot.active { background: #3b82f6; transform: scale(1.4); }
+  .dot:hover:not(.active) { background: #6b7280; }
+
+  #slide-counter { position: fixed; bottom: 20px; right: 28px; font-size: 12px; color: #6b7280; font-variant-numeric: tabular-nums; z-index: 100; }
+
+  #overview { position: fixed; inset: 0; background: rgba(17,24,39,0.97); display: none; z-index: 200; overflow-y: auto; padding: 40px 32px; }
+  #overview.visible { display: block; }
+  #overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; max-width: 1200px; margin: 0 auto; }
+  #overview h2 { text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 24px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .thumb { background: #1f2937; border: 2px solid #374151; border-radius: 10px; padding: 14px; cursor: pointer; transition: border-color 0.15s, transform 0.15s; aspect-ratio: 16/9; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; overflow: hidden; }
+  .thumb:hover { border-color: #3b82f6; transform: scale(1.03); }
+  .thumb.active-thumb { border-color: #3b82f6; }
+  .thumb-num { font-size: 10px; color: #6b7280; margin-bottom: 6px; }
+  .thumb-title { font-size: 12px; font-weight: 600; color: #d1d5db; line-height: 1.3; }
+  #overview-close { position: fixed; top: 24px; right: 32px; color: #6b7280; cursor: pointer; font-size: 24px; z-index: 210; }
+  #overview-close:hover { color: #f9fafb; }
+
+  .card { background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 20px 24px; }
+  .card-sm { background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 14px 18px; }
+  .accent { color: #3b82f6; }
+  .success { color: #22c55e; }
+  .warning { color: #f59e0b; }
+  .violet { color: #a78bfa; }
+  .muted { color: #9ca3af; }
+
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .tag-violet { background: rgba(167,139,250,0.15); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.3); }
+  .tag-gray { background: rgba(107,114,128,0.15); color: #9ca3af; border: 1px solid rgba(107,114,128,0.3); }
+
+  .slide-title { font-size: 2.2rem; font-weight: 800; line-height: 1.15; color: #f9fafb; }
+  .slide-subtitle { font-size: 1rem; color: #9ca3af; font-weight: 400; margin-top: 6px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  .h-divider { border: none; border-top: 1px solid #374151; margin: 14px 0; }
+
+  .highlight-box { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: 10px; padding: 14px 18px; }
+  .warning-box { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 14px 18px; }
+  .success-box { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 14px 18px; }
+  .violet-box { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.3); border-radius: 10px; padding: 14px 18px; }
+
+  #keyboard-hint { position: fixed; bottom: 20px; left: 28px; font-size: 11px; color: #4b5563; z-index: 100; }
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.4s ease both; }
+
+  .concept-node {
+    background: #1f2937; border: 1.5px solid #374151; border-radius: 12px;
+    padding: 14px 18px; text-align: center; font-size: 13px; color: #d1d5db; font-weight: 500;
+  }
+  .concept-arrow { display: flex; align-items: center; justify-content: center; color: #4b5563; font-size: 22px; }
+
+  /* Code-y label for events / API names */
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; color: #c4b5fd; background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.25); padding: 1px 6px; border-radius: 4px; }
+
+  :fullscreen body, :-webkit-full-screen body { background: #111827; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div id="slide-deck">
+
+  <!-- ─────────── SLIDE 1: TITLE ─────────── -->
+  <div class="slide" data-slide="1">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-violet" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Internal Briefing — Product, Support, CS, Sales, Marketing</div>
+        <h1 style="font-size:3rem; font-weight:800; line-height:1.1; color:#f9fafb; margin-bottom:18px;">
+          Manual Matching<br /><span style="color:#a78bfa;">in Transaction Reconciliation</span>
+        </h1>
+        <p style="font-size:1.15rem; color:#9ca3af; margin-bottom:12px; font-weight:400;">The gap we're closing in TxnRecon, what ships in Iteration 1 (DIS-330), and where the feature goes next.</p>
+        <p style="font-size:1rem; color:#6b7280; margin-bottom:40px;">DIS-330 · Iteration 1 · Hotflow-targeted release</p>
+        <div style="width:60px; height:2px; background:#374151; margin:0 auto 40px;"></div>
+        <div style="display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start;">
+          <div>
+            <p style="font-size:14px; color:#d1d5db; font-weight:700;">Slava</p>
+            <p style="font-size:11px; color:#6b7280; letter-spacing:0.06em; text-transform:uppercase;">Product Manager</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 2: AGENDA ─────────── -->
+  <div class="slide" data-slide="2">
+    <div class="slide-inner">
+      <div class="section-label">Overview</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">What We'll Cover</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Problem · Resolution · Future goals for Transaction Reconciliation.</p>
+
+      <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
+        <div class="card" style="border-left:4px solid #ef4444; display:flex; align-items:center; gap:18px; padding:12px 18px;">
+          <div style="width:36px; height:36px; background:rgba(239,68,68,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🧩</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">The Problem</div>
+            <div style="font-size:12.5px; color:#9ca3af;">Where Transaction Reconciliation lands today, and the gap that forces users out of Synder (or into Ignore-as-workaround).</div>
+          </div>
+          <div class="tag tag-red">Problem</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #3b82f6; display:flex; align-items:center; gap:18px; padding:12px 18px;">
+          <div style="width:36px; height:36px; background:rgba(59,130,246,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🔗</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">The Resolution — Manual Matching (DIS-330)</div>
+            <div style="font-size:12.5px; color:#9ca3af;">User-initiated Match / Unmatch on the Missing source surface. The eligibility rules, surfaces, lifecycle, and what's deliberately out of v1.</div>
+          </div>
+          <div class="tag tag-blue">Resolution</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #22c55e; display:flex; align-items:center; gap:18px; padding:12px 18px;">
+          <div style="width:36px; height:36px; background:rgba(34,197,94,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">📊</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Success Signal</div>
+            <div style="font-size:12.5px; color:#9ca3af;">The funnel we'll watch, the counter-metric, and the friction event.</div>
+          </div>
+          <div class="tag tag-green">Measure</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #a78bfa; display:flex; align-items:center; gap:18px; padding:12px 18px;">
+          <div style="width:36px; height:36px; background:rgba(167,139,250,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🚀</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Future Goals for Transaction Reconciliation</div>
+            <div style="font-size:12.5px; color:#9ca3af;">The six prototypes shown to Burkland — plus where DIS-330 plugs into the broader roadmap.</div>
+          </div>
+          <div class="tag tag-violet">Roadmap</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #f59e0b; display:flex; align-items:center; gap:18px; padding:12px 18px;">
+          <div style="width:36px; height:36px; background:rgba(245,158,11,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🤝</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Timeline + How to Feed Back</div>
+            <div style="font-size:12.5px; color:#9ca3af;">Where the build is, what's next, and how to send signal back to the team.</div>
+          </div>
+          <div class="tag tag-amber">Wrap</div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:16px;">💬</span>
+          <span style="font-size:13px; color:#93c5fd;">Interrupt anytime — questions surface things I'd otherwise miss.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 3: THE PROBLEM ─────────── -->
+  <div class="slide" data-slide="3">
+    <div class="slide-inner">
+      <div class="section-label">The Problem</div>
+      <h1 class="slide-title" style="margin-bottom:6px;">Where TxnRecon Lands Today — and the Gap</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Transaction Reconciliation already produces a clear, auditable result. But part of the result is "we couldn't tie these rows" — and today the user has no in-Synder way to act on it.</p>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Four result buckets — recap</div>
+      <div class="grid-4" style="gap:10px; margin-bottom:20px;">
+        <div class="card-sm" style="border-left:3px solid #22c55e; padding:10px 14px;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">✓ Matched</div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.45;">Integration ↔ accounting tied cleanly by ID. Auto-matched.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #f59e0b; padding:10px 14px;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">⚠ Discrepancy</div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.45;">Matched by ID, amounts disagree. User fixes in books → refresh.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">↗ Missing in Accounting</div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.45;">Integration sees it. Books don't. <strong>No in-Synder action today.</strong></div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #a78bfa; padding:10px 14px;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">↙ Missing in Integration</div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.45;">Books have an entry. Integration doesn't. <strong>No in-Synder action today.</strong></div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Why rows end up in "Missing" — and why they often <em>do</em> belong together</div>
+      <div class="grid-3" style="gap:10px; margin-bottom:18px;">
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">📝</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Different conventions</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.55;">Bookkeeper recorded the entry with a different label, date, or grouping than the integration sent — no shared ID for auto-matching to tie them.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🪛</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Manual entries in QBO</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.55;">Bookkeeper made the journal entry by hand. The amounts align with the integration's payout, but ID-based matching can't see that.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🔁</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Re-syncs &amp; deletions</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.55;">A row was re-synced, deleted, or rebuilt — leaving an orphan on one side and a near-twin on the other.</div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="font-size:12.5px; color:#fbbf24;">
+        <strong>Today's workaround.</strong> Users either (1) leave Synder, post the missing entry in QBO/Xero, and refresh; or (2) click <strong>Ignore on both sides</strong> as a stand-in for matching. The first is friction; the second <strong>breaks the meaning of Ignore</strong> — and the reconciliation looks "finished" only because nothing's actually resolved. We've seen this pattern in <strong>5 LogRocket sessions</strong> as the original signal for the work.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 4: RESOLUTION OVERVIEW ─────────── -->
+  <div class="slide" data-slide="4">
+    <div class="slide-inner">
+      <div class="section-label">The Resolution</div>
+      <h1 class="slide-title" style="margin-bottom:6px;">Manual Matching — DIS-330, Iteration 1</h1>
+      <p class="slide-subtitle" style="margin-bottom:20px;">User-initiated Match / Unmatch on the Missing source surface. Strict eligibility — the bet is <em>"the user can never record a wrong match."</em></p>
+
+      <div class="grid-2" style="margin-bottom:18px;">
+        <div class="card-sm" style="border-top:3px solid #3b82f6; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">🔗</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">What ships</div>
+          </div>
+          <ul style="font-size:11.5px; color:#d1d5db; line-height:1.6; padding-left:16px; margin:0;">
+            <li><strong>Multi-select</strong> rows on both Missing source tables (uncapped at selection).</li>
+            <li><strong>Match</strong> action — paired into a single match record.</li>
+            <li><strong>Unmatch</strong> action — both per-row on Manual rows and on every Discrepancy row.</li>
+            <li><strong>Cardinality:</strong> 1:1, 1:N, N:1, N:M — all supported.</li>
+            <li><strong>Manual matches are Synder-internal</strong> — no write back to QBO/Xero.</li>
+          </ul>
+        </div>
+
+        <div class="card-sm" style="border-top:3px solid #22c55e; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">🏷</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Surfaces — no new tabs</div>
+          </div>
+          <ul style="font-size:11.5px; color:#d1d5db; line-height:1.6; padding-left:16px; margin:0;">
+            <li><strong>Existing Matched tab</strong> gets a <span class="mono">Match type</span> column.</li>
+            <li>Values: <strong>Auto</strong> (current system matches), <strong>Manual</strong> (DIS-330) — plus <strong>AI</strong> and <strong>Journal Entry</strong> reserved.</li>
+            <li>Missing source — Match action lives above both tables in a separate action block.</li>
+            <li>Discrepancy — gains Unmatch as a peer to the existing Ignore.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">The four "this is what we promise" anchors</div>
+      <div class="grid-4" style="gap:10px;">
+        <div class="card-sm" style="text-align:center; padding:12px 12px;">
+          <div style="font-size:20px; margin-bottom:6px;">✋</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">User-initiated</div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Synder never invents a match. The user always confirms.</div>
+        </div>
+        <div class="card-sm" style="text-align:center; padding:12px 12px;">
+          <div style="font-size:20px; margin-bottom:6px;">🚫</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">No wrong matches</div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Strict currency + balanced-sum checks block bad confirms.</div>
+        </div>
+        <div class="card-sm" style="text-align:center; padding:12px 12px;">
+          <div style="font-size:20px; margin-bottom:6px;">↩</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">Reversible</div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Unmatch returns the rows to Missing source on the same reconciliation.</div>
+        </div>
+        <div class="card-sm" style="text-align:center; padding:12px 12px;">
+          <div style="font-size:20px; margin-bottom:6px;">📜</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">Auditable</div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Every match carries its origin label — Auto, Manual, AI*, Journal Entry*.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 5: HOW IT WORKS — USER FLOW ─────────── -->
+  <div class="slide" data-slide="5">
+    <div class="slide-inner">
+      <div class="section-label">The Resolution</div>
+      <h1 class="slide-title" style="margin-bottom:6px;">How It Works — The User Flow</h1>
+      <p class="slide-subtitle" style="margin-bottom:22px;">Four steps. The user is in Missing source the whole time.</p>
+
+      <div style="display:flex; align-items:stretch; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+        <div class="concept-node" style="flex:1; min-width:140px; padding:18px 14px;">
+          <div style="font-size:11px; font-weight:700; color:#6b7280; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Step 1</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:14px; margin-bottom:6px;">Select rows</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Tick checkboxes on the <strong>Missing in accounting</strong> table and the <strong>Missing in integration</strong> table. Counters show "N selected" above each.</div>
+        </div>
+        <div class="concept-arrow">→</div>
+        <div class="concept-node" style="flex:1; min-width:140px; padding:18px 14px;">
+          <div style="font-size:11px; font-weight:700; color:#6b7280; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Step 2</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:14px; margin-bottom:6px;">Match button</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;"><strong>Always visible</strong> above both tables. Enabled when both sides have selection. Disabled (with tooltip) in every other state.</div>
+        </div>
+        <div class="concept-arrow">→</div>
+        <div class="concept-node" style="flex:1; min-width:140px; padding:18px 14px;">
+          <div style="font-size:11px; font-weight:700; color:#6b7280; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Step 3</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:14px; margin-bottom:6px;">Validate</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Same currency. Balanced signed sums (1:1, 1:N, N:1, N:M). ≤200 rows total. Fails → blocked with a clear reason.</div>
+        </div>
+        <div class="concept-arrow">→</div>
+        <div class="concept-node" style="flex:1; min-width:140px; padding:18px 14px; border-color: rgba(34,197,94,0.4);">
+          <div style="font-size:11px; font-weight:700; color:#6b7280; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px;">Step 4</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:14px; margin-bottom:6px;">Matched tab</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Rows leave Missing source. New record renders on Matched with <span class="mono">Match type = Manual</span>.</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="success-box" style="font-size:12px; color:#4ade80;">
+          <strong>Match button placement (revised).</strong> Originally moved into the Missing source table header on the post-mocks pass — moved <em>back</em> to a separate action block above both tables after design / dev discussion (final state).
+        </div>
+        <div class="violet-box" style="font-size:12px; color:#c4b5fd;">
+          <strong>Same-currency, balanced sums.</strong> Sum-zero pairs (charge + refund on both sides) are <em>allowed</em> — <span class="mono">0 == 0</span> satisfies the rule. A real cancelled-pair grouping is a legitimate audit-worthy match.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 6: ELIGIBILITY + 200-ROW CAP ─────────── -->
+  <div class="slide" data-slide="6">
+    <div class="slide-inner">
+      <div class="section-label">The Resolution</div>
+      <h1 class="slide-title" style="margin-bottom:6px;">Eligibility — What Blocks a Match</h1>
+      <p class="slide-subtitle" style="margin-bottom:20px;">Strict, predictable, deterministic. The whole point of v1 is that the user cannot record a wrong match.</p>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Four eligibility rules</div>
+      <div class="grid-2" style="gap:10px; margin-bottom:20px;">
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:16px;">💱</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Same currency, across both sides</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">If a selection spans two distinct currencies (across or within either side), Match is blocked at confirm. <strong>Generic error</strong> — no row-level surfacing in v1.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:16px;">⚖</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Balanced signed sums</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;"><span class="mono">sum(side A) == sum(side B)</span> with raw signed amounts. Blocks with the deltas spelled out so the user can fix the selection.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:16px;">🚪</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">No already-matched rows</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">A row already in any match state (Auto, Manual, future AI/JE) cannot be re-eligible. Unmatch first.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:16px;">🧮</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">≤ 200 rows total per action</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">Cap is <strong>action-bound</strong>, not selection-bound (checkboxes are uncapped). Over-cap Match attempts → blocking error toast.</div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">200-row cap — where it applies</div>
+      <div class="grid-3" style="gap:10px;">
+        <div class="card-sm" style="border-left:3px solid #a78bfa;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">Manual Match — capped at 200</div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Toast fires on Match click if total > 200. <span class="mono">TxnReconciliationSelectionLimitHit</span> Mixpanel event fires once per toast.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #6b7280;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">Ignore — uncapped</div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Ignore is intentionally not capped. Different action, different volume profile.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #3b82f6;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">Future JE creation — will share the cap</div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">DIS-256 (in-Synder JE from Missing source) will adopt the same 200-row per-action cap when it ships, for consistency across manual actions.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 7: LIFECYCLE + UNMATCH ─────────── -->
+  <div class="slide" data-slide="7">
+    <div class="slide-inner">
+      <div class="section-label">The Resolution</div>
+      <h1 class="slide-title" style="margin-bottom:6px;">Unmatch + Lifecycle</h1>
+      <p class="slide-subtitle" style="margin-bottom:20px;">How matches come apart, and what happens on Refresh.</p>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Where Unmatch is surfaced</div>
+      <div class="grid-3" style="gap:10px; margin-bottom:18px;">
+        <div class="card-sm" style="border-left:3px solid #22c55e;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:16px;">📋</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Matched tab — Manual rows only</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;"><strong>Per-row Unmatch</strong> on every Manual record. <strong>Selection checkboxes + bulk Unmatch via header button</strong> when multiple Manual rows are selected.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #f59e0b;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:16px;">⚠</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Discrepancy tab — every row</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">Unmatch added <strong>alongside</strong> the existing Ignore. Breaking an Auto match happens here — both rows return to Missing source.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #6b7280;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:16px;">🚫</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Auto rows — no Unmatch, no checkbox</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">On the Matched tab, Auto rows have <strong>no checkbox at all</strong> (not a disabled placeholder) and no Unmatch action. Use the Discrepancy tab to break Auto matches.</div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Refresh + Delete — manual matches don't survive</div>
+      <div class="grid-2" style="gap:10px; margin-bottom:14px;">
+        <div class="card-sm" style="border-top:3px solid #ef4444; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:16px;">🔄</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13.5px;">Refresh + Delete clear all manual matches</div>
+          </div>
+          <div style="font-size:11.5px; color:#d1d5db; line-height:1.55;">Dev-confirmed v1 constraint: preserving manual matches across a rebuild is not feasible (re-pull from source data is destructive). Cleared rows return to Missing source.</div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #3b82f6; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:16px;">⚠</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13.5px;">Warning modal — on every Refresh / Delete click</div>
+          </div>
+          <div style="font-size:11.5px; color:#d1d5db; line-height:1.55;">Generic copy ("all manual changes will be lost"). <strong>Always shown</strong>, no conditional pre-check for whether matches exist (dev preference — keeps the path simple).</div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="font-size:12px; color:#fbbf24;">
+        <strong>What this means in practice.</strong> Users should treat manual matches as <em>"reconciliation-scoped"</em> — they live on the current run, not across refreshes. If we see in adoption data that users redo the same matches every refresh, that's a real signal — and the path to preserving matches becomes a candidate for Iteration 2.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 8: SUPPORTING CHANGES ─────────── -->
+  <div class="slide" data-slide="8">
+    <div class="slide-inner">
+      <div class="section-label">The Resolution</div>
+      <h1 class="slide-title" style="margin-bottom:6px;">Supporting Changes Across the Page</h1>
+      <p class="slide-subtitle" style="margin-bottom:22px;">Filters, column, export, Mixpanel — small additions that the whole TxnRecon page inherits.</p>
+
+      <div class="grid-2" style="gap:14px; margin-bottom:14px;">
+        <div class="card-sm" style="border-top:3px solid #3b82f6; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">🏷</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Matched tab — Match type column</div>
+          </div>
+          <div style="font-size:11.5px; color:#d1d5db; line-height:1.6;">New column on the existing Matched tab. <strong>Filterable, not sortable</strong> in v1. Values:</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+            <span class="tag tag-green">Auto</span>
+            <span class="tag tag-violet">Manual</span>
+            <span class="tag tag-gray">AI (reserved)</span>
+            <span class="tag tag-gray">Journal Entry (reserved)</span>
+          </div>
+        </div>
+
+        <div class="card-sm" style="border-top:3px solid #a78bfa; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">📤</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Matched export — gains Match type column</div>
+          </div>
+          <div style="font-size:11.5px; color:#d1d5db; line-height:1.6;">No new export options. The existing Matched export adds <span class="mono">Match type</span> with the same values as the on-screen column. Other tab exports unchanged.</div>
+        </div>
+
+        <div class="card-sm" style="border-top:3px solid #f59e0b; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">🔎</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Filters on every table on every tab</div>
+          </div>
+          <div style="font-size:11.5px; color:#d1d5db; line-height:1.6;"><strong>Currency selector</strong> (from a prefilled global list — popular currencies at the top) + <strong>amount range</strong> (From / To). Applied independently per tab. Currency list does <em>not</em> recompute from current table content — that's intentional (dynamic tables would force constant recalculation).</div>
+        </div>
+
+        <div class="card-sm" style="border-top:3px solid #22c55e; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <span style="font-size:18px;">📡</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Mixpanel — seven new events</div>
+          </div>
+          <div style="font-size:11.5px; color:#d1d5db; line-height:1.6;">Attribution: <span class="mono">ManuallyMatched</span>, <span class="mono">Ignored</span>. Friction: <span class="mono">SelectionLimitHit</span>. Journey: <span class="mono">RunAuditClicked</span>, <span class="mono">StartMatchingClicked</span>, <span class="mono">ListViewed</span>, <span class="mono">Opened</span>. All prefixed <span class="mono">TxnReconciliation*</span>.</div>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="font-size:12.5px; color:#93c5fd;">
+        <strong>One thing not changing:</strong> LogRocket. Stays the qualitative-observation tool (blocked-attempt sessions, UX behaviour around the new affordances). Mixpanel handles attribution.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 9: SUCCESS SIGNAL ─────────── -->
+  <div class="slide" data-slide="9">
+    <div class="slide-inner">
+      <div class="section-label">Measure</div>
+      <h1 class="slide-title" style="margin-bottom:6px;">Success Signal</h1>
+      <p class="slide-subtitle" style="margin-bottom:22px;">How we'll know the bet paid off — and what we'd be willing to revisit if it didn't.</p>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Primary funnel — share of reconciliations that close <em>with</em> a manual Match</div>
+      <div style="display:flex; align-items:stretch; gap:8px; margin-bottom:18px; flex-wrap:wrap;">
+        <div class="concept-node" style="flex:1; min-width:180px; border-color: rgba(59,130,246,0.4);">
+          <span class="mono">TxnReconciliationStarted</span>
+        </div>
+        <div class="concept-arrow">→</div>
+        <div class="concept-node" style="flex:1; min-width:180px; border-color: rgba(167,139,250,0.4);">
+          <span class="mono">TxnReconciliationManuallyMatched</span>
+        </div>
+        <div class="concept-arrow">→</div>
+        <div class="concept-node" style="flex:1; min-width:180px; border-color: rgba(34,197,94,0.4);">
+          <span class="mono">TxnReconciliationFinished</span><br>
+          <span style="font-size:11px; color:#9ca3af;">reconciliationStatus = reconciled</span>
+        </div>
+      </div>
+
+      <div class="grid-3" style="gap:10px; margin-bottom:14px;">
+        <div class="card-sm" style="border-left:3px solid #22c55e;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">Direction</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">Share of reconciliations completing the funnel: <strong>↑</strong>. The bet attributes successful reconciliations to the Match action.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #f59e0b;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">Counter — Ignore-as-workaround should drop</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">Companion funnel: <span class="mono">Started → Ignored → Finished[reconciled]</span> should fall as Match displaces the workaround.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #a78bfa;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">Friction — 200-row cap</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">Count of <span class="mono">SelectionLimitHit</span>. If we see persistent friction, the cap becomes a candidate to revisit.</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="gap:10px;">
+        <div class="success-box" style="font-size:12px; color:#4ade80;">
+          <strong>Measurement points:</strong> 30 / 60 / 90 days post-release, against the active TxnRecon cohort (~1–2% of orgs today).
+        </div>
+        <div class="warning-box" style="font-size:12px; color:#fbbf24;">
+          <strong>Do-no-harm counter:</strong> total reconciliations finished should not drop. If it does, that's the alarm bell.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 10: FUTURE GOALS — ROADMAP ─────────── -->
+  <div class="slide" data-slide="10">
+    <div class="slide-inner">
+      <div class="section-label">Roadmap</div>
+      <h1 class="slide-title" style="margin-bottom:6px;">Future Goals for Transaction Reconciliation</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">DIS-330 is one step. Six prototype directions are queued — the Burkland webinar gave us an early ranking signal on which to ship sooner.</p>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">The six prototypes — Burkland's early ranking (9 of 19 attendees voted live)</div>
+      <div class="grid-2" style="gap:10px; margin-bottom:16px;">
+        <div class="card-sm" style="border-top:3px solid #22c55e; padding:12px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🥇</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Balance Reconciliation</div>
+            <span class="tag tag-green" style="margin-left:auto; font-size:10px;">~95%</span>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Aggregate-first lens — verify totals tie before drilling into rows. The depth ask from accountants. <strong>DIS-259.</strong></div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #3b82f6; padding:12px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🥈</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">JE-from-Synder</div>
+            <span class="tag tag-blue" style="margin-left:auto; font-size:10px;">~80%</span>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Create a JE in-Synder for Missing-in-Accounting rows, no QBO round-trip. Same Missing source surface as DIS-330. <strong>DIS-256 / SD-17432.</strong></div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #a78bfa; padding:12px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🥉</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Match with AI</div>
+            <span class="tag tag-violet" style="margin-left:auto; font-size:10px;">~75%</span>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">"AI proposes pairs, you decide" — reasoning + confidence score. Landed warmer than we predicted. <strong>DIS-370</strong> (separate Opportunity).</div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #f59e0b; padding:12px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">4</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Configurable Matching Rules</div>
+            <span class="tag tag-amber" style="margin-left:auto; font-size:10px;">~58%</span>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Deterministic auto-match rules — pair by date tolerance, amount tolerance, payee pattern. <strong>DIS-345.</strong></div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #6b7280; padding:12px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">5</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Firm-Level Reconciliation</div>
+            <span class="tag tag-gray" style="margin-left:auto; font-size:10px;">~38%</span>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Cross-client / portfolio view for firms. Burkland ranked it lower — they have their own firm workflows. May matter more to other ICPs.</div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #6b7280; padding:12px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">6</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Audit Report</div>
+            <span class="tag tag-gray" style="margin-left:auto; font-size:10px;">~33%</span>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Formal audit-ready export with provenance per row. Low pull from Burkland — audit is handled elsewhere in their stack.</div>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="font-size:12px; color:#93c5fd;">
+        <strong>What this tells us already.</strong> The <em>"trust the numbers"</em> reconciliation arc has two clear next stops: <strong>aggregate-first verification</strong> (Balance Reconciliation) and <strong>in-Synder accounting entries</strong> (JE-from-Synder). DIS-330 unlocks the surface they'll plug into.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 11: TIMELINE + ASKS ─────────── -->
+  <div class="slide" data-slide="11">
+    <div class="slide-inner">
+      <div class="section-label">Wrap</div>
+      <h1 class="slide-title" style="margin-bottom:6px;">Timeline + How to Feed Signal Back</h1>
+      <p class="slide-subtitle" style="margin-bottom:22px;">Where we are, what's next, and the channels for getting feedback to the team.</p>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Timeline</div>
+      <div class="grid-3" style="gap:10px; margin-bottom:18px;">
+        <div class="card-sm" style="border-left:3px solid #3b82f6;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">Hotflow target</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;"><strong>24 June 2026</strong> — DIS-330 Iteration 1 on hotflow. The build is in flight; FDD pitching → dev-refinement complete.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #22c55e;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">Burkland webinar — ran 26 June</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">External webinar with the Burkland accounting firm (26 employees). Training-first, prototype-preview, vote. Live ranking + post-call questionnaire in flight.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #a78bfa;">
+          <div style="font-weight:700; color:#f9fafb; font-size:12.5px; margin-bottom:4px;">Iteration 1 → adoption read</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">30 / 60 / 90-day Mixpanel reads post-release. Iteration 2 is opened only if a product-behaviour candidate (e.g. preserving matches across refresh, tolerance bands) warrants it.</div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">How to feed signal back</div>
+      <div class="grid-3" style="gap:10px; margin-bottom:14px;">
+        <div class="card-sm" style="border-top:3px solid #3b82f6;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">💬</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Customer says X</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Drop the verbatim ask / friction / surprise in the product channel. Verbatims > paraphrases. We can read between the lines.</div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #f59e0b;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🐞</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Behaviour looks wrong</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Org ID + reconciliation ID + screenshot. Bug or "by design" — we'll tell you which.</div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #22c55e;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🚀</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">"They want X next"</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Feeds the Iteration 2 decision and the broader roadmap. Tag DIS-330 (or DIS-256 for JE).</div>
+        </div>
+      </div>
+
+      <div class="success-box" style="font-size:12.5px; color:#4ade80;">
+        <strong>Help support: <a href="mailto:help@synder.com" style="color:#4ade80; text-decoration:underline;">help@synder.com</a></strong> — that's the channel customers see in-product. Internal escalation pathways unchanged.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="nav-dots"></div>
+<div id="slide-counter"></div>
+<div id="keyboard-hint">← → arrows · F fullscreen · Esc overview</div>
+
+<div id="overview">
+  <span id="overview-close">✕</span>
+  <h2>All Slides — Click to Jump</h2>
+  <div id="overview-grid"></div>
+</div>
+
+<script>
+const TOTAL = 11;
+const TITLES = [
+  "Title — Manual Matching in TxnRecon",
+  "Agenda",
+  "The Problem — TxnRecon Result Buckets + the Gap",
+  "The Resolution — Manual Matching (DIS-330)",
+  "How It Works — User Flow",
+  "Eligibility + 200-Row Cap",
+  "Unmatch + Lifecycle",
+  "Supporting Changes",
+  "Success Signal",
+  "Future Goals for TxnRecon",
+  "Timeline + Feedback Channels"
+];
+
+let current = 1;
+
+const dotsEl = document.getElementById('nav-dots');
+for (let i = 1; i <= TOTAL; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.dataset.slide = i;
+  d.title = TITLES[i-1];
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+const grid = document.getElementById('overview-grid');
+for (let i = 1; i <= TOTAL; i++) {
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb' + (i === 1 ? ' active-thumb' : '');
+  thumb.dataset.slide = i;
+  thumb.innerHTML = `<div class="thumb-num">Slide ${i}</div><div class="thumb-title">${TITLES[i-1]}</div>`;
+  thumb.addEventListener('click', () => { goTo(i); hideOverview(); });
+  grid.appendChild(thumb);
+}
+
+function goTo(n) {
+  if (n < 1 || n > TOTAL) return;
+  const prev = document.querySelector('.slide.active');
+  if (prev) prev.classList.remove('active');
+  const prevDot = document.querySelector('.dot.active');
+  if (prevDot) prevDot.classList.remove('active');
+  const prevThumb = document.querySelector('.thumb.active-thumb');
+  if (prevThumb) prevThumb.classList.remove('active-thumb');
+
+  current = n;
+  const next = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (next) next.classList.add('active');
+  const dots = document.querySelectorAll('.dot');
+  if (dots[n-1]) dots[n-1].classList.add('active');
+  const thumbs = document.querySelectorAll('.thumb');
+  if (thumbs[n-1]) thumbs[n-1].classList.add('active-thumb');
+
+  document.getElementById('slide-counter').textContent = `${n} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = ((n / TOTAL) * 100) + '%';
+}
+
+goTo(1);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current - 1);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    const ov = document.getElementById('overview');
+    if (ov.classList.contains('visible')) hideOverview();
+    else showOverview();
+  } else if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault();
+    toggleFullscreen();
+  }
+});
+
+function showOverview() { document.getElementById('overview').classList.add('visible'); }
+function hideOverview() { document.getElementById('overview').classList.remove('visible'); }
+document.getElementById('overview-close').addEventListener('click', hideOverview);
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+  else document.exitFullscreen().catch(() => {});
+}
+
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    if (dx < 0) goTo(current + 1);
+    else goTo(current - 1);
+  }
+}, { passive: true });
+</script>
+</body>
+</html>
