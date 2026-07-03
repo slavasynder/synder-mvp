@@ -226,12 +226,14 @@ function parseWorkbook(wb) {
     }
     const clearingAccounts = Object.keys(buckets).filter(a => !SPECIAL_ACCOUNTS.has(a));
     if (clearingAccounts.length === 0) throw new Error('No clearing account rows found. Ensure the Xero export includes the clearing account.');
-    const missing = [];
-    if (!buckets['Accounts Receivable']) missing.push('Accounts Receivable');
-    if (!buckets['Accounts Payable']) missing.push('Accounts Payable');
-    // Realized Currency Gains is allowed to be empty; only warn if entirely missing
-    // (Xero may omit the account name from the export when there are no rows, so
-    // this isn't a hard failure — we just note it as a warning during normalize).
+
+    // AR and AP are optional at the file level — a reconciliation period may
+    // legitimately have no receivable or no payable activity, in which case
+    // Xero omits that account's section from the export. We surface a soft
+    // warning in `normalize` when the missing side is actually needed.
+    const softMissing = [];
+    if (!buckets['Accounts Receivable']) softMissing.push('Accounts Receivable');
+    if (!buckets['Accounts Payable']) softMissing.push('Accounts Payable');
 
     return {
         headers, idx,
@@ -240,7 +242,7 @@ function parseWorkbook(wb) {
         apRows: buckets['Accounts Payable'] || [],
         golRows: buckets['Realized Currency Gains'] || [],
         buckets,
-        missingCritical: missing,
+        softMissing,
     };
 }
 
@@ -270,12 +272,6 @@ function parseAccountingNumber(s) {
 // ─── Normalization algorithm ─────────────────────────────────────────────────
 function normalize(parsed, clearingAccount, mode) {
     const warnings = [];
-    if (parsed.missingCritical.length) {
-        return { rows: [], summary: { mode, substitutedCount: 0 }, warnings: [
-            `Required account missing from the file: ${parsed.missingCritical.join(', ')}. Re-export from Xero with all four accounts (clearing + Accounts Receivable + Accounts Payable + Realized Currency Gains) selected.`,
-        ] };
-    }
-
     const clearingRows = parsed.buckets[clearingAccount] || [];
     const { headers, idx, arRows, apRows, golRows } = parsed;
 
@@ -338,6 +334,9 @@ function normalize(parsed, clearingAccount, mode) {
     if (mode === 'source' && parsed.golRows.length === 0) {
         warnings.push('The Realized Currency Gains account is not present in the export. In Source mode, that means no rows will be substituted — if you expect FX activity, re-export with that account ticked in the Xero account picker.');
     }
+    if (mode === 'source' && parsed.softMissing && parsed.softMissing.length) {
+        warnings.push(`The following accounts weren't in the export: ${parsed.softMissing.join(', ')}. This is fine if the period had no activity on those sides; otherwise re-export with them ticked in the Xero account picker so source-currency substitution can find the counterparts.`);
+    }
     if (unresolvedFxCount > 0) {
         warnings.push(`${unresolvedFxCount} clearing row(s) had no matching AR/AP counterpart (by reference or by date+contact+hybrid). These rows kept their clearing amount/currency. Common causes: the counterpart row is outside the export window, or a data-quality issue.`);
     }
@@ -390,6 +389,15 @@ function findMatchingArAp(cr, ctx, usedAr, usedGol) {
     const targetAbs = Math.abs(cNetUsd);
     let best = null; // { row, gol, diff }
 
+    // Xero's Net convention differs by account type: Asset & Expense use
+    // Debit − Credit, Liability uses Credit − Debit. That means the hybrid
+    // invariant flips sign between AR-side and AP-side clearing rows:
+    //   AR-side: |Clearing.Net(USD)| = |AR.Net(USD) + GoL.Net(Src)|
+    //   AP-side: |Clearing.Net(USD)| = |AP.Net(USD) − GoL.Net(Src)|
+    // In practice we compare absolute values, so the sign of the GoL term is
+    // what matters.
+    const golSign = isPayable ? -1 : +1;
+
     for (const group of orderedGroups) {
         for (const ar of group) {
             const arNetUsd = toNum(ar[idx('Net (USD)')]);
@@ -400,7 +408,7 @@ function findMatchingArAp(cr, ctx, usedAr, usedGol) {
             }
             // Option: each unused GoL candidate
             for (const gol of golCandidates) {
-                const hybrid = arNetUsd + toNum(gol[idx('Net (Source)')]);
+                const hybrid = arNetUsd + golSign * toNum(gol[idx('Net (Source)')]);
                 const diff = Math.abs(Math.abs(hybrid) - targetAbs);
                 if (diff < best.diff) best = { row: ar, gol, diff };
             }
