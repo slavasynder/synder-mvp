@@ -279,16 +279,15 @@ function normalize(parsed, clearingAccount, mode) {
     const clearingRows = parsed.buckets[clearingAccount] || [];
     const { headers, idx, arRows, apRows, golRows } = parsed;
 
-    // Pre-index AR/AP by Reference and by (date + contact)
-    const arByRef = groupBy(arRows, r => r[idx('Reference')]);
-    const apByRef = groupBy(apRows, r => r[idx('Reference')]);
-    const arByDayContact = groupBy(arRows, r => keyDayContact(r, idx));
-    const apByDayContact = groupBy(apRows, r => keyDayContact(r, idx));
-    // Gain/Loss rows indexed by Reference (Xero writes Invoice Number here)
-    const golByRef = groupBy(golRows, r => r[idx('Reference')]);
+    // Track already-assigned AR/AP and GoL rows so we don't double-count.
+    const usedAr = new Set();
+    const usedGol = new Set();
+
+    const ctx = { headers, idx, arRows, apRows, golRows };
 
     const rows = [];
     let substitutedCount = 0;
+    let unresolvedFxCount = 0;
 
     for (const cr of clearingRows) {
         const primaryId = String(cr[idx('Reference')] ?? '').trim();
@@ -297,32 +296,31 @@ function normalize(parsed, clearingAccount, mode) {
         const contact = cr[idx('Contact')] ?? '';
         const description = cr[idx('Description')] ?? '';
         const netSrc = toNum(cr[idx('Net (Source)')]);
-        const netUsd = toNum(cr[idx('Net (USD)')]);
         const currency = cr[idx('Currency')] ?? '';
 
         let outAmount = netSrc;
         let outCurrency = currency;
 
         // Bank Transfer rows pass through — no AR/AP matching, mode doesn't apply.
-        const isPayable = /^Payable/i.test(String(type));
         const isBankTransfer = /^Bank\s*Transfer/i.test(String(type));
 
         if (mode === 'source' && !isBankTransfer) {
-            const match = findMatchingArAp(cr, {
-                headers, idx, arRows, apRows, golRows,
-                arByRef, apByRef, arByDayContact, apByDayContact,
-                golByRef,
-                isPayable,
-            });
+            const match = findMatchingArAp(cr, ctx, usedAr, usedGol);
             if (match && match.hasGoL) {
                 // Source substitution: pull amount+currency from matched AR/AP row.
                 // Sign follows the clearing side (clearing debit = +; credit = −).
                 const matchedNetSrc = toNum(match.row[idx('Net (Source)')]);
                 const magnitude = Math.abs(matchedNetSrc);
                 outAmount = Math.sign(netSrc || 0) * magnitude;
-                if (outAmount === 0 && netSrc === 0) outAmount = matchedNetSrc; // extreme edge case
+                if (outAmount === 0 && netSrc === 0) outAmount = matchedNetSrc;
                 outCurrency = match.row[idx('Currency')] ?? currency;
                 substitutedCount++;
+            } else if (match) {
+                // AR/AP found but no linked GoL — that's the "same-rate cross-currency"
+                // or "same-currency" case; keep clearing values.
+            } else {
+                // No AR/AP match — could indicate data quality issue.
+                if (!isBankTransfer) unresolvedFxCount++;
             }
         }
 
@@ -337,103 +335,94 @@ function normalize(parsed, clearingAccount, mode) {
         });
     }
 
-    // Post hoc warning: Gain/Loss bucket entirely absent from the export.
     if (mode === 'source' && parsed.golRows.length === 0) {
         warnings.push('The Realized Currency Gains account is not present in the export. In Source mode, that means no rows will be substituted — if you expect FX activity, re-export with that account ticked in the Xero account picker.');
+    }
+    if (unresolvedFxCount > 0) {
+        warnings.push(`${unresolvedFxCount} clearing row(s) had no matching AR/AP counterpart (by reference or by date+contact+hybrid). These rows kept their clearing amount/currency. Common causes: the counterpart row is outside the export window, or a data-quality issue.`);
     }
 
     return { rows, summary: { mode, substitutedCount }, warnings };
 }
 
-function findMatchingArAp(cr, ctx) {
-    const { idx, isPayable } = ctx;
-    const pool = isPayable ? ctx.apRows : ctx.arRows;
-    const byRef = isPayable ? ctx.apByRef : ctx.arByRef;
-    const byDayContact = isPayable ? ctx.apByDayContact : ctx.arByDayContact;
+// Match a clearing row to (AR/AP, optional GoL) using date+contact+source-type
+// enumeration and the double-entry hybrid invariant:
+//   Clearing.Net(USD) + GoL.Net(Source) + AR.Net(USD) = 0
+// This does NOT rely on the AR sibling-invoice row being in the export (which
+// might be out of period), so it's robust to partial-period exports.
+function findMatchingArAp(cr, ctx, usedAr, usedGol) {
+    const { idx, arRows, apRows, golRows } = ctx;
+    const cType = String(cr[idx('Source')] ?? '');
+    const isPayable = /^Payable/i.test(cType);
+    const pool = isPayable ? apRows : arRows;
 
     const cRef = String(cr[idx('Reference')] ?? '').trim();
     const cContact = cr[idx('Contact')];
     const cDate = cr[idx('Date')];
     const cNetUsd = toNum(cr[idx('Net (USD)')]);
-    const cType = String(cr[idx('Source')] ?? '');
 
-    // 1. Reference join. Restrict to a payment/refund row (skip invoice rows).
-    if (cRef) {
-        const candidates = (byRef.get(cRef) || []).filter(r => isPaymentLikeRow(r[idx('Source')]));
-        // Prefer a same-date row; else any candidate.
-        const best = candidates.find(r => sameDate(r[idx('Date')], cDate)) || candidates[0];
-        if (best) {
-            return { row: best, hasGoL: hasLinkedGoL(best, ctx) };
-        }
-    }
+    // Candidate AR/AP rows on same (date, contact, source-type), unused, and
+    // payment-like (skip invoice rows on the AR side).
+    const arCandidates = pool.filter(r =>
+        !usedAr.has(r) &&
+        isPaymentLikeRow(r[idx('Source')]) &&
+        sameDate(r[idx('Date')], cDate) &&
+        sameContact(r[idx('Contact')], cContact) &&
+        matchesType(r[idx('Source')], cType)
+    );
+    if (arCandidates.length === 0) return null;
 
-    // 2. Fallback: date + contact + hybrid amount match.
-    const dayKey = keyDayContact(cr, idx);
-    const candidates = (byDayContact.get(dayKey) || []).filter(r => matchesType(r[idx('Source')], cType));
-    if (candidates.length === 0) return null;
+    // Candidate GoL rows on same (date, contact, source-type), unused.
+    const golCandidates = golRows.filter(r =>
+        !usedGol.has(r) &&
+        sameDate(r[idx('Date')], cDate) &&
+        sameContact(r[idx('Contact')], cContact) &&
+        matchesType(r[idx('Source')], cType)
+    );
 
-    // Compute hybrid_amount for each candidate:
-    //   hybrid = candidate.Net(USD) + linkedGoL.Net(Source)
-    // where linkedGoL is the GoL row that shares the invoice number of the
-    // candidate's sibling invoice row, at the sort position of the payment
-    // among that invoice's payments.
-    const scored = candidates.map(cand => {
-        const gol = findLinkedGoL(cand, ctx, candidates);
-        const candNetUsd = toNum(cand[idx('Net (USD)')]);
-        const golAmt = gol ? toNum(gol[idx('Net (Source)')]) : 0;
-        const hybrid = candNetUsd + golAmt;
-        return { row: cand, gol, hybrid };
-    });
+    // Prefer AR candidates whose Reference matches the clearing row's Reference
+    // (Sales Receipt / passthrough case). Fall back to the rest.
+    const refMatched = arCandidates.filter(r =>
+        cRef && String(r[idx('Reference')] ?? '').trim() === cRef
+    );
+    const orderedGroups = [refMatched, arCandidates.filter(r => !refMatched.includes(r))];
 
     const targetAbs = Math.abs(cNetUsd);
-    // Best match: absolute value of hybrid == absolute value of clearing.Net(USD).
-    const best = scored.find(s => approxEq(Math.abs(s.hybrid), targetAbs));
-    if (best) return { row: best.row, hasGoL: !!best.gol };
-    // No exact hybrid match — take the closest candidate but don't claim GoL.
-    scored.sort((a, b) => Math.abs(Math.abs(a.hybrid) - targetAbs) - Math.abs(Math.abs(b.hybrid) - targetAbs));
-    return scored[0] ? { row: scored[0].row, hasGoL: !!scored[0].gol } : null;
-}
+    let best = null; // { row, gol, diff }
 
-// Returns the linked GoL row for a payment row, if one exists.
-function findLinkedGoL(paymentRow, ctx, sameDayContactCandidates) {
-    const { idx, arRows, apRows, golByRef, isPayable } = ctx;
-    const pool = isPayable ? apRows : arRows;
-    const pRef = paymentRow[idx('Reference')];
-    if (!pRef) return null;
+    for (const group of orderedGroups) {
+        for (const ar of group) {
+            const arNetUsd = toNum(ar[idx('Net (USD)')]);
+            // Option: no GoL (same-currency or same-rate cross-currency)
+            {
+                const diff = Math.abs(Math.abs(arNetUsd) - targetAbs);
+                if (best == null || diff < best.diff) best = { row: ar, gol: null, diff };
+            }
+            // Option: each unused GoL candidate
+            for (const gol of golCandidates) {
+                const hybrid = arNetUsd + toNum(gol[idx('Net (Source)')]);
+                const diff = Math.abs(Math.abs(hybrid) - targetAbs);
+                if (diff < best.diff) best = { row: ar, gol, diff };
+            }
+        }
+        // If we found an exact match inside the ref-matched group, stop —
+        // reference match is authoritative.
+        if (best && best.diff <= 0.011 && group === refMatched && refMatched.length) break;
+    }
 
-    // Sibling invoice row (same Reference, but Source is *Invoice)
-    const invRow = pool.find(r =>
-        r[idx('Reference')] === pRef && isInvoiceRow(r[idx('Source')])
-    );
-    if (!invRow) return null;
-    const invNum = invRow[idx('Invoice Number')];
-    if (!invNum) return null;
+    if (!best || best.diff > 0.011) return null;
 
-    const golRows = golByRef.get(invNum) || [];
-    if (golRows.length === 0) return null;
-
-    // Position of this payment among all payments for the same invoice within
-    // the day-contact candidate pool (position is preserved in the AR ordering).
-    const paymentsForInvoice = pool.filter(r =>
-        isPaymentLikeRow(r[idx('Source')]) &&
-        r[idx('Reference')] === pRef  // shares payment reference == same sibling invoice
-    );
-    const pos = paymentsForInvoice.indexOf(paymentRow);
-    if (pos < 0) return null;
-    return golRows[pos] || null;
-}
-
-function hasLinkedGoL(paymentRow, ctx) {
-    return !!findLinkedGoL(paymentRow, ctx);
+    usedAr.add(best.row);
+    if (best.gol) usedGol.add(best.gol);
+    return { row: best.row, gol: best.gol, hasGoL: !!best.gol };
 }
 
 function isPaymentLikeRow(source) {
     const s = String(source || '');
     return /Payment$|Credit Note Refund$/i.test(s);
 }
-function isInvoiceRow(source) {
-    const s = String(source || '');
-    return /Invoice$|Credit Note$/i.test(s) && !/Refund/i.test(s);
+function sameContact(a, b) {
+    return String(a ?? '').trim() === String(b ?? '').trim();
 }
 function matchesType(candidateSource, clearingSource) {
     // Match Receivable Payment ↔ Receivable Payment (etc.). Bank Transfers excluded upstream.
