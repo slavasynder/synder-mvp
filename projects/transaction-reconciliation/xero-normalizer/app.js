@@ -1,4 +1,4 @@
-// Xero Assisted Reconciliation — Normalizer
+// Xero Assisted Reconciliation — Normalizer  (v2 — hybrid-enumeration matching)
 // Reads a Xero "Account Transactions" export (single file, 4 accounts) and produces
 // a normalized reconciliation-ready sheet. See ../fdd.md for algorithm rationale.
 
