@@ -302,21 +302,24 @@ function normalize(parsed, clearingAccount, mode) {
 
         if (mode === 'source' && !isBankTransfer) {
             const match = findMatchingArAp(cr, ctx, usedAr, usedGol);
-            if (match && match.hasGoL) {
+            if (match) {
                 // Source substitution: pull amount+currency from matched AR/AP row.
                 // Sign follows the clearing side (clearing debit = +; credit = −).
+                // Runs whether or not a Gain/Loss row was involved — a
+                // cross-currency payment settled at the invoice's own rate
+                // still needs the AR/AP row's Net (Source) + Currency, even
+                // though Xero didn't book a realized gain or loss.
                 const matchedNetSrc = toNum(match.row[idx('Net (Source)')]);
+                const matchedCurrency = match.row[idx('Currency')] ?? currency;
                 const magnitude = Math.abs(matchedNetSrc);
                 outAmount = Math.sign(netSrc || 0) * magnitude;
                 if (outAmount === 0 && netSrc === 0) outAmount = matchedNetSrc;
-                outCurrency = match.row[idx('Currency')] ?? currency;
-                substitutedCount++;
-            } else if (match) {
-                // AR/AP found but no linked GoL — that's the "same-rate cross-currency"
-                // or "same-currency" case; keep clearing values.
+                outCurrency = matchedCurrency;
+                if (matchedCurrency !== currency || Math.abs(magnitude - Math.abs(netSrc)) > 0.011) {
+                    substitutedCount++;
+                }
             } else {
-                // No AR/AP match — could indicate data quality issue.
-                if (!isBankTransfer) unresolvedFxCount++;
+                unresolvedFxCount++;
             }
         }
 
