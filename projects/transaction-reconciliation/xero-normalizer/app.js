@@ -210,11 +210,20 @@ function parseWorkbook(wb) {
     // Detect the base-currency Net column dynamically. Xero labels it with the
     // org's base currency code — `Net (USD)` in a USD-based org, `Net (EUR)`
     // in a EUR-based org, etc. The row's own-currency column is always literal
-    // `Net (Source)`. Fall back to `Net (Source)` when the export contains no
-    // separate base column (single-currency org — the two columns are identical).
+    // `Net (Source)`.
     const baseColumn = headers.find(h =>
         typeof h === 'string' && /^Net \([A-Z]{3}\)$/.test(h) && h !== 'Net (Source)'
-    ) || 'Net (Source)';
+    );
+
+    // Required columns per the FDD. All must be present in the header row;
+    // otherwise the export can't be normalized and we fail fast so the user
+    // re-exports with the right column selection.
+    const REQUIRED_COLUMNS = ['Date', 'Source', 'Contact', 'Description', 'Reference', 'Net (Source)', 'Currency', 'Account'];
+    const missingCols = REQUIRED_COLUMNS.filter(c => idx(c) === -1);
+    if (!baseColumn) missingCols.push('Net ({currency}) — the base-currency Net column, e.g. Net (USD) in a USD org, Net (EUR) in a EUR org');
+    if (missingCols.length > 0) {
+        throw new Error(`Required column(s) missing from the Xero export: ${missingCols.join('; ')}. Re-export from Xero → Reporting → Account Transactions with the full column set selected.`);
+    }
 
     // With raw:true, cells are already native types. Fall back to coercion only when
     // sheet_to_json returns a string (e.g. formula-derived cells).
