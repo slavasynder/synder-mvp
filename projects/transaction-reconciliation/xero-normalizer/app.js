@@ -205,11 +205,22 @@ function parseWorkbook(wb) {
         dataRows.push(r);
     }
 
+    const idx = colIndexer(headers);
+
+    // Detect the base-currency Net column dynamically. Xero labels it with the
+    // org's base currency code — `Net (USD)` in a USD-based org, `Net (EUR)`
+    // in a EUR-based org, etc. The row's own-currency column is always literal
+    // `Net (Source)`. Fall back to `Net (Source)` when the export contains no
+    // separate base column (single-currency org — the two columns are identical).
+    const baseColumn = headers.find(h =>
+        typeof h === 'string' && /^Net \([A-Z]{3}\)$/.test(h) && h !== 'Net (Source)'
+    ) || 'Net (Source)';
+
     // With raw:true, cells are already native types. Fall back to coercion only when
     // sheet_to_json returns a string (e.g. formula-derived cells).
-    const idx = colIndexer(headers);
+    const coerceCols = ['Net (Source)', baseColumn, 'Debit (Source)', 'Credit (Source)'];
     for (const r of dataRows) {
-        for (const cn of ['Net (Source)', 'Net (USD)', 'Debit (Source)', 'Credit (Source)']) {
+        for (const cn of coerceCols) {
             const ci = idx(cn);
             if (ci >= 0 && typeof r[ci] === 'string') {
                 r[ci] = parseAccountingNumber(r[ci]);
@@ -237,6 +248,7 @@ function parseWorkbook(wb) {
 
     return {
         headers, idx,
+        baseColumn,
         clearingAccounts,
         arRows: buckets['Accounts Receivable'] || [],
         apRows: buckets['Accounts Payable'] || [],
@@ -273,13 +285,13 @@ function parseAccountingNumber(s) {
 function normalize(parsed, clearingAccount, mode) {
     const warnings = [];
     const clearingRows = parsed.buckets[clearingAccount] || [];
-    const { headers, idx, arRows, apRows, golRows } = parsed;
+    const { headers, idx, arRows, apRows, golRows, baseColumn } = parsed;
 
     // Track already-assigned AR/AP and GoL rows so we don't double-count.
     const usedAr = new Set();
     const usedGol = new Set();
 
-    const ctx = { headers, idx, arRows, apRows, golRows };
+    const ctx = { headers, idx, arRows, apRows, golRows, baseColumn };
 
     const rows = [];
     let substitutedCount = 0;
@@ -353,7 +365,7 @@ function normalize(parsed, clearingAccount, mode) {
 // This does NOT rely on the AR sibling-invoice row being in the export (which
 // might be out of period), so it's robust to partial-period exports.
 function findMatchingArAp(cr, ctx, usedAr, usedGol) {
-    const { idx, arRows, apRows, golRows } = ctx;
+    const { idx, arRows, apRows, golRows, baseColumn } = ctx;
     const cType = String(cr[idx('Source')] ?? '');
     const isPayable = /^Payable/i.test(cType);
     const pool = isPayable ? apRows : arRows;
@@ -361,7 +373,7 @@ function findMatchingArAp(cr, ctx, usedAr, usedGol) {
     const cRef = String(cr[idx('Reference')] ?? '').trim();
     const cContact = cr[idx('Contact')];
     const cDate = cr[idx('Date')];
-    const cNetUsd = toNum(cr[idx('Net (USD)')]);
+    const cNetBase = toNum(cr[idx(baseColumn)]);
 
     // Candidate AR/AP rows on same (date, contact, source-type), unused, and
     // payment-like (skip invoice rows on the AR side).
@@ -389,29 +401,30 @@ function findMatchingArAp(cr, ctx, usedAr, usedGol) {
     );
     const orderedGroups = [refMatched, arCandidates.filter(r => !refMatched.includes(r))];
 
-    const targetAbs = Math.abs(cNetUsd);
+    const targetAbs = Math.abs(cNetBase);
     let best = null; // { row, gol, diff }
 
     // Xero's Net convention differs by account type: Asset & Expense use
     // Debit − Credit, Liability uses Credit − Debit. That means the hybrid
     // invariant flips sign between AR-side and AP-side clearing rows:
-    //   AR-side: |Clearing.Net(USD)| = |AR.Net(USD) + GoL.Net(Src)|
-    //   AP-side: |Clearing.Net(USD)| = |AP.Net(USD) − GoL.Net(Src)|
+    //   AR-side: |Clearing.Net({base})| = |AR.Net({base}) + GoL.Net(Source)|
+    //   AP-side: |Clearing.Net({base})| = |AP.Net({base}) − GoL.Net(Source)|
     // In practice we compare absolute values, so the sign of the GoL term is
-    // what matters.
+    // what matters. `{base}` is the org's base currency column (e.g. `Net (USD)`
+    // for a USD-based org) — detected once at parse time.
     const golSign = isPayable ? -1 : +1;
 
     for (const group of orderedGroups) {
         for (const ar of group) {
-            const arNetUsd = toNum(ar[idx('Net (USD)')]);
+            const arNetBase = toNum(ar[idx(baseColumn)]);
             // Option: no GoL (same-currency or same-rate cross-currency)
             {
-                const diff = Math.abs(Math.abs(arNetUsd) - targetAbs);
+                const diff = Math.abs(Math.abs(arNetBase) - targetAbs);
                 if (best == null || diff < best.diff) best = { row: ar, gol: null, diff };
             }
             // Option: each unused GoL candidate
             for (const gol of golCandidates) {
-                const hybrid = arNetUsd + golSign * toNum(gol[idx('Net (Source)')]);
+                const hybrid = arNetBase + golSign * toNum(gol[idx('Net (Source)')]);
                 const diff = Math.abs(Math.abs(hybrid) - targetAbs);
                 if (diff < best.diff) best = { row: ar, gol, diff };
             }
