@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xero Assisted Reconciliation — Normalizer (grouped-by-account)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .drop-active { border-color: #3b82f6 !important; background-color: #eff6ff !important; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-5xl mx-auto px-6 py-12">
+        <a href="../" class="text-sm text-gray-400 hover:text-blue-500 transition-colors mb-8 inline-block">← Back to Transaction Reconciliation</a>
+
+        <div class="mb-10">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded">DIS-362</span>
+                <span class="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-1 rounded">Grouped-by-account variant</span>
+                <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-1 rounded">Prototype</span>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Xero Assisted Reconciliation · Normalizer (grouped)</h1>
+            <p class="text-gray-500 text-lg">Upload a Xero <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm">Account Transactions</code> report exported with <strong>Grouping = Account</strong> — one file that lists each of the four accounts (clearing + AR + AP + Realized Currency Gains) as its own section, plus a running-balance column that supports future balance reconciliation. Pick the amount mode. Get the normalized reconciliation-ready file.</p>
+            <p class="text-gray-400 text-sm mt-2">For the flat (Grouping = None) format, use the <a class="text-blue-500 hover:underline" href="../xero-normalizer/">non-grouped variant</a> instead.</p>
+        </div>
+
+        <!-- Step 1: Upload -->
+        <div class="bg-white border border-gray-200 rounded-xl p-6 mb-4">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">1</span>
+                <h2 class="text-lg font-semibold text-gray-900">Upload the Xero export</h2>
+            </div>
+            <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer hover:border-blue-400 transition-colors">
+                <input type="file" id="fileInput" accept=".xlsx" class="hidden">
+                <div id="dropPrompt">
+                    <svg class="w-10 h-10 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.9A5.001 5.001 0 0117 8h.06a5 5 0 01.94 9.85M12 12v9m0-9l-3 3m3-3l3 3"/></svg>
+                    <p class="text-gray-600 font-medium">Drop the .xlsx file here, or click to choose</p>
+                    <p class="text-gray-400 text-sm mt-1">Only the <code>Account Transactions</code> export from Xero is supported.</p>
+                    <div class="mt-4">
+                        <button type="button" id="tryDemoBtn" class="text-sm text-blue-600 hover:text-blue-800 font-medium underline">Or try the demo file →</button>
+                    </div>
+                </div>
+                <div id="dropFile" class="hidden">
+                    <svg class="w-10 h-10 mx-auto text-green-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <p class="text-gray-800 font-semibold" id="fileName"></p>
+                    <p class="text-gray-500 text-sm mt-1" id="fileMeta"></p>
+                    <button type="button" id="clearFile" class="mt-3 text-blue-500 hover:text-blue-700 text-sm font-medium">Choose a different file</button>
+                </div>
+            </div>
+            <div id="parseError" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700"></div>
+        </div>
+
+        <!-- Step 2: Config -->
+        <div id="configStep" class="hidden bg-white border border-gray-200 rounded-xl p-6 mb-4">
+            <div class="flex items-center gap-2 mb-4">
+                <span class="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold flex items-center justify-center">2</span>
+                <h2 class="text-lg font-semibold text-gray-900">Choose amount mode</h2>
+            </div>
+
+            <div id="clearingPicker" class="mb-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Clearing account (multiple detected)</label>
+                <select id="clearingSelect" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></select>
+            </div>
+
+            <div class="space-y-3">
+                <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/50">
+                    <input type="radio" name="mode" value="converted" checked class="mt-1">
+                    <div>
+                        <div class="font-medium text-gray-900">Converted (clearing currency)</div>
+                        <div class="text-sm text-gray-500 mt-0.5">Amounts and currency are taken from the clearing account. Use for integrations whose provider report is in the clearing (settlement) currency. This is the default for most providers.</div>
+                    </div>
+                </label>
+                <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/50">
+                    <input type="radio" name="mode" value="source" class="mt-1">
+                    <div>
+                        <div class="font-medium text-gray-900">Source (transaction currency, PayPal-style)</div>
+                        <div class="text-sm text-gray-500 mt-0.5">For payments with a realized gain/loss row, the source amount and currency are recovered from the AR/AP row. Everything else stays on the clearing side. Use for providers like PayPal that report in the transaction's source currency.</div>
+                    </div>
+                </label>
+            </div>
+
+            <button id="normalizeBtn" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-colors">Normalize</button>
+        </div>
+
+        <!-- Step 3: Results -->
+        <div id="resultStep" class="hidden bg-white border border-gray-200 rounded-xl p-6 mb-4">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-full bg-green-600 text-white text-xs font-semibold flex items-center justify-center">3</span>
+                    <h2 class="text-lg font-semibold text-gray-900">Normalized result</h2>
+                </div>
+                <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">Download .xlsx</button>
+            </div>
+
+            <div id="summary" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4"></div>
+
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider">Preview (first 25 rows)</div>
+                <div class="overflow-x-auto">
+                    <table id="previewTable" class="min-w-full text-sm">
+                        <thead class="bg-gray-100 text-xs font-medium text-gray-500 uppercase">
+                            <tr>
+                                <th class="px-3 py-2 text-left">Primary ID</th>
+                                <th class="px-3 py-2 text-left">Secondary ID</th>
+                                <th class="px-3 py-2 text-right">Amount</th>
+                                <th class="px-3 py-2 text-left">Currency</th>
+                                <th class="px-3 py-2 text-left">Date</th>
+                                <th class="px-3 py-2 text-left">Type</th>
+                                <th class="px-3 py-2 text-left">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewBody" class="divide-y divide-gray-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="warnings" class="mt-4 space-y-2"></div>
+        </div>
+
+        <!-- Docs / Help -->
+        <div class="bg-white border border-gray-200 rounded-xl p-6 text-sm text-gray-600">
+            <h3 class="font-semibold text-gray-900 mb-2">How to export the file from Xero (grouped)</h3>
+            <ol class="list-decimal ml-5 space-y-1">
+                <li>Xero → <span class="font-medium">Reporting → Account Transactions</span>.</li>
+                <li>In the <span class="font-medium">Account</span> filter, tick all four: the clearing account, Accounts Receivable, Accounts Payable, Realized Currency Gains.</li>
+                <li><span class="font-medium">Grouping / Summarise = Account</span> — this puts each account into its own section with a running-balance column.</li>
+                <li>Choose the date range.</li>
+                <li>Select columns: <code>Date</code>, <code>Source</code>, <code>Contact</code>, <code>Description</code>, <code>Reference</code>, <code>Net (Source)</code>, <code>Currency</code>, <code>Net (USD)</code> (or whatever your base currency is). The <code>Running Balance</code> column comes automatically with grouping.</li>
+                <li>Update → Export as Excel.</li>
+            </ol>
+            <p class="mt-3 text-gray-500">One reconciliation run = one clearing account. If you have several clearing accounts, run the export (and the normalizer) once per clearing account. The grouped format doesn't need an <code>Account</code> column — Xero writes each account as a labelled section instead.</p>
+        </div>
+    </div>
+
+    <script src="app.js?v=5"></script>
+</body>
+</html>

@@ -80,22 +80,43 @@
                 </div>
             </a>
 
-            <!-- Xero Assisted Reconciliation - Normalizer -->
+            <!-- Xero Assisted Reconciliation - Normalizer (flat / no grouping) -->
             <a href="xero-normalizer/" class="block bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-cyan-300 transition-all duration-200 group">
                 <div class="flex items-start justify-between">
                     <div>
                         <div class="flex items-center gap-2 mb-2">
                             <span class="bg-cyan-100 text-cyan-700 text-xs font-semibold px-2 py-1 rounded">DIS-362 · Assisted for Xero</span>
+                            <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-1 rounded">Grouping = None</span>
                             <span class="bg-blue-50 text-blue-700 text-[10.5px] font-semibold px-2 py-0.5 rounded">Working prototype</span>
                         </div>
-                        <h2 class="text-xl font-semibold text-gray-900 group-hover:text-cyan-600 transition-colors">Xero Assisted Reconciliation · Normalizer</h2>
-                        <p class="text-gray-500 mt-1">Client-side tool that takes a raw Xero Account Transactions export (4 accounts) and produces the normalized reconciliation-ready file. Amount-mode toggle: converted (clearing currency) vs. source (transaction currency, PayPal-style). Verified 25-of-25 rows against Slava's expected normalized tabs.</p>
+                        <h2 class="text-xl font-semibold text-gray-900 group-hover:text-cyan-600 transition-colors">Xero Normalizer · flat format</h2>
+                        <p class="text-gray-500 mt-1">Client-side tool that takes a raw Xero Account Transactions export (Grouping = None, single <code>Account</code> column) and produces the normalized reconciliation-ready file. Amount-mode toggle: converted (clearing currency) vs. source (transaction currency, PayPal-style).</p>
                         <div class="flex gap-4 mt-3 text-sm text-gray-400">
                             <span>🧪 Live tool</span>
                             <span>📥 Upload → normalize → download .xlsx</span>
                         </div>
                     </div>
                     <svg class="w-5 h-5 text-gray-400 group-hover:text-cyan-500 mt-1 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </a>
+
+            <!-- Xero Assisted Reconciliation - Normalizer (grouped-by-account) -->
+            <a href="xero-normalizer-grouped/" class="block bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-purple-300 transition-all duration-200 group">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="bg-cyan-100 text-cyan-700 text-xs font-semibold px-2 py-1 rounded">DIS-362 · Assisted for Xero</span>
+                            <span class="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-1 rounded">Grouping = Account</span>
+                            <span class="bg-blue-50 text-blue-700 text-[10.5px] font-semibold px-2 py-0.5 rounded">Experimental</span>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-900 group-hover:text-purple-600 transition-colors">Xero Normalizer · grouped-by-account</h2>
+                        <p class="text-gray-500 mt-1">Alternate variant that parses the Xero export saved with <strong>Grouping = Account</strong> — one file with per-account sections and a running-balance column. Same normalized output as the flat variant, and the running balance opens the door to reusing the same export for future balance reconciliation. Set-comparison against the flat sample: 90 of 90 rows identical.</p>
+                        <div class="flex gap-4 mt-3 text-sm text-gray-400">
+                            <span>🧪 Live tool</span>
+                            <span>📥 Upload → normalize → download .xlsx</span>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 group-hover:text-purple-500 mt-1 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 </div>
             </a>
 
