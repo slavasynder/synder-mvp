@@ -65,6 +65,12 @@
                 <select id="clearingSelect" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></select>
             </div>
 
+            <div id="baseCurrencyPicker" class="mb-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Base currency <span class="text-xs font-normal text-gray-500">(single-currency Xero — file has no Currency column)</span></label>
+                <input id="baseCurrencyInput" type="text" value="USD" maxlength="3" class="w-24 border border-gray-300 rounded-lg px-3 py-2 text-sm uppercase" placeholder="USD">
+                <p class="text-xs text-gray-500 mt-1">The org's Xero account-preference currency. In production this comes from the Xero connector metadata; for the MVP you enter it here. Ignored on multi-currency files.</p>
+            </div>
+
             <div class="space-y-3">
                 <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50/50">
                     <input type="radio" name="mode" value="converted" checked class="mt-1">
@@ -135,6 +141,6 @@
         </div>
     </div>
 
-    <script src="app.js?v=5"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>

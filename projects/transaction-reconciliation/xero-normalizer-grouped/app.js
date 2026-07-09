@@ -93,12 +93,19 @@ function showConfigStep(parsed) {
         state.selectedClearing = parsed.clearingAccounts[0];
         $('clearingPicker').classList.add('hidden');
     }
+    // Show the base-currency input only when we parsed a single-currency file.
+    if (!parsed.isMultiCurrency) {
+        $('baseCurrencyPicker').classList.remove('hidden');
+    } else {
+        $('baseCurrencyPicker').classList.add('hidden');
+    }
 }
 
 function runNormalize() {
     const mode = document.querySelector('input[name="mode"]:checked').value;
+    const baseCurrency = ($('baseCurrencyInput').value || 'USD').trim().toUpperCase();
     try {
-        state.result = normalize(state.parsed, state.selectedClearing, mode);
+        state.result = normalize(state.parsed, state.selectedClearing, mode, { baseCurrency });
         renderResult(state.result);
     } catch (err) {
         console.error(err);
@@ -190,26 +197,54 @@ function parseWorkbook(wb) {
     if (!ws) throw new Error('No sheet found.');
     const raw = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true });
 
-    // Find header row: the first row containing 'Date' AND 'Net (Source)'.
-    // Grouped exports don't have an `Account` column (account name is on
-    // section-header rows), so we don't require it here.
+    // Find header row: the first row containing `Date` AND either `Net (Source)` (multi-currency)
+    // or plain `Net` (single-currency).
     const headerIdx = raw.findIndex(r =>
-        Array.isArray(r) && r.includes('Date') && r.includes('Net (Source)')
+        Array.isArray(r) && r.includes('Date') && (r.includes('Net (Source)') || r.includes('Net'))
     );
-    if (headerIdx === -1) throw new Error('Header row not found. Expected a row containing Date and Net (Source).');
+    if (headerIdx === -1) throw new Error('Header row not found. Expected a row containing Date and either Net (Source) or Net.');
     const headers = raw[headerIdx];
     const idx = colIndexer(headers);
 
-    // Detect the base-currency Net column (see flat-format app.js for rationale).
-    const baseColumn = headers.find(h =>
+    // Detect variant:
+    //   multi-currency  → header carries Net (Source) and a Net ({currency-code}) column
+    //   single-currency → header carries plain Net (no Source variant, no Currency column)
+    const hasNetSource = idx('Net (Source)') !== -1;
+    const baseNetCol = headers.find(h =>
         typeof h === 'string' && /^Net \([A-Z]{3}\)$/.test(h) && h !== 'Net (Source)'
     );
+    const isMultiCurrency = hasNetSource || !!baseNetCol;
 
-    // Required columns for the grouped format. `Account` is absent by design —
-    // section-header rows carry it.
-    const REQUIRED_COLUMNS = ['Date', 'Source', 'Contact', 'Description', 'Reference', 'Net (Source)', 'Currency'];
-    const missingCols = REQUIRED_COLUMNS.filter(c => idx(c) === -1);
-    if (!baseColumn) missingCols.push('Net ({currency}) — the base-currency Net column, e.g. Net (USD) in a USD org, Net (EUR) in a EUR org');
+    // Column resolution:
+    //   netSourceCol → the row's own-currency Net column
+    //   baseNetCol   → the base-currency Net column (equal to netSourceCol in single-currency)
+    //   currencyCol  → per-row currency column ('Currency'), or null when the file has no such column
+    const netSourceCol = isMultiCurrency ? 'Net (Source)' : 'Net';
+    const resolvedBaseNetCol = isMultiCurrency ? baseNetCol : 'Net';
+    const currencyCol = isMultiCurrency ? 'Currency' : null;
+
+    // Also detect the Running Balance column. Multi-currency labels it with the
+    // base currency code (`Running Balance (USD)`); single-currency drops the parens.
+    const runningBalanceCol = headers.find(h =>
+        typeof h === 'string' && (/^Running Balance \([A-Z]{3}\)$/.test(h) || h === 'Running Balance')
+    );
+
+    // Required columns per variant. Missing → hard error.
+    const COMMON_REQUIRED = ['Date', 'Source', 'Contact', 'Description', 'Reference'];
+    const missingCols = COMMON_REQUIRED.filter(c => idx(c) === -1);
+    if (isMultiCurrency) {
+        if (idx('Net (Source)') === -1) missingCols.push('Net (Source)');
+        if (!baseNetCol) missingCols.push('Net ({currency}) — the base-currency Net column, e.g. Net (USD) in a USD org, Net (EUR) in a EUR org');
+        if (idx('Currency') === -1) missingCols.push('Currency');
+        if (!runningBalanceCol || !/^Running Balance \([A-Z]{3}\)$/.test(runningBalanceCol)) {
+            missingCols.push('Running Balance ({currency}) — Xero doesn\'t always tick this by default when Grouping = Account is set; make sure to select it in the column picker');
+        }
+    } else {
+        if (idx('Net') === -1) missingCols.push('Net');
+        if (!runningBalanceCol || runningBalanceCol !== 'Running Balance') {
+            missingCols.push('Running Balance — Xero doesn\'t always tick this by default when Grouping = Account is set; make sure to select it in the column picker');
+        }
+    }
     if (missingCols.length > 0) {
         throw new Error(`Required column(s) missing from the Xero export: ${missingCols.join('; ')}. Re-export from Xero → Reporting → Account Transactions with Grouping = Account and the full column set selected.`);
     }
@@ -248,7 +283,7 @@ function parseWorkbook(wb) {
 
         // Coerce numeric columns if they came through as strings (accounting-format
         // negatives). Skip Running Balance since it's often a formula cell.
-        for (const cn of ['Net (Source)', baseColumn, 'Debit (Source)', 'Credit (Source)']) {
+        for (const cn of [netSourceCol, resolvedBaseNetCol, 'Debit (Source)', 'Credit (Source)']) {
             const ci = idx(cn);
             if (ci >= 0 && typeof r[ci] === 'string') {
                 r[ci] = parseAccountingNumber(r[ci]);
@@ -275,7 +310,13 @@ function parseWorkbook(wb) {
 
     return {
         headers, idx,
-        baseColumn,
+        isMultiCurrency,
+        netSourceCol,
+        baseNetCol: resolvedBaseNetCol,
+        currencyCol,
+        runningBalanceCol,
+        // Kept for backwards compatibility with any external code that reads this
+        baseColumn: resolvedBaseNetCol,
         clearingAccounts,
         arRows: buckets['Accounts Receivable'] || [],
         apRows: buckets['Accounts Payable'] || [],
@@ -309,16 +350,22 @@ function parseAccountingNumber(s) {
 }
 
 // ─── Normalization algorithm ─────────────────────────────────────────────────
-function normalize(parsed, clearingAccount, mode) {
+function normalize(parsed, clearingAccount, mode, opts = {}) {
     const warnings = [];
     const clearingRows = parsed.buckets[clearingAccount] || [];
-    const { headers, idx, arRows, apRows, golRows, baseColumn } = parsed;
+    const { headers, idx, arRows, apRows, golRows, netSourceCol, baseNetCol, currencyCol, isMultiCurrency } = parsed;
+
+    // For single-currency Xero orgs the file has no Currency column. The org's
+    // base currency comes from Xero's account preference (via the connector in
+    // production). For the MVP we accept it as an opts parameter, defaulting
+    // to USD as the demo assumption.
+    const singleCurrencyBase = (opts.baseCurrency || 'USD').trim();
 
     // Track already-assigned AR/AP and GoL rows so we don't double-count.
     const usedAr = new Set();
     const usedGol = new Set();
 
-    const ctx = { headers, idx, arRows, apRows, golRows, baseColumn };
+    const ctx = { headers, idx, arRows, apRows, golRows, netSourceCol, baseNetCol, currencyCol, isMultiCurrency, singleCurrencyBase };
 
     const rows = [];
     let substitutedCount = 0;
@@ -330,8 +377,8 @@ function normalize(parsed, clearingAccount, mode) {
         const type = cr[idx('Source')] ?? '';
         const contact = cr[idx('Contact')] ?? '';
         const description = cr[idx('Description')] ?? '';
-        const netSrc = toNum(cr[idx('Net (Source)')]);
-        const currency = cr[idx('Currency')] ?? '';
+        const netSrc = toNum(cr[idx(netSourceCol)]);
+        const currency = currencyCol ? (cr[idx(currencyCol)] ?? singleCurrencyBase) : singleCurrencyBase;
 
         let outAmount = netSrc;
         let outCurrency = currency;
@@ -348,8 +395,10 @@ function normalize(parsed, clearingAccount, mode) {
                 // cross-currency payment settled at the invoice's own rate
                 // still needs the AR/AP row's Net (Source) + Currency, even
                 // though Xero didn't book a realized gain or loss.
-                const matchedNetSrc = toNum(match.row[idx('Net (Source)')]);
-                const matchedCurrency = match.row[idx('Currency')] ?? currency;
+                const matchedNetSrc = toNum(match.row[idx(netSourceCol)]);
+                const matchedCurrency = currencyCol
+                    ? (match.row[idx(currencyCol)] ?? currency)
+                    : singleCurrencyBase;
                 const magnitude = Math.abs(matchedNetSrc);
                 outAmount = Math.sign(netSrc || 0) * magnitude;
                 if (outAmount === 0 && netSrc === 0) outAmount = matchedNetSrc;
@@ -392,7 +441,7 @@ function normalize(parsed, clearingAccount, mode) {
 // This does NOT rely on the AR sibling-invoice row being in the export (which
 // might be out of period), so it's robust to partial-period exports.
 function findMatchingArAp(cr, ctx, usedAr, usedGol) {
-    const { idx, arRows, apRows, golRows, baseColumn } = ctx;
+    const { idx, arRows, apRows, golRows, baseNetCol, netSourceCol } = ctx;
     const cType = String(cr[idx('Source')] ?? '');
     const isPayable = /^Payable/i.test(cType);
     const pool = isPayable ? apRows : arRows;
@@ -400,7 +449,7 @@ function findMatchingArAp(cr, ctx, usedAr, usedGol) {
     const cRef = String(cr[idx('Reference')] ?? '').trim();
     const cContact = cr[idx('Contact')];
     const cDate = cr[idx('Date')];
-    const cNetBase = toNum(cr[idx(baseColumn)]);
+    const cNetBase = toNum(cr[idx(baseNetCol)]);
 
     // Candidate AR/AP rows on same (date, contact, source-type), unused, and
     // payment-like (skip invoice rows on the AR side).
@@ -443,7 +492,7 @@ function findMatchingArAp(cr, ctx, usedAr, usedGol) {
 
     for (const group of orderedGroups) {
         for (const ar of group) {
-            const arNetBase = toNum(ar[idx(baseColumn)]);
+            const arNetBase = toNum(ar[idx(baseNetCol)]);
             // Option: no GoL (same-currency or same-rate cross-currency)
             {
                 const diff = Math.abs(Math.abs(arNetBase) - targetAbs);
@@ -451,7 +500,7 @@ function findMatchingArAp(cr, ctx, usedAr, usedGol) {
             }
             // Option: each unused GoL candidate
             for (const gol of golCandidates) {
-                const hybrid = arNetBase + golSign * toNum(gol[idx('Net (Source)')]);
+                const hybrid = arNetBase + golSign * toNum(gol[idx(netSourceCol)]);
                 const diff = Math.abs(Math.abs(hybrid) - targetAbs);
                 if (diff < best.diff) best = { row: ar, gol, diff };
             }
