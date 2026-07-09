@@ -37,6 +37,19 @@
     .step-num{width:22px;height:22px;border-radius:50%;background:#0284c7;color:white;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
     .step-title{font-weight:600;color:#0c4a6e;font-size:13px;}
     .step-body{font-size:12.5px;color:#075985;margin-top:2px;line-height:1.5;}
+    /* mode toggle */
+    .mode-toggle{display:inline-flex;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:3px;font-size:12px;gap:2px;}
+    .mode-toggle button{padding:6px 14px;border:none;background:transparent;color:#475569;font-weight:500;border-radius:4px;cursor:pointer;font-size:12px;}
+    .mode-toggle button.active{background:white;color:#0f172a;box-shadow:0 1px 2px rgba(0,0,0,0.08);font-weight:600;}
+    /* manual panel */
+    .manual-panel{background:#faf5ff;border:1px solid #e9d5ff;border-radius:6px;padding:14px 16px;margin-top:10px;}
+    .manual-panel .m-title{font-size:12.5px;font-weight:600;color:#6b21a8;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+    .manual-panel .m-title .chip{background:#ede9fe;color:#6b21a8;font-size:10px;padding:1px 8px;}
+    .manual-panel input.txt{width:100%;border:1px solid #d1d5db;border-radius:4px;padding:8px 10px;font-size:13px;background:white;}
+    .manual-panel input.txt:focus{outline:none;border-color:#7c3aed;}
+    .manual-panel .helper{font-size:11.5px;color:#6b21a8;margin-top:10px;line-height:1.5;}
+    .manual-panel .helper a{text-decoration:underline;cursor:help;}
+    .assisted-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:10px 14px;margin-top:8px;font-size:12px;color:#1e3a8a;line-height:1.5;}
     .annot{position:fixed;bottom:16px;right:16px;background:#1f2937;color:#f9fafb;padding:10px 14px;border-radius:6px;font-size:12px;max-width:320px;box-shadow:0 10px 25px rgba(0,0,0,0.2);line-height:1.5;z-index:30;}
     .annot strong{color:#fef3c7;}
     .annot .close{position:absolute;top:6px;right:8px;color:#94a3b8;cursor:pointer;font-size:14px;}
@@ -150,12 +163,33 @@
         </div>
 
         <div class="mb-5">
-          <div class="m-input">
-            <span class="m-label">Automation mode <span class="m-req">*</span></span>
-            <span class="m-val">Automated</span>
-            <span class="m-chev">▾</span>
+          <label class="field-label" style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;display:block">Automation mode <span style="color:#dc2626">*</span></label>
+          <div class="mode-toggle" id="mode-toggle">
+            <button id="mode-automated" class="active" onclick="setMode('automated')">Automated</button>
+            <button id="mode-assisted"             onclick="setMode('assisted')">Assisted</button>
+            <button id="mode-manual"               onclick="setMode('manual')">Manual</button>
           </div>
-          <div class="m-caption">Synder will automatically retrieve the necessary files for you and will map the data according to these <a href="#">mapping rules</a>.</div>
+          <div id="mode-caption-automated" class="m-caption" style="margin-top:8px">Synder will automatically retrieve the necessary files for you and will map the data according to these <a href="#">mapping rules</a>.</div>
+          <div id="mode-caption-assisted" class="assisted-note" style="display:none">Beginning + Reported are sourced from the uploaded Xero Account Transactions report's Running Balance column (per DIS-362). No additional input required.</div>
+
+          <div id="manual-panel" class="manual-panel" style="display:none">
+            <div class="m-title">Manual balance entry <span class="chip">Optional</span></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="field-label" style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;display:block">Beginning balance</label>
+                <input class="txt" placeholder="Enter to enable balance verification"/>
+              </div>
+              <div>
+                <label class="field-label" style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;display:block">Reported ending balance</label>
+                <input class="txt" placeholder="Enter to enable balance verification"/>
+              </div>
+            </div>
+            <div class="helper">
+              Optional. Enter both to render the balance module on results. Leave blank to skip balance verification for this reconciliation. No carry-over from prior period (per FDD §2).
+              <br/>
+              <a href="#" title="Design pass: platform-specific guidance">Where to find these in QBD →</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -185,11 +219,35 @@
   }
   setVariant(readVariant());
 
+  // ---- automation mode toggle ----
+  let currentMode = 'automated';
+  function setMode(mode){
+    currentMode = mode;
+    ['automated','assisted','manual'].forEach(m=>{
+      document.getElementById('mode-'+m).classList.toggle('active', m===mode);
+    });
+    document.getElementById('mode-caption-automated').style.display = mode==='automated' ? 'block' : 'none';
+    document.getElementById('mode-caption-assisted').style.display  = mode==='assisted'  ? 'block' : 'none';
+    document.getElementById('manual-panel').style.display           = mode==='manual'    ? 'block' : 'none';
+    sessionStorage.setItem('dis259_mode', mode);
+  }
+
   function startMatching(){
-    // A newly configured run — mimic FDD Scenario A: Beg $10,000 + Deb $45,300 − Cred $1,200 → −$50 delta
-    sessionStorage.setItem('dis259_recon_id', 'new-jun-2026');
-    sessionStorage.setItem('dis259_recon_state', 'off');
-    sessionStorage.setItem('dis259_recon_supported', '1');
+    // Route based on selected automation mode.
+    // Automated  → default off-by scenario
+    // Assisted   → default off-by scenario (Xero Assisted path)
+    // Manual     → r-manual-with-values (module renders w/ matching values; reviewers can pop back to try empty from list)
+    let rid = 'new-jun-2026';
+    let state = 'off';
+    let supported = '1';
+    if(currentMode === 'manual'){
+      rid = 'r-manual-with-values';
+      state = 'match';
+    }
+    sessionStorage.setItem('dis259_recon_id', rid);
+    sessionStorage.setItem('dis259_recon_state', state);
+    sessionStorage.setItem('dis259_recon_supported', supported);
+    sessionStorage.setItem('scenario', rid);
     window.location.href = 'results.html';
   }
 </script>

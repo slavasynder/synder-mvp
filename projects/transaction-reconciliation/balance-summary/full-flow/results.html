@@ -88,6 +88,14 @@
     /* unsupported clearing notice */
     .unsupported-notice{background:#fffbeb;border:1px solid #fde68a;color:#92400e;margin:12px 24px;padding:12px 16px;border-radius:8px;display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.5;}
     .unsupported-notice .icon{color:#d97706;font-size:16px;line-height:1;margin-top:1px;}
+    /* manual empty notice */
+    .manual-empty-notice{background:#f8fafc;border:1px solid #e5e7eb;color:#475569;margin:12px 24px;padding:10px 14px;border-radius:6px;font-size:12.5px;line-height:1.5;}
+    .manual-empty-notice a{color:#2563eb;text-decoration:underline;}
+    /* purple chip for Manual mode */
+    .c-purple{background:#ede9fe;color:#6b21a8;}
+    /* scenario label */
+    .scenario-label{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#475569;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:4px 10px;font-weight:500;}
+    .scenario-label strong{color:#0f172a;font-weight:600;}
     /* annot */
     .annot{position:fixed;bottom:16px;right:16px;background:#1f2937;color:#f9fafb;padding:10px 14px;border-radius:6px;font-size:12px;max-width:340px;box-shadow:0 10px 25px rgba(0,0,0,0.2);line-height:1.5;z-index:30;}
     .annot strong{color:#fef3c7;}
@@ -102,13 +110,16 @@
   <span class="font-medium text-gray-800">Reconciliation results</span>
   <span class="chip c-blue" style="font-size:10px">DIS-259 · Full flow · A/B</span>
   <div class="ml-auto flex items-center gap-4">
-    <div class="flex items-center gap-2">
+    <div id="state-toggle-wrap" class="flex items-center gap-2">
       <span class="text-xs text-gray-500">Balance state:</span>
       <div class="state-toggle">
         <button id="st-off"   class="active" onclick="setState('off')">⚠ Off by</button>
         <button id="st-match"            onclick="setState('match')">✓ Matches</button>
         <button id="st-none"             onclick="setState('none')">– No beg.</button>
       </div>
+    </div>
+    <div id="scenario-label" class="scenario-label" style="display:none">
+      <span>Scenario:</span><strong id="scenario-label-text">—</strong>
     </div>
     <div class="variant-switch">
       <span>A/B variant</span>
@@ -148,6 +159,11 @@
     <strong>Balance verification not available for this clearing.</strong><br/>
     This integration's transactions are reported in multiple currencies; balance verification isn't supported for this clearing yet. Row-level reconciliation works as usual. <span class="text-amber-800/70">(FDD §2 · Unsupported clearing)</span>
   </div>
+</div>
+
+<!-- Manual mode, no values entered — unobtrusive info strip -->
+<div id="manual-empty-notice" class="manual-empty-notice" style="display:none">
+  Balance verification skipped — Manual mode, no values entered on this reconciliation. Row-level reconciliation runs as usual. <a href="configure.html">Enter Beginning + Reported →</a>
 </div>
 
 <!-- Balance Summary block — hidden for control variant / unsupported clearing -->
@@ -219,6 +235,54 @@
     </div>
     <div class="bb-footnote">
       Debits and Credits are summed from the <strong>raw Stripe report</strong> — independent of row-matching classification.
+    </div>
+  </div>
+
+  <!-- MANUAL WITH VALUES state — Beginning + Reported entered by user; matches -->
+  <div id="bb-manual" class="bb-section" style="display:none">
+    <div class="bb-header">
+      <span class="bb-title" style="color:#065f46;">✓ Balance matches · Feb 1 – 28, 2026</span>
+      <span class="bb-meta">Manual · Beginning &amp; Reported entered by user <span class="chip c-purple" style="font-size:10px;margin-left:6px">Manual mode</span></span>
+    </div>
+    <div class="bb-grid">
+      <div class="bb-cell">
+        <div class="bb-label">Beginning balance</div>
+        <div class="bb-num">$8,750.00</div>
+        <div class="bb-src">Entered by user</div>
+      </div>
+      <div class="bb-op">+</div>
+      <div class="bb-cell">
+        <div class="bb-label">+ Debits</div>
+        <div class="bb-num">$12,400.00</div>
+        <div class="bb-src">Stripe · sum of debit txns</div>
+      </div>
+      <div class="bb-op">−</div>
+      <div class="bb-cell">
+        <div class="bb-label">− Credits</div>
+        <div class="bb-num">$3,150.00</div>
+        <div class="bb-src">Stripe · sum of credit txns</div>
+      </div>
+      <div class="bb-op">=</div>
+      <div class="bb-cell computed">
+        <div class="bb-label">Computed ending</div>
+        <div class="bb-num">$18,000.00</div>
+        <div class="bb-src">Beg + Deb − Cred</div>
+      </div>
+      <div class="bb-vsep"></div>
+      <div class="bb-cell">
+        <div class="bb-label">Reported ending</div>
+        <div class="bb-num">$18,000.00</div>
+        <div class="bb-src">Entered by user</div>
+      </div>
+      <div class="bb-vsep"></div>
+      <div class="bb-cell" style="background:#f0fdf4;gap:6px;padding:12px 16px">
+        <div class="bb-label" style="color:#065f46">✓ Delta</div>
+        <div class="bb-num" style="color:#065f46;font-size:22px">$0.00</div>
+        <div class="bb-src" style="color:#059669">Reported − Computed</div>
+      </div>
+    </div>
+    <div class="bb-footnote">
+      Manual mode: Beginning &amp; Reported are user-entered per-reconciliation (no carry-over, per FDD §2). Debits and Credits are summed from the <strong>raw Stripe report</strong> — independent of row-matching classification.
     </div>
   </div>
 
@@ -385,14 +449,23 @@
   function readVariant(){
     return sessionStorage.getItem('dis259_variant') || 'treatment';
   }
+  function currentScenario(){
+    return sessionStorage.getItem('scenario') || sessionStorage.getItem('dis259_recon_id') || 'r3';
+  }
   function applyVariant(v){
+    const scen = currentScenario();
     const block = document.getElementById('balance-block');
     const pill = document.getElementById('balance-pill');
     const unsupported = sessionStorage.getItem('dis259_recon_supported') === '0';
-    const showBlock = v === 'treatment' && !unsupported;
+    const manualEmpty = scen === 'r-manual-empty';
+    // Balance block hidden for control OR unsupported OR manual-empty
+    const showBlock = v === 'treatment' && !unsupported && !manualEmpty;
     block.style.display = showBlock ? 'block' : 'none';
-    pill.style.display  = showBlock ? 'inline-flex' : 'none';
-    document.getElementById('unsupported-notice').style.display = unsupported ? 'flex' : 'none';
+    // Pill always shown in treatment (except control) — even for manual-empty & unsupported we show a pill,
+    // but with the appropriate state (⚠ Balance not reconciled).
+    pill.style.display = v === 'treatment' ? 'inline-flex' : 'none';
+    document.getElementById('unsupported-notice').style.display = unsupported && v === 'treatment' ? 'flex' : 'none';
+    document.getElementById('manual-empty-notice').style.display = manualEmpty && v === 'treatment' ? 'block' : 'none';
   }
   function setVariant(v){
     sessionStorage.setItem('dis259_variant', v);
@@ -404,13 +477,15 @@
   // ---- balance state ----
   function setState(state){
     ['off','match','none'].forEach(s=>{
-      document.getElementById('st-'+s).classList.toggle('active', s===state);
+      const el = document.getElementById('st-'+s);
+      if(el) el.classList.toggle('active', s===state);
     });
     const block=document.getElementById('balance-block');
     block.classList.remove('state-off','state-match','state-none');
-    document.getElementById('bb-off').style.display='none';
-    document.getElementById('bb-match').style.display='none';
-    document.getElementById('bb-none').style.display='none';
+    ['bb-off','bb-match','bb-none','bb-manual'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.style.display='none';
+    });
     const pill=document.getElementById('balance-pill');
     pill.classList.remove('c-red','c-green','c-gray','c-amber');
     if(state==='off'){
@@ -423,6 +498,14 @@
       document.getElementById('bb-match').style.display='block';
       pill.classList.add('c-green');
       pill.textContent='✓ Balance matches';
+    } else if(state==='manual-match'){
+      block.classList.add('state-match');
+      document.getElementById('bb-manual').style.display='block';
+      pill.classList.add('c-green');
+      pill.textContent='✓ Balance reconciled';
+    } else if(state==='manual-empty'){
+      pill.classList.add('c-amber');
+      pill.textContent='⚠ Balance not reconciled';
     } else {
       block.classList.add('state-none');
       document.getElementById('bb-none').style.display='block';
@@ -445,12 +528,45 @@
 
   // ---- init from sessionStorage ----
   (function init(){
-    const state = sessionStorage.getItem('dis259_recon_state') || 'off';
-    setState(state);
-    // If PayPal row was clicked, swap the header text
-    if(sessionStorage.getItem('dis259_recon_id') === 'r7-paypal'){
+    const scen = currentScenario();
+    const stateToggleWrap = document.getElementById('state-toggle-wrap');
+    const scenarioLabel = document.getElementById('scenario-label');
+    const scenarioLabelText = document.getElementById('scenario-label-text');
+
+    // Scenario-specific header + state
+    if(scen === 'r-manual-with-values'){
+      document.getElementById('recon-title').textContent = 'Stripe Stripe Test (sandbox) (required for Synder)';
+      document.getElementById('recon-subtitle').textContent = 'Stripe Test (sandbox) / Feb 1 - 28, 2026 · Manual mode';
+      setState('manual-match');
+      // hide state toggle, show scenario label
+      stateToggleWrap.style.display = 'none';
+      scenarioLabel.style.display = 'inline-flex';
+      scenarioLabelText.textContent = 'Manual · values entered';
+    } else if(scen === 'r-manual-empty'){
+      document.getElementById('recon-title').textContent = 'Stripe Stripe Test (sandbox) (required for Synder)';
+      document.getElementById('recon-subtitle').textContent = 'Stripe Test (sandbox) / Jan 1 - 31, 2026 · Manual mode';
+      setState('manual-empty');
+      stateToggleWrap.style.display = 'none';
+      scenarioLabel.style.display = 'inline-flex';
+      scenarioLabelText.textContent = 'Manual · no values entered';
+    } else if(scen === 'r7-paypal'){
       document.getElementById('recon-title').textContent = 'PayPal clearing (USD)';
-      document.getElementById('recon-subtitle').textContent = 'PayPal / Mar 1 - 31, 2026';
+      document.getElementById('recon-subtitle').textContent = 'PayPal / Mar 1 - 31, 2026 · Unsupported clearing';
+      setState('off'); // internal state is off but pill hidden via unsupported branch below; we'll override pill
+      stateToggleWrap.style.display = 'none';
+      scenarioLabel.style.display = 'inline-flex';
+      scenarioLabelText.textContent = 'PayPal · unsupported clearing';
+      // Override pill to a Not-reconciled state for the unsupported case
+      const pill = document.getElementById('balance-pill');
+      pill.classList.remove('c-red','c-green','c-gray');
+      pill.classList.add('c-amber');
+      pill.textContent = '⚠ Balance not reconciled';
+    } else {
+      // Default scenario (r3 off-by, or others) — keep the state toggle available
+      const state = sessionStorage.getItem('dis259_recon_state') || 'off';
+      setState(state);
+      stateToggleWrap.style.display = 'flex';
+      scenarioLabel.style.display = 'none';
     }
     setVariant(readVariant());
   })();

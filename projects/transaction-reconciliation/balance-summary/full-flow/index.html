@@ -14,6 +14,8 @@
     .c-red{background:#fee2e2;color:#991b1b;}
     .c-blue{background:#dbeafe;color:#1e40af;}
     .c-gray{background:#e5e7eb;color:#4b5563;}
+    .c-purple{background:#ede9fe;color:#6b21a8;}
+    .row-reason{color:#b91c1c;font-size:11px;margin-top:2px;}
     .btn{padding:6px 14px;font-size:13px;border-radius:4px;font-weight:500;cursor:pointer;border:none;line-height:1.3;}
     .btn-p{background:#2563eb;color:white;} .btn-p:hover{background:#1d4ed8;}
     .btn-o{background:white;color:#374151;border:1px solid #d1d5db;} .btn-o:hover{background:#f9fafb;}
@@ -203,11 +205,37 @@
           <td><span class="chip c-green">Reconciled</span></td>
           <td class="text-gray-400">⋯</td>
         </tr>
-        <tr onclick="openReconciliation('r7-paypal')">
+        <tr onclick="openReconciliation('r-manual-with-values')">
+          <td>Feb 1 - 28, 2026</td>
+          <td><span class="inline-flex items-center gap-2"><span class="integ-icon">S</span>Stripe Test (sandbox)</span></td>
+          <td>
+            <div>Stripe Stripe Test (sandbox) (required for Synder) <span class="chip c-purple" style="font-size:10px;margin-left:6px">Manual</span></div>
+          </td>
+          <td>Jun 20, 2026</td>
+          <td><span class="chip c-green">Finished</span></td>
+          <td style="text-align:right;font-variant-numeric:tabular-nums">100%</td>
+          <td><span class="chip c-green">Reconciled</span></td>
+          <td class="text-gray-400">⋯</td>
+        </tr>
+        <tr onclick="openReconciliation('r-manual-empty')">
+          <td>Jan 1 - 31, 2026</td>
+          <td><span class="inline-flex items-center gap-2"><span class="integ-icon">S</span>Stripe Test (sandbox)</span></td>
+          <td>
+            <div>Stripe Stripe Test (sandbox) (required for Synder) <span class="chip c-purple" style="font-size:10px;margin-left:6px">Manual</span></div>
+            <div class="row-info-note">ⓘ balance module not rendered — Manual mode, no values entered</div>
+          </td>
+          <td>Jun 20, 2026</td>
+          <td><span class="chip c-green">Finished</span></td>
+          <td style="text-align:right;font-variant-numeric:tabular-nums">100%</td>
+          <td><span class="chip c-amber">Not reconciled</span></td>
+          <td class="text-gray-400">⋯</td>
+        </tr>
+        <tr onclick="openReconciliation('r7-paypal')" style="background:#fef2f2">
           <td>Mar 1 - 31, 2026</td>
-          <td><span class="inline-flex items-center gap-2"><span class="integ-icon paypal">P</span>PayPal</span></td>
+          <td><span class="inline-flex items-center gap-2"><span class="integ-icon paypal">P</span>PayPal <span class="chip c-red" style="font-size:10px">Unsupported</span></span></td>
           <td>
             <div>PayPal clearing (USD)</div>
+            <div class="row-reason">Reason: mixed-currency reporting</div>
             <div class="row-info-note">
               <span class="tt">
                 ⓘ no balance module — unsupported clearing
@@ -229,7 +257,7 @@
         <div class="select-inp" style="min-width:60px;padding:3px 22px 3px 8px;font-size:12px">25</div>
       </div>
       <div class="flex items-center gap-4">
-        <span>1-7 of 7</span>
+        <span>1-9 of 9</span>
         <div class="flex items-center gap-1">
           <button class="btn btn-o btn-sm">‹</button>
           <button class="btn btn-o btn-sm">›</button>
@@ -243,7 +271,8 @@
   <span class="close" onclick="this.parentElement.remove()">×</span>
   <strong>Full-flow MVP — page 1 / 3</strong><br/>
   Click the highlighted <strong>Mar 1 - 31, 2026</strong> row (Stripe, 92%) for the off-by state,<br/>
-  or the <strong>PayPal row</strong> for the unsupported-clearing case.<br/>
+  the red <strong>PayPal row</strong> for the unsupported-clearing case,<br/>
+  or the <strong>Manual rows</strong> (Jan / Feb 2026) to see the optional balance-entry path.<br/>
   Toggle A/B variant top-right — persists across pages.
 </div>
 
@@ -267,13 +296,16 @@
     r4:  {state:'match', supported:true,  matched:60,  pct:'100%'},
     r5:  {state:'match', supported:true,  matched:60,  pct:'100%'},
     r6:  {state:'match', supported:true,  matched:60,  pct:'100%'},
-    'r7-paypal': {state:'off', supported:false, matched:52, pct:'87%'}
+    'r7-paypal': {state:'off', supported:false, matched:52, pct:'87%'},
+    'r-manual-with-values': {state:'match', supported:true, matched:60, pct:'100%'},
+    'r-manual-empty':       {state:'none',  supported:true, matched:60, pct:'100%'}
   };
   function openReconciliation(id){
     const scen = scenarios[id] || scenarios.r3;
     sessionStorage.setItem('dis259_recon_id', id);
     sessionStorage.setItem('dis259_recon_state', scen.state);
     sessionStorage.setItem('dis259_recon_supported', scen.supported ? '1' : '0');
+    sessionStorage.setItem('scenario', id);
     window.location.href = 'results.html';
   }
 </script>
