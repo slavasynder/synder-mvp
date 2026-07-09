@@ -238,6 +238,54 @@
     </div>
   </div>
 
+  <!-- XERO ASSISTED state — Beginning + Reported sourced from DIS-362 Running Balance column; matches -->
+  <div id="bb-xero-assisted" class="bb-section" style="display:none">
+    <div class="bb-header">
+      <span class="bb-title" style="color:#065f46;">✓ Balance matches · Feb 1 – 28, 2026</span>
+      <span class="bb-meta">Assisted · Beginning &amp; Reported from Xero Account Transactions report <span class="chip" style="background:#cffafe;color:#155e75;font-size:10px;margin-left:6px">Xero Assisted</span></span>
+    </div>
+    <div class="bb-grid">
+      <div class="bb-cell">
+        <div class="bb-label">Beginning balance</div>
+        <div class="bb-num">$2,500.00</div>
+        <div class="bb-src">Xero · first Running Balance row</div>
+      </div>
+      <div class="bb-op">+</div>
+      <div class="bb-cell">
+        <div class="bb-label">+ Debits</div>
+        <div class="bb-num">$8,340.00</div>
+        <div class="bb-src">Stripe · sum of debit txns</div>
+      </div>
+      <div class="bb-op">−</div>
+      <div class="bb-cell">
+        <div class="bb-label">− Credits</div>
+        <div class="bb-num">$2,140.00</div>
+        <div class="bb-src">Stripe · sum of credit txns</div>
+      </div>
+      <div class="bb-op">=</div>
+      <div class="bb-cell computed">
+        <div class="bb-label">Computed ending</div>
+        <div class="bb-num">$8,700.00</div>
+        <div class="bb-src">Beg + Deb − Cred</div>
+      </div>
+      <div class="bb-vsep"></div>
+      <div class="bb-cell">
+        <div class="bb-label">Reported ending</div>
+        <div class="bb-num">$8,700.00</div>
+        <div class="bb-src">Xero · last Running Balance row</div>
+      </div>
+      <div class="bb-vsep"></div>
+      <div class="bb-cell" style="background:#f0fdf4;gap:6px;padding:12px 16px">
+        <div class="bb-label" style="color:#065f46">✓ Delta</div>
+        <div class="bb-num" style="color:#065f46;font-size:22px">$0.00</div>
+        <div class="bb-src" style="color:#059669">Reported − Computed</div>
+      </div>
+    </div>
+    <div class="bb-footnote">
+      Xero Assisted mode: Beginning &amp; Reported are the first &amp; last <strong>Running Balance</strong> rows of the clearing section in the uploaded Xero Account Transactions report (per DIS-362). Debits and Credits are summed from the <strong>raw Stripe report</strong> — independent of row-matching classification.
+    </div>
+  </div>
+
   <!-- MANUAL WITH VALUES state — Beginning + Reported entered by user; matches -->
   <div id="bb-manual" class="bb-section" style="display:none">
     <div class="bb-header">
@@ -482,7 +530,7 @@
     });
     const block=document.getElementById('balance-block');
     block.classList.remove('state-off','state-match','state-none');
-    ['bb-off','bb-match','bb-none','bb-manual'].forEach(id=>{
+    ['bb-off','bb-match','bb-none','bb-manual','bb-xero-assisted'].forEach(id=>{
       const el = document.getElementById(id);
       if(el) el.style.display='none';
     });
@@ -501,6 +549,11 @@
     } else if(state==='manual-match'){
       block.classList.add('state-match');
       document.getElementById('bb-manual').style.display='block';
+      pill.classList.add('c-green');
+      pill.textContent='✓ Balance reconciled';
+    } else if(state==='xero-assisted-match'){
+      block.classList.add('state-match');
+      document.getElementById('bb-xero-assisted').style.display='block';
       pill.classList.add('c-green');
       pill.textContent='✓ Balance reconciled';
     } else if(state==='manual-empty'){
@@ -542,6 +595,13 @@
       stateToggleWrap.style.display = 'none';
       scenarioLabel.style.display = 'inline-flex';
       scenarioLabelText.textContent = 'Manual · values entered';
+    } else if(scen === 'r-xero-assisted'){
+      document.getElementById('recon-title').textContent = 'Stripe Test (sandbox) · Cool dollars (Xero)';
+      document.getElementById('recon-subtitle').textContent = 'Cool dollars (Xero) / Feb 1 - 28, 2026 · Assisted mode';
+      setState('xero-assisted-match');
+      stateToggleWrap.style.display = 'none';
+      scenarioLabel.style.display = 'inline-flex';
+      scenarioLabelText.textContent = 'Xero Assisted · from Running Balance';
     } else if(scen === 'r-manual-empty'){
       document.getElementById('recon-title').textContent = 'Stripe Stripe Test (sandbox) (required for Synder)';
       document.getElementById('recon-subtitle').textContent = 'Stripe Test (sandbox) / Jan 1 - 31, 2026 · Manual mode';

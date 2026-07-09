@@ -10,6 +10,7 @@
     body{font-family:'Inter',system-ui,sans-serif;color:#1f2937;background:#f3f4f6;font-size:13px;}
     .chip{display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;line-height:1.4;}
     .c-blue{background:#dbeafe;color:#1e40af;}
+    .c-amber{background:#fef3c7;color:#92400e;}
     .btn{padding:6px 14px;font-size:13px;border-radius:4px;font-weight:500;cursor:pointer;border:none;line-height:1.3;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
     .btn-p{background:#2563eb;color:white;} .btn-p:hover{background:#1d4ed8;}
     .btn-o{background:white;color:#374151;border:1px solid #d1d5db;} .btn-o:hover{background:#f9fafb;}
@@ -21,22 +22,29 @@
     .m-input{position:relative;background:white;border:1px solid #d1d5db;border-radius:4px;padding:14px 14px 8px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .15s;}
     .m-input:hover{border-color:#94a3b8;}
     .m-input.focused{border-color:#2563eb;border-width:2px;padding:13px 13px 7px;}
-    .m-input .m-label{position:absolute;top:-8px;left:10px;background:white;padding:0 6px;font-size:11px;font-weight:500;color:#6b7280;letter-spacing:.02em;}
+    .m-input .m-label{position:absolute;top:-8px;left:10px;background:white;padding:0 6px;font-size:11px;font-weight:500;color:#6b7280;letter-spacing:.02em;display:inline-flex;align-items:center;gap:4px;}
     .m-input.focused .m-label{color:#2563eb;}
     .m-input .m-req{color:#dc2626;}
+    .m-input .m-info{color:#9ca3af;font-size:11px;cursor:help;border:1px solid #cbd5e1;border-radius:50%;width:12px;height:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:600;}
     .m-input .m-val{font-size:13.5px;color:#1f2937;font-weight:500;display:flex;align-items:center;gap:8px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
     .m-input .m-chev{color:#9ca3af;font-size:11px;flex-shrink:0;margin-left:8px;}
     .m-caption{font-size:11.5px;color:#6b7280;margin-top:6px;padding-left:2px;}
     .m-caption a{color:#2563eb;text-decoration:underline;}
     .col-header{font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e5e7eb;}
     .integ-icon{width:20px;height:20px;border-radius:4px;background:#635bff;color:white;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+    .integ-icon.paypal{background:#003087;}
     .qbo-icon{width:22px;height:22px;border-radius:4px;background:#2ca01c;color:white;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+    .xero-icon{width:22px;height:22px;border-radius:4px;background:#1AB4D7;color:white;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+    .qbd-icon{width:22px;height:22px;border-radius:4px;background:#0077C5;color:white;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
     .platform-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
     .steps-card{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px 20px;position:relative;}
     .steps-close{position:absolute;top:10px;right:12px;color:#0369a1;cursor:pointer;font-size:16px;font-weight:600;}
     .step-num{width:22px;height:22px;border-radius:50%;background:#0284c7;color:white;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
     .step-title{font-weight:600;color:#0c4a6e;font-size:13px;}
     .step-body{font-size:12.5px;color:#075985;margin-top:2px;line-height:1.5;}
+    /* mode label */
+    .field-label{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+    .field-label .info-icon{color:#9ca3af;font-size:10px;cursor:help;border:1px solid #cbd5e1;border-radius:50%;width:12px;height:12px;display:inline-flex;align-items:center;justify-content:center;font-weight:600;text-transform:none;letter-spacing:0;}
     /* mode toggle */
     .mode-toggle{display:inline-flex;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:3px;font-size:12px;gap:2px;}
     .mode-toggle button{padding:6px 14px;border:none;background:transparent;color:#475569;font-weight:500;border-radius:4px;cursor:pointer;font-size:12px;}
@@ -49,8 +57,29 @@
     .manual-panel input.txt:focus{outline:none;border-color:#7c3aed;}
     .manual-panel .helper{font-size:11.5px;color:#6b21a8;margin-top:10px;line-height:1.5;}
     .manual-panel .helper a{text-decoration:underline;cursor:help;}
-    .assisted-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:10px 14px;margin-top:8px;font-size:12px;color:#1e3a8a;line-height:1.5;}
-    .annot{position:fixed;bottom:16px;right:16px;background:#1f2937;color:#f9fafb;padding:10px 14px;border-radius:6px;font-size:12px;max-width:320px;box-shadow:0 10px 25px rgba(0,0,0,0.2);line-height:1.5;z-index:30;}
+    /* Automated helper */
+    .auto-helper{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:10px 14px;margin-top:8px;font-size:12px;color:#1e3a8a;line-height:1.5;}
+    /* Assisted instructions collapsible */
+    .instructions-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;margin-top:8px;overflow:hidden;}
+    .instructions-header{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;background:#f1f5f9;border-bottom:1px solid #e2e8f0;user-select:none;}
+    .instructions-header.collapsed{border-bottom:none;}
+    .instructions-title{font-size:12.5px;font-weight:600;color:#334155;display:flex;align-items:center;gap:8px;}
+    .instructions-caret{color:#64748b;transition:transform .15s;font-size:11px;}
+    .instructions-body{padding:12px 16px 14px;background:white;}
+    .instr-step{display:flex;gap:10px;padding:6px 0;font-size:12.5px;color:#334155;line-height:1.5;}
+    .instr-step-num{width:20px;height:20px;border-radius:50%;background:#e0e7ff;color:#3730a3;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+    .instr-tip{background:#fefce8;border:1px solid #fde68a;color:#854d0e;padding:8px 12px;border-radius:4px;font-size:11.5px;margin-top:10px;line-height:1.5;}
+    .instr-tip strong{color:#713f12;}
+    /* Upload dropzone */
+    .upload-dz{margin-top:10px;border:2px dashed #cbd5e1;border-radius:6px;padding:20px;text-align:center;background:#f8fafc;cursor:pointer;transition:border-color .15s;}
+    .upload-dz:hover{border-color:#94a3b8;background:#f1f5f9;}
+    .upload-dz .upload-req{font-size:11px;color:#dc2626;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
+    .upload-dz .upload-cta{font-size:13px;color:#334155;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .upload-dz .upload-hint{font-size:11.5px;color:#64748b;margin-top:4px;}
+    /* PayPal balance-verification-unavailable strip */
+    .paypal-notice{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 14px;border-radius:6px;margin-top:10px;font-size:12px;line-height:1.5;display:flex;gap:8px;align-items:flex-start;}
+    .paypal-notice .icon{color:#dc2626;font-size:14px;line-height:1;margin-top:1px;}
+    .annot{position:fixed;bottom:16px;right:16px;background:#1f2937;color:#f9fafb;padding:10px 14px;border-radius:6px;font-size:12px;max-width:340px;box-shadow:0 10px 25px rgba(0,0,0,0.2);line-height:1.5;z-index:30;}
     .annot strong{color:#fef3c7;}
     .annot .close{position:absolute;top:6px;right:8px;color:#94a3b8;cursor:pointer;font-size:14px;}
   </style>
@@ -68,11 +97,11 @@
       <button id="v-control" onclick="setVariant('control')">Control</button>
       <button id="v-treatment" class="active" onclick="setVariant('treatment')">Treatment</button>
     </div>
-    <button onclick="startMatching()" class="btn btn-p">Start matching</button>
+    <button onclick="startReconciliation()" class="btn btn-p">Start reconciliation</button>
   </div>
 </div>
 
-<div class="max-w-[1000px] mx-auto px-6 py-6">
+<div class="max-w-[1100px] mx-auto px-6 py-6">
 
   <!-- Get started card -->
   <div id="steps-card" class="steps-card mb-6">
@@ -112,14 +141,14 @@
         <div>
           <div class="m-input">
             <span class="m-label">Date from <span class="m-req">*</span></span>
-            <span class="m-val">01/06/2026</span>
+            <span class="m-val" id="date-from">01/06/2026</span>
             <span class="m-chev">📅</span>
           </div>
         </div>
         <div>
           <div class="m-input">
             <span class="m-label">Date to <span class="m-req">*</span></span>
-            <span class="m-val">30/06/2026</span>
+            <span class="m-val" id="date-to">30/06/2026</span>
             <span class="m-chev">📅</span>
           </div>
         </div>
@@ -128,66 +157,184 @@
 
     <!-- Two columns -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <!-- Accounting -->
+
+      <!-- ================== ACCOUNTING COLUMN ================== -->
       <div>
         <div class="col-header">Accounting</div>
-        <div class="platform-card">
-          <div class="qbo-icon">Q</div>
-          <div>
-            <div class="font-medium text-gray-800">Advanced Sandbox Company US 9ac8</div>
-            <div class="text-xs text-gray-500">QuickBooks Online</div>
+
+        <!-- Platform card + selector -->
+        <div class="mb-5">
+          <div class="field-label" style="text-transform:none;letter-spacing:0;font-size:11px">Platform</div>
+          <div class="platform-card" id="acc-platform-card">
+            <div id="acc-icon" class="qbo-icon">Q</div>
+            <div class="flex-1">
+              <div id="acc-name" class="font-medium text-gray-800">Advanced Sandbox Company US 9ac8</div>
+              <div id="acc-platform-label" class="text-xs text-gray-500">QuickBooks Online</div>
+            </div>
+            <select id="acc-platform-select" onchange="setAccPlatform(this.value)"
+              class="border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-700">
+              <option value="qbo">QBO</option>
+              <option value="xero">Xero</option>
+              <option value="qbd">QBD</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Accounting Automation mode dropdown -->
+        <div class="mb-4">
+          <label class="field-label">
+            Automation mode <span style="color:#dc2626">*</span>
+            <span class="info-icon" title="How to provide accounting-side data (Beginning + Reported balances). Default depends on platform.">i</span>
+          </label>
+          <div class="mode-toggle" id="acc-mode-toggle">
+            <button id="acc-mode-automated" onclick="setAccMode('automated')">Automated</button>
+            <button id="acc-mode-assisted"  onclick="setAccMode('assisted')">Assisted</button>
+            <button id="acc-mode-manual"    onclick="setAccMode('manual')">Manual</button>
+          </div>
+
+          <!-- Automated content -->
+          <div id="acc-content-automated" class="auto-helper" style="display:none">
+            Synder will automatically retrieve the GL Account register and map balances for you.
+          </div>
+
+          <!-- Assisted content (Xero) -->
+          <div id="acc-content-assisted" style="display:none">
+            <div class="field-label mt-3">Upload file <span style="color:#dc2626">*</span></div>
+            <div class="instructions-card">
+              <div id="xero-instr-header" class="instructions-header" onclick="toggleInstructions('xero-instr')">
+                <div class="instructions-title">How to get Account Transactions from Xero</div>
+                <span class="instructions-caret" id="xero-instr-caret">▼</span>
+              </div>
+              <div class="instructions-body" id="xero-instr-body">
+                <div class="instr-step"><span class="instr-step-num">1</span><div>Open Xero Reporting <a href="https://reporting.xero.com" target="_blank" class="text-blue-600 underline">reporting.xero.com</a> → Account Transactions</div></div>
+                <div class="instr-step"><span class="instr-step-num">2</span><div>Select accounts: <strong>Clearing</strong>, <strong>Accounts Receivable</strong>, <strong>Accounts Payable</strong>, <strong>Realized Currency Gains</strong></div></div>
+                <div class="instr-step"><span class="instr-step-num">3</span><div>Pick the date range that matches the reconciliation date range</div></div>
+                <div class="instr-step"><span class="instr-step-num">4</span><div>Set Grouping to <strong>Group by Account</strong></div></div>
+                <div class="instr-step"><span class="instr-step-num">5</span><div>Select columns: <strong>Contact</strong>, <strong>Date</strong>, <strong>Description</strong>, <strong>Net</strong>, <strong>Reference</strong>, <strong>Running Balance</strong>, <strong>Source</strong>. If multi-currency is enabled, also add: <strong>Currency</strong>, <strong>Net (Source)</strong>, <strong>Net ((currency))</strong>.</div></div>
+                <div class="instr-step"><span class="instr-step-num">6</span><div>Export as Excel</div></div>
+                <div class="instr-tip"><strong>Tip:</strong> save the report settings as a Custom view in Xero to avoid this next time.</div>
+              </div>
+            </div>
+            <div class="upload-dz">
+              <div class="upload-cta">⬇ Browse or drag your file here</div>
+              <div class="upload-hint">CSV / Excel format, up to 100MB</div>
+            </div>
+          </div>
+
+          <!-- Manual content -->
+          <div id="acc-content-manual" style="display:none">
+            <div class="field-label mt-3">Upload file <span style="color:#dc2626">*</span></div>
+            <div class="upload-dz">
+              <div class="upload-cta">⬇ Browse or drag your file here</div>
+              <div class="upload-hint">CSV / Excel format, up to 100MB</div>
+            </div>
+
+            <!-- Balance inputs — visible only when integration is supported (i.e. NOT PayPal) -->
+            <div id="manual-balance-panel" class="manual-panel" style="margin-top:14px">
+              <div class="m-title">Manual balance entry <span class="chip">Optional</span></div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label class="field-label" style="margin-bottom:4px">Beginning balance</label>
+                  <input id="manual-beginning" class="txt" placeholder="Enter to enable balance verification"/>
+                </div>
+                <div>
+                  <label class="field-label" style="margin-bottom:4px">Reported ending balance</label>
+                  <input id="manual-reported" class="txt" placeholder="Enter to enable balance verification"/>
+                </div>
+              </div>
+              <div class="helper">
+                Optional. Enter both to render the balance module on results. Leave blank to skip balance verification for this reconciliation. No carry-over from prior period (per FDD §2).
+                <br/>
+                <a href="#" title="Design pass: platform-specific guidance">Where to find these →</a>
+              </div>
+            </div>
+
+            <!-- PayPal (unsupported integration) — replaces the balance inputs -->
+            <div id="manual-balance-unsupported" class="paypal-notice" style="display:none">
+              <span class="icon">⚠</span>
+              <div>Balance verification isn't available for this integration (mixed-currency reporting). Row-level reconciliation continues as usual.</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Integration -->
+      <!-- ================== INTEGRATION COLUMN ================== -->
       <div>
         <div class="col-header">Integration</div>
 
+        <!-- Integration dropdown -->
         <div class="mb-5">
-          <div class="m-input">
-            <span class="m-label">Integration <span class="m-req">*</span></span>
-            <span class="m-val"><span class="integ-icon">S</span>Stripe Test (sandbox)</span>
+          <div class="m-input" onclick="void(0)">
+            <span class="m-label">
+              Integration <span class="m-req">*</span>
+              <span class="m-info" title="The payment integration to reconcile against">i</span>
+            </span>
+            <span class="m-val" id="integ-val"><span id="integ-icon" class="integ-icon">S</span><span id="integ-name">Stripe Test (sandbox)</span></span>
             <span class="m-chev">▾</span>
           </div>
-          <div class="m-caption">Timezone: Etc/UTC</div>
+          <select id="integ-select" onchange="setIntegration(this.value)"
+            class="mt-2 border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-700 w-full">
+            <option value="stripe">Stripe Test (sandbox)</option>
+            <option value="paypal">Great payments for every one (PayPal)</option>
+          </select>
+          <div class="m-caption" id="integ-tz">Timezone: Etc/UTC</div>
         </div>
 
+        <!-- Clearing account dropdown -->
         <div class="mb-5">
           <div class="m-input">
-            <span class="m-label">Account to reconcile <span class="m-req">*</span></span>
-            <span class="m-val">Stripe Stripe Test (sandbox) (required for Synder)</span>
+            <span class="m-label">
+              Clearing account <span class="m-req">*</span>
+              <span class="m-info" title="The GL account that holds this integration's pending funds">i</span>
+            </span>
+            <span class="m-val" id="clearing-val">Stripe Stripe Test (sandbox) (required for Synder)</span>
             <span class="m-chev">▾</span>
           </div>
-          <div class="m-caption">Currency: USD</div>
+          <div class="m-caption" id="clearing-currency">Currency: USD</div>
         </div>
 
-        <div class="mb-5">
-          <label class="field-label" style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;display:block">Automation mode <span style="color:#dc2626">*</span></label>
-          <div class="mode-toggle" id="mode-toggle">
-            <button id="mode-automated" class="active" onclick="setMode('automated')">Automated</button>
-            <button id="mode-assisted"             onclick="setMode('assisted')">Assisted</button>
-            <button id="mode-manual"               onclick="setMode('manual')">Manual</button>
+        <!-- Integration Automation mode dropdown -->
+        <div class="mb-4">
+          <label class="field-label">
+            Automation mode <span style="color:#dc2626">*</span>
+            <span class="info-icon" title="How to provide integration-side data (transactions report). Default depends on integration.">i</span>
+          </label>
+          <div class="mode-toggle" id="integ-mode-toggle">
+            <button id="integ-mode-automated" onclick="setIntegMode('automated')">Automated</button>
+            <button id="integ-mode-assisted"  onclick="setIntegMode('assisted')">Assisted</button>
+            <button id="integ-mode-manual"    onclick="setIntegMode('manual')">Manual</button>
           </div>
-          <div id="mode-caption-automated" class="m-caption" style="margin-top:8px">Synder will automatically retrieve the necessary files for you and will map the data according to these <a href="#">mapping rules</a>.</div>
-          <div id="mode-caption-assisted" class="assisted-note" style="display:none">Beginning + Reported are sourced from the uploaded Xero Account Transactions report's Running Balance column (per DIS-362). No additional input required.</div>
 
-          <div id="manual-panel" class="manual-panel" style="display:none">
-            <div class="m-title">Manual balance entry <span class="chip">Optional</span></div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <label class="field-label" style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;display:block">Beginning balance</label>
-                <input class="txt" placeholder="Enter to enable balance verification"/>
+          <!-- Automated content -->
+          <div id="integ-content-automated" class="auto-helper" style="display:none">
+            Synder will automatically retrieve the <span id="integ-auto-name">Stripe</span> transactions report for the period.
+          </div>
+
+          <!-- Assisted content -->
+          <div id="integ-content-assisted" style="display:none">
+            <div class="field-label mt-3">Upload file <span style="color:#dc2626">*</span></div>
+            <div class="instructions-card">
+              <div id="integ-instr-header" class="instructions-header" onclick="toggleInstructions('integ-instr')">
+                <div class="instructions-title" id="integ-instr-title">How to get the balance report from Stripe</div>
+                <span class="instructions-caret" id="integ-instr-caret">▼</span>
               </div>
-              <div>
-                <label class="field-label" style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;display:block">Reported ending balance</label>
-                <input class="txt" placeholder="Enter to enable balance verification"/>
+              <div class="instructions-body" id="integ-instr-body">
+                <div class="instr-step"><span class="instr-step-num">1</span><div>Download the <strong>Balance Report</strong> for the reconciliation period from your integration's dashboard.</div></div>
+                <div class="instr-step"><span class="instr-step-num">2</span><div>Upload it here — Synder parses the transactions and totals for you.</div></div>
               </div>
             </div>
-            <div class="helper">
-              Optional. Enter both to render the balance module on results. Leave blank to skip balance verification for this reconciliation. No carry-over from prior period (per FDD §2).
-              <br/>
-              <a href="#" title="Design pass: platform-specific guidance">Where to find these in QBD →</a>
+            <div class="upload-dz">
+              <div class="upload-cta">⬇ Browse or drag your file here</div>
+              <div class="upload-hint">CSV / Excel format, up to 100MB</div>
+            </div>
+          </div>
+
+          <!-- Manual content -->
+          <div id="integ-content-manual" style="display:none">
+            <div class="field-label mt-3">Upload file <span style="color:#dc2626">*</span></div>
+            <div class="upload-dz">
+              <div class="upload-cta">⬇ Browse or drag your file here</div>
+              <div class="upload-hint">CSV / Excel format, up to 100MB</div>
             </div>
           </div>
         </div>
@@ -195,20 +342,21 @@
     </div>
   </div>
 
-  <div class="mt-6 text-xs text-gray-500">
-    <span class="chip c-blue" style="font-size:10px;margin-right:6px">FDD §2</span>
-    <strong>Automated mode</strong> on QBO PT pulls Beginning + Reported from the GL Account register (see FDD §2 Balance sourcing mode). Balance module renders on the results screen if variant = treatment.
+  <div class="mt-6 text-xs text-gray-500 flex items-start gap-2">
+    <span class="chip c-blue" style="font-size:10px;flex-shrink:0">FDD §2</span>
+    <span>Automation mode is chosen <strong>independently</strong> on each side. Balance inputs (Manual, accounting side) render only when the integration is a supported clearing — PayPal-style mixed-currency integrations disable balance verification and show a note in place of the inputs.</span>
   </div>
 </div>
 
 <div class="annot">
   <span class="close" onclick="this.parentElement.remove()">×</span>
   <strong>Full-flow MVP — page 2 / 3</strong><br/>
-  Configure screen for the reconciliation run. Same UI in both variants — the A/B split only changes the results page.<br/>
-  Click <strong>Start matching</strong> to see the results page.
+  Configure screen. Two independent Automation-mode dropdowns (accounting + integration). Flip the platform + integration selectors to explore modes.<br/>
+  Click <strong>Start reconciliation</strong> to see the results page.
 </div>
 
 <script>
+  // ---- A/B variant ----
   function readVariant(){
     return sessionStorage.getItem('dis259_variant') || 'treatment';
   }
@@ -219,37 +367,169 @@
   }
   setVariant(readVariant());
 
-  // ---- automation mode toggle ----
-  let currentMode = 'automated';
-  function setMode(mode){
-    currentMode = mode;
-    ['automated','assisted','manual'].forEach(m=>{
-      document.getElementById('mode-'+m).classList.toggle('active', m===mode);
-    });
-    document.getElementById('mode-caption-automated').style.display = mode==='automated' ? 'block' : 'none';
-    document.getElementById('mode-caption-assisted').style.display  = mode==='assisted'  ? 'block' : 'none';
-    document.getElementById('manual-panel').style.display           = mode==='manual'    ? 'block' : 'none';
-    sessionStorage.setItem('dis259_mode', mode);
+  // ---- Accounting platform ----
+  const ACC_PLATFORMS = {
+    qbo:  {icon:'Q', iconClass:'qbo-icon',  label:'QuickBooks Online',   name:'Advanced Sandbox Company US 9ac8', defaultMode:'automated'},
+    xero: {icon:'X', iconClass:'xero-icon', label:'Xero',                name:'Cool dollars',                     defaultMode:'assisted'},
+    qbd:  {icon:'D', iconClass:'qbd-icon',  label:'QuickBooks Desktop',  name:'Acme LLC',                         defaultMode:'manual'},
+  };
+  let accPlatform = 'qbo';
+  let accMode = 'automated';
+
+  function setAccPlatform(p){
+    accPlatform = p;
+    const cfg = ACC_PLATFORMS[p];
+    const icon = document.getElementById('acc-icon');
+    icon.className = cfg.iconClass;
+    icon.textContent = cfg.icon;
+    document.getElementById('acc-name').textContent = cfg.name;
+    document.getElementById('acc-platform-label').textContent = cfg.label;
+    setAccMode(cfg.defaultMode);
   }
 
-  function startMatching(){
-    // Route based on selected automation mode.
-    // Automated  → default off-by scenario
-    // Assisted   → default off-by scenario (Xero Assisted path)
-    // Manual     → r-manual-with-values (module renders w/ matching values; reviewers can pop back to try empty from list)
-    let rid = 'new-jun-2026';
-    let state = 'off';
-    let supported = '1';
-    if(currentMode === 'manual'){
-      rid = 'r-manual-with-values';
-      state = 'match';
+  function setAccMode(mode){
+    accMode = mode;
+    ['automated','assisted','manual'].forEach(m=>{
+      const btn = document.getElementById('acc-mode-'+m);
+      if(btn) btn.classList.toggle('active', m===mode);
+      const content = document.getElementById('acc-content-'+m);
+      if(content) content.style.display = m===mode ? 'block' : 'none';
+    });
+    // when acc mode changes to manual, refresh the balance-inputs visibility
+    updateManualBalanceVisibility();
+    sessionStorage.setItem('dis259_acc_mode', mode);
+  }
+
+  // ---- Integration ----
+  const INTEGS = {
+    stripe: {
+      icon:'S', iconClass:'integ-icon',
+      name:'Stripe Test (sandbox)',
+      autoName:'Stripe',
+      tz:'Timezone: Etc/UTC',
+      clearing:'Stripe Stripe Test (sandbox) (required for Synder)',
+      currency:'Currency: USD',
+      defaultMode:'automated',
+      instructions:{
+        title:'How to get the balance report from Stripe',
+        steps:[
+          'Download the <strong>Balance Report</strong> for the reconciliation period from your Stripe dashboard.',
+          'Upload it here — Synder parses the transactions and totals for you.'
+        ]
+      },
+      supported:true
+    },
+    paypal: {
+      icon:'P', iconClass:'integ-icon paypal',
+      name:'Great payments for every one (PayPal)',
+      autoName:'PayPal',
+      tz:'UTC +3:00, Vilnius',
+      clearing:'PayPal clearing',
+      currency:'Currency: EUR',
+      defaultMode:'manual',
+      instructions:{
+        title:'How to get the balance report from PayPal',
+        steps:[
+          'Download the <strong>Balance Affecting Activity</strong> report for the reconciliation period from your PayPal Activity dashboard.',
+          'Upload it here — Synder parses the transactions and totals for you.'
+        ]
+      },
+      supported:false
     }
-    sessionStorage.setItem('dis259_recon_id', rid);
-    sessionStorage.setItem('dis259_recon_state', state);
-    sessionStorage.setItem('dis259_recon_supported', supported);
-    sessionStorage.setItem('scenario', rid);
+  };
+  let integ = 'stripe';
+  let integMode = 'automated';
+
+  function setIntegration(k){
+    integ = k;
+    const cfg = INTEGS[k];
+    const icon = document.getElementById('integ-icon');
+    icon.className = cfg.iconClass;
+    icon.textContent = cfg.icon;
+    document.getElementById('integ-name').textContent = cfg.name;
+    document.getElementById('integ-tz').textContent = cfg.tz;
+    document.getElementById('clearing-val').textContent = cfg.clearing;
+    document.getElementById('clearing-currency').textContent = cfg.currency;
+    document.getElementById('integ-auto-name').textContent = cfg.autoName;
+
+    // Instructions swap for Assisted
+    document.getElementById('integ-instr-title').textContent = cfg.instructions.title;
+    const body = document.getElementById('integ-instr-body');
+    body.innerHTML = cfg.instructions.steps.map((s,i)=>
+      `<div class="instr-step"><span class="instr-step-num">${i+1}</span><div>${s}</div></div>`
+    ).join('');
+
+    setIntegMode(cfg.defaultMode);
+    updateManualBalanceVisibility();
+  }
+
+  function setIntegMode(mode){
+    integMode = mode;
+    ['automated','assisted','manual'].forEach(m=>{
+      const btn = document.getElementById('integ-mode-'+m);
+      if(btn) btn.classList.toggle('active', m===mode);
+      const content = document.getElementById('integ-content-'+m);
+      if(content) content.style.display = m===mode ? 'block' : 'none';
+    });
+    sessionStorage.setItem('dis259_integ_mode', mode);
+  }
+
+  // ---- Balance-inputs visibility ----
+  // Show manual balance inputs ONLY when accounting is Manual AND integration is supported.
+  // For unsupported integration (PayPal), show the red-tinted info strip instead.
+  function updateManualBalanceVisibility(){
+    if(accMode !== 'manual') return; // controlled by content-manual show/hide anyway
+    const supported = INTEGS[integ].supported;
+    document.getElementById('manual-balance-panel').style.display        = supported ? 'block' : 'none';
+    document.getElementById('manual-balance-unsupported').style.display  = supported ? 'none'  : 'flex';
+  }
+
+  // ---- Instructions collapsible ----
+  function toggleInstructions(prefix){
+    const header = document.getElementById(prefix+'-header');
+    const body   = document.getElementById(prefix+'-body');
+    const caret  = document.getElementById(prefix+'-caret');
+    const collapsed = body.style.display === 'none';
+    body.style.display = collapsed ? 'block' : 'none';
+    header.classList.toggle('collapsed', !collapsed);
+    caret.textContent = collapsed ? '▼' : '▶';
+  }
+
+  // ---- Start reconciliation → results ----
+  function startReconciliation(){
+    // Resolve scenario per PO's routing rules
+    let scenario;
+    const supported = INTEGS[integ].supported;
+
+    if(integ === 'paypal'){
+      // PayPal always routes to unsupported scenario, regardless of acc mode
+      scenario = 'r7-paypal';
+    } else if(accMode === 'assisted' && accPlatform === 'xero'){
+      scenario = 'r-xero-assisted';
+    } else if(accMode === 'manual' && supported){
+      const beg = (document.getElementById('manual-beginning')||{}).value || '';
+      const rep = (document.getElementById('manual-reported')||{}).value || '';
+      scenario = (beg.trim() && rep.trim()) ? 'r-manual-with-values' : 'r-manual-empty';
+    } else {
+      // Default off-by scenario (Automated / other combinations)
+      scenario = 'new-jun-2026';
+    }
+
+    sessionStorage.setItem('scenario', scenario);
+    sessionStorage.setItem('dis259_recon_id', scenario);
+    sessionStorage.setItem('dis259_recon_supported', supported ? '1' : '0');
+    // Legacy state key still used by results.html default branch
+    if(scenario === 'r-manual-with-values' || scenario === 'r-xero-assisted'){
+      sessionStorage.setItem('dis259_recon_state', 'match');
+    } else {
+      sessionStorage.setItem('dis259_recon_state', 'off');
+    }
     window.location.href = 'results.html';
   }
+
+  // ---- init defaults ----
+  setAccPlatform('qbo');
+  setIntegration('stripe');
 </script>
 </body>
 </html>
