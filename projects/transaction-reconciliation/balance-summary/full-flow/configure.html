@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Reconciliation details — DIS-259 Full Flow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body{font-family:'Inter',system-ui,sans-serif;color:#1f2937;background:#f3f4f6;font-size:13px;}
+    .chip{display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;line-height:1.4;}
+    .c-blue{background:#dbeafe;color:#1e40af;}
+    .btn{padding:6px 14px;font-size:13px;border-radius:4px;font-weight:500;cursor:pointer;border:none;line-height:1.3;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+    .btn-p{background:#2563eb;color:white;} .btn-p:hover{background:#1d4ed8;}
+    .btn-o{background:white;color:#374151;border:1px solid #d1d5db;} .btn-o:hover{background:#f9fafb;}
+    .variant-switch{display:flex;align-items:center;gap:6px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:3px;font-size:11px;}
+    .variant-switch span{color:#64748b;font-weight:600;padding:0 6px;text-transform:uppercase;letter-spacing:.04em;}
+    .variant-switch button{padding:4px 10px;border:none;background:transparent;color:#475569;font-weight:500;border-radius:4px;cursor:pointer;font-size:12px;}
+    .variant-switch button.active{background:white;color:#0f172a;box-shadow:0 1px 2px rgba(0,0,0,0.08);}
+    /* Material-style outlined input with floating label */
+    .m-input{position:relative;background:white;border:1px solid #d1d5db;border-radius:4px;padding:14px 14px 8px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:border-color .15s;}
+    .m-input:hover{border-color:#94a3b8;}
+    .m-input.focused{border-color:#2563eb;border-width:2px;padding:13px 13px 7px;}
+    .m-input .m-label{position:absolute;top:-8px;left:10px;background:white;padding:0 6px;font-size:11px;font-weight:500;color:#6b7280;letter-spacing:.02em;}
+    .m-input.focused .m-label{color:#2563eb;}
+    .m-input .m-req{color:#dc2626;}
+    .m-input .m-val{font-size:13.5px;color:#1f2937;font-weight:500;display:flex;align-items:center;gap:8px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .m-input .m-chev{color:#9ca3af;font-size:11px;flex-shrink:0;margin-left:8px;}
+    .m-caption{font-size:11.5px;color:#6b7280;margin-top:6px;padding-left:2px;}
+    .m-caption a{color:#2563eb;text-decoration:underline;}
+    .col-header{font-size:13px;font-weight:600;color:#374151;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e5e7eb;}
+    .integ-icon{width:20px;height:20px;border-radius:4px;background:#635bff;color:white;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+    .qbo-icon{width:22px;height:22px;border-radius:4px;background:#2ca01c;color:white;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+    .platform-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:12px 14px;display:flex;align-items:center;gap:12px;}
+    .steps-card{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px 20px;position:relative;}
+    .steps-close{position:absolute;top:10px;right:12px;color:#0369a1;cursor:pointer;font-size:16px;font-weight:600;}
+    .step-num{width:22px;height:22px;border-radius:50%;background:#0284c7;color:white;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .step-title{font-weight:600;color:#0c4a6e;font-size:13px;}
+    .step-body{font-size:12.5px;color:#075985;margin-top:2px;line-height:1.5;}
+    .annot{position:fixed;bottom:16px;right:16px;background:#1f2937;color:#f9fafb;padding:10px 14px;border-radius:6px;font-size:12px;max-width:320px;box-shadow:0 10px 25px rgba(0,0,0,0.2);line-height:1.5;z-index:30;}
+    .annot strong{color:#fef3c7;}
+    .annot .close{position:absolute;top:6px;right:8px;color:#94a3b8;cursor:pointer;font-size:14px;}
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="bg-white border-b border-gray-200 px-6 py-2.5 flex items-center gap-3">
+  <a href="index.html" class="text-gray-400 hover:text-gray-700 text-xl leading-none">×</a>
+  <span class="font-medium text-gray-800">Reconciliation details</span>
+  <span class="chip c-blue" style="font-size:10px">DIS-259 · A/B</span>
+  <div class="ml-auto flex items-center gap-3">
+    <div class="variant-switch">
+      <span>A/B variant</span>
+      <button id="v-control" onclick="setVariant('control')">Control</button>
+      <button id="v-treatment" class="active" onclick="setVariant('treatment')">Treatment</button>
+    </div>
+    <button onclick="startMatching()" class="btn btn-p">Start matching</button>
+  </div>
+</div>
+
+<div class="max-w-[1000px] mx-auto px-6 py-6">
+
+  <!-- Get started card -->
+  <div id="steps-card" class="steps-card mb-6">
+    <span class="steps-close" onclick="document.getElementById('steps-card').style.display='none'">×</span>
+    <div class="font-semibold text-[#0c4a6e] mb-3 text-[14px]">Get started with reconciling</div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="flex items-start gap-3">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Set the date range</div>
+          <div class="step-body">Monthly reconciliation is the most common approach.</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Select integration</div>
+          <div class="step-body">Choose the integration you want to reconcile. Reconciliation is done using one integration at a time.</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-3">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Choose automation mode</div>
+          <div class="step-body">Select how to provide data: retrieve files automatically or upload them manually.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="bg-white border border-gray-200 rounded-lg p-6">
+
+    <!-- Date range row -->
+    <div class="mb-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <div class="m-input">
+            <span class="m-label">Date from <span class="m-req">*</span></span>
+            <span class="m-val">01/06/2026</span>
+            <span class="m-chev">📅</span>
+          </div>
+        </div>
+        <div>
+          <div class="m-input">
+            <span class="m-label">Date to <span class="m-req">*</span></span>
+            <span class="m-val">30/06/2026</span>
+            <span class="m-chev">📅</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two columns -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Accounting -->
+      <div>
+        <div class="col-header">Accounting</div>
+        <div class="platform-card">
+          <div class="qbo-icon">Q</div>
+          <div>
+            <div class="font-medium text-gray-800">Advanced Sandbox Company US 9ac8</div>
+            <div class="text-xs text-gray-500">QuickBooks Online</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Integration -->
+      <div>
+        <div class="col-header">Integration</div>
+
+        <div class="mb-5">
+          <div class="m-input">
+            <span class="m-label">Integration <span class="m-req">*</span></span>
+            <span class="m-val"><span class="integ-icon">S</span>Stripe Test (sandbox)</span>
+            <span class="m-chev">▾</span>
+          </div>
+          <div class="m-caption">Timezone: Etc/UTC</div>
+        </div>
+
+        <div class="mb-5">
+          <div class="m-input">
+            <span class="m-label">Account to reconcile <span class="m-req">*</span></span>
+            <span class="m-val">Stripe Stripe Test (sandbox) (required for Synder)</span>
+            <span class="m-chev">▾</span>
+          </div>
+          <div class="m-caption">Currency: USD</div>
+        </div>
+
+        <div class="mb-5">
+          <div class="m-input">
+            <span class="m-label">Automation mode <span class="m-req">*</span></span>
+            <span class="m-val">Automated</span>
+            <span class="m-chev">▾</span>
+          </div>
+          <div class="m-caption">Synder will automatically retrieve the necessary files for you and will map the data according to these <a href="#">mapping rules</a>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-6 text-xs text-gray-500">
+    <span class="chip c-blue" style="font-size:10px;margin-right:6px">FDD §2</span>
+    <strong>Automated mode</strong> on QBO PT pulls Beginning + Reported from the GL Account register (see FDD §2 Balance sourcing mode). Balance module renders on the results screen if variant = treatment.
+  </div>
+</div>
+
+<div class="annot">
+  <span class="close" onclick="this.parentElement.remove()">×</span>
+  <strong>Full-flow MVP — page 2 / 3</strong><br/>
+  Configure screen for the reconciliation run. Same UI in both variants — the A/B split only changes the results page.<br/>
+  Click <strong>Start matching</strong> to see the results page.
+</div>
+
+<script>
+  function readVariant(){
+    return sessionStorage.getItem('dis259_variant') || 'treatment';
+  }
+  function setVariant(v){
+    sessionStorage.setItem('dis259_variant', v);
+    document.getElementById('v-control').classList.toggle('active', v==='control');
+    document.getElementById('v-treatment').classList.toggle('active', v==='treatment');
+  }
+  setVariant(readVariant());
+
+  function startMatching(){
+    // A newly configured run — mimic FDD Scenario A: Beg $10,000 + Deb $45,300 − Cred $1,200 → −$50 delta
+    sessionStorage.setItem('dis259_recon_id', 'new-jun-2026');
+    sessionStorage.setItem('dis259_recon_state', 'off');
+    sessionStorage.setItem('dis259_recon_supported', '1');
+    window.location.href = 'results.html';
+  }
+</script>
+</body>
+</html>

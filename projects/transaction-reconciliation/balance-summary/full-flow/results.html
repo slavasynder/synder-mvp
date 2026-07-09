@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Reconciliation results — DIS-259 Full Flow</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    body{font-family:'Inter',system-ui,sans-serif;color:#1f2937;background:#f3f4f6;font-size:13px;}
+    .chip{display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;line-height:1.4;}
+    .c-green{background:#d1fae5;color:#065f46;}
+    .c-amber{background:#fef3c7;color:#92400e;}
+    .c-red{background:#fee2e2;color:#991b1b;}
+    .c-blue{background:#dbeafe;color:#1e40af;}
+    .c-gray{background:#e5e7eb;color:#4b5563;}
+    /* tabs */
+    .tab-btn{cursor:pointer;padding:10px 0;font-size:13px;font-weight:500;border-bottom:2px solid transparent;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+    .tab-active{color:#2563eb;border-bottom-color:#2563eb;}
+    .tab-inactive{color:#6b7280;}
+    .tab-inactive:hover{color:#374151;}
+    .tab-badge{font-size:12px;font-weight:600;padding:1px 7px;border-radius:10px;}
+    .tab-active .tab-badge{background:#dbeafe;color:#1d4ed8;}
+    .tab-inactive .tab-badge{background:#f3f4f6;color:#6b7280;}
+    /* buttons */
+    .btn{padding:5px 12px;font-size:13px;border-radius:4px;font-weight:500;cursor:pointer;border:none;line-height:1.3;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+    .btn-p{background:#2563eb;color:white;} .btn-p:hover{background:#1d4ed8;}
+    .btn-o{background:white;color:#374151;border:1px solid #d1d5db;} .btn-o:hover{background:#f9fafb;}
+    .inp{border:1px solid #d1d5db;border-radius:4px;padding:5px 10px;font-size:13px;background:white;}
+    .inp:focus{outline:none;border-color:#3b82f6;}
+    /* table */
+    .tbl{width:100%;border-collapse:collapse;font-size:13px;}
+    .tbl thead th{background:#fafafa;color:#6b7280;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:9px 12px;text-align:left;border-bottom:1px solid #e5e7eb;white-space:nowrap;}
+    .tbl tbody td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+    .tbl tbody tr:last-child td{border-bottom:none;}
+    .tbl tbody tr:hover td{background:#fafafa;}
+    .id-mono{font-family:'SFMono-Regular','Menlo',monospace;font-size:12px;color:#374151;}
+    .tnum{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+    .chev-icon{color:#9ca3af;cursor:pointer;}
+    /* balance block — reused from mock/index.html (byte-compatible class names) */
+    .balance-block{background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;margin:12px 24px;overflow:hidden;}
+    .balance-block.state-off  {border:1px solid #fecaca;}
+    .balance-block.state-match{border:1px solid #a7f3d0;}
+    .balance-block.state-none {border:1px solid #d1d5db;background:#fafafa;}
+    .bb-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #f1f5f9;background:#fafafa;}
+    .bb-title{font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.05em;}
+    .balance-block.state-off   .bb-header{background:#fef2f2;border-bottom-color:#fecaca;}
+    .balance-block.state-off   .bb-title {color:#9f1239;}
+    .balance-block.state-match .bb-header{background:#f0fdf4;border-bottom-color:#a7f3d0;}
+    .balance-block.state-match .bb-title {color:#065f46;}
+    .bb-meta{font-size:11px;color:#94a3b8;}
+    .bb-grid{display:grid;align-items:stretch;grid-template-columns:1.05fr 22px 1fr 22px 1fr 22px 1.05fr 1px 1fr 1px 1.25fr;}
+    .bb-cell{padding:12px 12px;display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;}
+    .bb-op{display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;color:#94a3b8;padding-top:18px;}
+    .bb-vsep{background:#e5e7eb;}
+    .balance-block.state-off .bb-vsep{background:#fecaca;}
+    .bb-label{font-size:10.5px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .bb-num{font-size:18px;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.1;white-space:nowrap;}
+    .bb-src{font-size:11px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .bb-cell.computed{background:#f8fafc;}
+    .bb-cell.computed .bb-label{color:#475569;}
+    .bb-cell.delta{background:#fff5f5;gap:6px;padding:12px 16px;}
+    .bb-cell.delta .bb-label{color:#991b1b;}
+    .bb-cell.delta .bb-num  {color:#991b1b;font-size:22px;}
+    .bb-cell.delta .bb-src  {color:#b91c1c;}
+    .bb-actions{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;}
+    .bb-action{padding:4px 10px;font-size:12px;font-weight:500;background:white;color:#991b1b;border:1px solid #fca5a5;border-radius:4px;cursor:pointer;white-space:nowrap;}
+    .bb-action:hover{background:#fee2e2;}
+    .bb-match-strip{display:flex;align-items:center;gap:16px;padding:14px 18px;background:#f0fdf4;}
+    .bb-match-tick{width:24px;height:24px;border-radius:50%;background:#10b981;color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+    .bb-match-main{font-size:14px;font-weight:600;color:#064e3b;}
+    .bb-match-amount{font-size:18px;font-weight:700;color:#064e3b;font-variant-numeric:tabular-nums;margin-left:6px;}
+    .bb-expand-btn{font-size:12px;color:#065f46;cursor:pointer;background:none;border:none;text-decoration:underline;padding:4px 8px;}
+    .bb-footnote{padding:8px 16px 10px;background:#f8fafc;border-top:1px solid #e5e7eb;font-size:11.5px;color:#64748b;line-height:1.5;}
+    .balance-block.state-off .bb-footnote{background:#fef9f9;border-top-color:#fecaca;color:#7f1d1d;}
+    .balance-block.state-match .bb-footnote{background:#f0fdf4;border-top-color:#a7f3d0;color:#065f46;}
+    .bb-footnote strong{color:#1e293b;font-weight:600;}
+    /* state toggle + variant switch */
+    .state-toggle{display:flex;background:white;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;font-size:12px;}
+    .state-toggle button{padding:5px 10px;border:none;background:white;color:#374151;cursor:pointer;font-weight:500;}
+    .state-toggle button:hover{background:#f9fafb;}
+    .state-toggle button.active{background:#2563eb;color:white;}
+    .state-toggle button+button{border-left:1px solid #d1d5db;}
+    .variant-switch{display:flex;align-items:center;gap:6px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:3px;font-size:11px;}
+    .variant-switch span{color:#64748b;font-weight:600;padding:0 6px;text-transform:uppercase;letter-spacing:.04em;}
+    .variant-switch button{padding:4px 10px;border:none;background:transparent;color:#475569;font-weight:500;border-radius:4px;cursor:pointer;font-size:12px;}
+    .variant-switch button.active{background:white;color:#0f172a;box-shadow:0 1px 2px rgba(0,0,0,0.08);}
+    /* unsupported clearing notice */
+    .unsupported-notice{background:#fffbeb;border:1px solid #fde68a;color:#92400e;margin:12px 24px;padding:12px 16px;border-radius:8px;display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.5;}
+    .unsupported-notice .icon{color:#d97706;font-size:16px;line-height:1;margin-top:1px;}
+    /* annot */
+    .annot{position:fixed;bottom:16px;right:16px;background:#1f2937;color:#f9fafb;padding:10px 14px;border-radius:6px;font-size:12px;max-width:340px;box-shadow:0 10px 25px rgba(0,0,0,0.2);line-height:1.5;z-index:30;}
+    .annot strong{color:#fef3c7;}
+    .annot .close{position:absolute;top:6px;right:8px;color:#94a3b8;cursor:pointer;font-size:14px;}
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="bg-white border-b border-gray-200 px-6 py-2 flex items-center gap-2.5">
+  <a href="index.html" class="text-gray-400 hover:text-gray-700 text-lg leading-none">×</a>
+  <span class="font-medium text-gray-800">Reconciliation results</span>
+  <span class="chip c-blue" style="font-size:10px">DIS-259 · Full flow · A/B</span>
+  <div class="ml-auto flex items-center gap-4">
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-500">Balance state:</span>
+      <div class="state-toggle">
+        <button id="st-off"   class="active" onclick="setState('off')">⚠ Off by</button>
+        <button id="st-match"            onclick="setState('match')">✓ Matches</button>
+        <button id="st-none"             onclick="setState('none')">– No beg.</button>
+      </div>
+    </div>
+    <div class="variant-switch">
+      <span>A/B variant</span>
+      <button id="v-control" onclick="setVariant('control')">Control</button>
+      <button id="v-treatment" class="active" onclick="setVariant('treatment')">Treatment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="bg-white border-b border-gray-200 px-6 pt-3">
+  <div class="flex items-start justify-between mb-3">
+    <div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <h1 id="recon-title" class="text-[21px] font-bold text-gray-900 leading-tight">Stripe Stripe Test (sandbox) (required for Synder)</h1>
+        <span class="chip c-green">Finished</span>
+        <span class="chip c-amber">Not reconciled</span>
+        <span id="balance-pill" class="chip c-red">⚠ Balance off by $50.00</span>
+      </div>
+      <div id="recon-subtitle" class="text-[13px] text-gray-500 mt-0.5">Stripe Test (sandbox) / Mar 1 - 31, 2026</div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="btn btn-o">Copy share link</button>
+      <button class="btn btn-o">Refresh data</button>
+    </div>
+  </div>
+  <div class="flex items-center gap-2 pb-3">
+    <button class="btn btn-o">Process log</button>
+    <button class="btn btn-p">Export <span class="text-xs">▾</span></button>
+  </div>
+</div>
+
+<!-- Unsupported-clearing notice (shown only for PayPal row) -->
+<div id="unsupported-notice" class="unsupported-notice" style="display:none">
+  <span class="icon">⚠</span>
+  <div>
+    <strong>Balance verification not available for this clearing.</strong><br/>
+    This integration's transactions are reported in multiple currencies; balance verification isn't supported for this clearing yet. Row-level reconciliation works as usual. <span class="text-amber-800/70">(FDD §2 · Unsupported clearing)</span>
+  </div>
+</div>
+
+<!-- Balance Summary block — hidden for control variant / unsupported clearing -->
+<div id="balance-block" class="balance-block state-off">
+
+  <!-- OFF state — FDD §3 worked example: Beg $10,000, Deb $45,300, Cred $1,200 → Delta −$50 -->
+  <div id="bb-off" class="bb-section">
+    <div class="bb-header">
+      <span class="bb-title">Balance Summary · Mar 1 – 31, 2026</span>
+      <span class="bb-meta">Automated · Beginning &amp; Reported from QBO clearing register · Debits and Credits from Stripe</span>
+    </div>
+    <div class="bb-grid">
+      <div class="bb-cell">
+        <div class="bb-label">Beginning balance</div>
+        <div class="bb-num">$10,000.00</div>
+        <div class="bb-src">QBO clearing register</div>
+      </div>
+      <div class="bb-op">+</div>
+      <div class="bb-cell">
+        <div class="bb-label">+ Debits</div>
+        <div class="bb-num">$45,300.00</div>
+        <div class="bb-src">Stripe · sum of debit txns</div>
+      </div>
+      <div class="bb-op">−</div>
+      <div class="bb-cell">
+        <div class="bb-label">− Credits</div>
+        <div class="bb-num">$1,200.00</div>
+        <div class="bb-src">Stripe · sum of credit txns</div>
+      </div>
+      <div class="bb-op">=</div>
+      <div class="bb-cell computed">
+        <div class="bb-label">Computed ending</div>
+        <div class="bb-num">$54,100.00</div>
+        <div class="bb-src">Beg + Deb − Cred</div>
+      </div>
+      <div class="bb-vsep"></div>
+      <div class="bb-cell">
+        <div class="bb-label">Reported ending</div>
+        <div class="bb-num">$54,050.00</div>
+        <div class="bb-src">QBO clearing register</div>
+      </div>
+      <div class="bb-vsep"></div>
+      <div class="bb-cell delta">
+        <div class="bb-label">⚠ Delta</div>
+        <div class="bb-num">−$50.00</div>
+        <div class="bb-src">Reported − Computed</div>
+        <div class="bb-actions">
+          <button class="bb-action" onclick="switchTab('missingsrc')">Review missing →</button>
+          <button class="bb-action" onclick="switchTab('discrepancy')">Review discrepancies →</button>
+        </div>
+      </div>
+    </div>
+    <div class="bb-footnote">
+      Debits and Credits are summed from the <strong>raw Stripe report</strong> for the period — independent of row-matching classification (per FDD §2 Balance-check data sources). Delta ≠ 0 is a signal, not a cause: the tabs below are places you <em>can</em> investigate.
+    </div>
+  </div>
+
+  <!-- MATCH state -->
+  <div id="bb-match" class="bb-section" style="display:none">
+    <div class="bb-header">
+      <span class="bb-title" style="color:#065f46;">✓ Balance matches · Mar 1 – 31, 2026</span>
+      <span class="bb-meta">All transactions accounted for · period is closeable</span>
+    </div>
+    <div class="bb-match-strip">
+      <div class="bb-match-tick">✓</div>
+      <div class="bb-match-main">Balance matches<span class="bb-match-amount">$54,100.00</span></div>
+      <div class="flex-1 text-xs text-emerald-700 font-mono">Beg $10,000 + Deb $45,300 − Cred $1,200 = Reported $54,100</div>
+      <button class="bb-expand-btn" onclick="alert('Expand behavior — see mock/ for the full breakdown UI.')">Show breakdown</button>
+    </div>
+    <div class="bb-footnote">
+      Debits and Credits are summed from the <strong>raw Stripe report</strong> — independent of row-matching classification.
+    </div>
+  </div>
+
+  <!-- NONE state -->
+  <div id="bb-none" class="bb-section" style="display:none">
+    <div class="bb-header">
+      <span class="bb-title">Balance Summary · Mar 1 – 31, 2026</span>
+      <span class="bb-meta">Sources unavailable — Beginning + Reported not fetched</span>
+    </div>
+    <div class="bb-grid" style="grid-template-columns:1fr auto">
+      <div class="bb-cell" style="padding:16px 20px">
+        <div class="bb-label" style="color:#475569">– No beginning balance</div>
+        <div class="bb-num" style="color:#475569;font-size:16px">Balance verification unavailable</div>
+        <div class="bb-src">Auto-pull failed. Row-level reconciliation continues as usual.</div>
+      </div>
+      <div class="bb-cell" style="padding:16px 20px;justify-content:center">
+        <button class="btn btn-p">Retry fetch →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="bg-white border-b border-gray-200 px-6 pt-3">
+  <div class="flex items-center gap-8 -mb-px">
+    <button data-tab="matched"     class="tab-btn tab-active"   onclick="switchTab('matched')">Matched     <span class="tab-badge">56</span></button>
+    <button data-tab="discrepancy" class="tab-btn tab-inactive" onclick="switchTab('discrepancy')">Discrepancy <span class="tab-badge">4</span></button>
+    <button data-tab="missingsrc"  class="tab-btn tab-inactive" onclick="switchTab('missingsrc')">Missing source <span class="tab-badge">3</span></button>
+    <button data-tab="ignored"     class="tab-btn tab-inactive" onclick="switchTab('ignored')">Ignored     <span class="tab-badge">0</span></button>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white border-b border-gray-200 px-6 py-3 flex flex-wrap items-end gap-3">
+  <div><div class="text-xs text-gray-500 font-medium mb-1">Search</div><input class="inp w-48" placeholder="Search…"/></div>
+  <div>
+    <div class="text-xs text-gray-500 font-medium mb-1">Date range</div>
+    <div class="flex items-center gap-2">
+      <input class="inp" style="width:110px" placeholder="Mar 1, 2026"/>
+      <span class="text-gray-400">–</span>
+      <input class="inp" style="width:110px" placeholder="Mar 31, 2026"/>
+    </div>
+  </div>
+  <div>
+    <div class="text-xs text-gray-500 font-medium mb-1">Amount range</div>
+    <div class="flex items-center gap-2">
+      <input class="inp w-24" placeholder="Min"/>
+      <span class="text-gray-400">–</span>
+      <input class="inp w-24" placeholder="Max"/>
+    </div>
+  </div>
+  <div><div class="text-xs text-gray-500 font-medium mb-1">Match type</div><input class="inp w-28" value="All"/></div>
+  <div><div class="text-xs text-gray-500 font-medium mb-1">Currency</div><input class="inp w-24" value="All"/></div>
+  <button class="btn btn-p">Apply</button>
+  <button class="btn btn-o">Reset filters</button>
+</div>
+
+<!-- Table -->
+<div class="px-6 pt-3 pb-10">
+  <div class="bg-white border border-gray-200 rounded">
+    <div id="tab-matched" class="tab-pane">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:26px"><input type="checkbox"/></th>
+            <th>Date ↓</th>
+            <th>Matching ID ↓</th>
+            <th class="text-right" style="text-align:right">Total amount ↓</th>
+            <th>Types ↓</th>
+            <th>Match type</th>
+            <th class="text-right" style="text-align:right">Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><input type="checkbox"/></td><td>Mar 31, 2026</td><td class="id-mono">po_1TGqaE7QSl16uhjVk9QMnj9H</td><td class="tnum">−301.76 USD</td><td>Transfer;payout</td><td>Auto (ID)</td><td class="tnum">2</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 30, 2026</td><td class="id-mono">po_1TGU6C7QSl16uhjV9eJPM9V8</td><td class="tnum">−520.74 USD</td><td>Transfer;payout</td><td>Auto (ID)</td><td class="tnum">2</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 29, 2026</td><td class="id-mono">ch_3TF9fT7QSl16uhjV0qesufrt</td><td class="tnum">142.30 USD</td><td>Sales Receipt;Expense;charge</td><td>Auto (ID)</td><td class="tnum">3</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 27, 2026</td><td class="id-mono">po_1TFOI47QSl16uhjVAJxJMzGu</td><td class="tnum">−2,808.05 USD</td><td>Transfer;payout</td><td>Auto (ID)</td><td class="tnum">2</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TES167QSl16uhjV1bCL9uFG</td><td class="tnum">579.30 USD</td><td>Payment;Expense;charge</td><td>Auto (ID)</td><td class="tnum">3</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TFCdS7QSl16uhjV1ye0xCZn</td><td class="tnum">96.80 USD</td><td>Payment;Expense;charge</td><td>Auto (ID)</td><td class="tnum">3</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TFBSE7QSl16uhjV1Su3SgxF</td><td class="tnum">24.58 USD</td><td>Payment;Expense;charge</td><td>Auto (ID)</td><td class="tnum">3</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TFB4H7QSl16uhjV0TnJGOS8</td><td class="tnum">72.96 USD</td><td>Payment;Expense;charge</td><td>Auto (ID)</td><td class="tnum">3</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TFB8j7QSl16uhjV0zv86Cpy</td><td class="tnum">82.65 USD</td><td>Payment;Expense;charge</td><td>Auto (ID)</td><td class="tnum">3</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 26, 2026</td><td class="id-mono">ch_3TF9d977QSl16uhjV0ubKSPFF</td><td class="tnum">40.27 USD</td><td>Payment;Expense;charge</td><td>Auto (ID)</td><td class="tnum">3</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 25, 2026</td><td class="id-mono">po_1TEfqB7QSl16uhjVIZzpcd8h</td><td class="tnum">−2,346.18 USD</td><td>Transfer;payout</td><td>Auto (ID)</td><td class="tnum">2</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 25, 2026</td><td class="id-mono">ch_3TEoHG7QSl16uhjV0aPCqNDe</td><td class="tnum">18.81 USD</td><td>Payment;Expense;charge</td><td>Auto (ID)</td><td class="tnum">3</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 22, 2026</td><td class="id-mono">ch_3TD1nA7QSl16uhjV0fWx8Kkl</td><td class="tnum">210.00 USD</td><td>Sales Receipt;Expense;charge</td><td>Auto (ID)</td><td class="tnum">3</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 20, 2026</td><td class="id-mono">po_1TC7pM7QSl16uhjV3JXvVUyR</td><td class="tnum">−1,984.20 USD</td><td>Transfer;payout</td><td>Auto (ID)</td><td class="tnum">2</td></tr>
+          <tr><td><input type="checkbox"/></td><td>Mar 17, 2026</td><td class="id-mono">ch_3TBK5J7QSl16uhjV1MzZQKtb</td><td class="tnum">64.99 USD</td><td>Payment;Expense;charge</td><td>Auto (ID)</td><td class="tnum">3</td></tr>
+        </tbody>
+      </table>
+      <div class="px-4 py-2 text-xs text-gray-500 border-t border-gray-200 flex justify-between">
+        <span>Showing 15 of 56 matched rows</span>
+        <div class="flex items-center gap-2">
+          <button class="btn btn-o">‹ Prev</button><span>1 / 4</span>
+          <button class="btn btn-o">Next ›</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-discrepancy" class="tab-pane" style="display:none">
+      <div class="px-4 py-3 text-[12px] text-gray-500 border-b border-gray-200 bg-amber-50">
+        <strong class="text-amber-900">4 rows with amount / date discrepancies between Stripe and QBO.</strong> Delta line is a signal, not a cause — see FDD §2.
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Date ↓</th>
+            <th>Matching ID</th>
+            <th class="text-right" style="text-align:right">Stripe</th>
+            <th class="text-right" style="text-align:right">QBO</th>
+            <th class="text-right" style="text-align:right">Diff</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mar 21, 2026</td><td class="id-mono">ch_3TCwqE7QSl16uhjV1DiscA</td><td class="tnum">42.50</td><td class="tnum">42.00</td><td class="tnum">0.50</td><td>Payment;charge</td></tr>
+          <tr><td>Mar 18, 2026</td><td class="id-mono">ch_3TBHi27QSl16uhjV0DiscB</td><td class="tnum">150.00</td><td class="tnum">148.00</td><td class="tnum">2.00</td><td>Payment;charge</td></tr>
+          <tr><td>Mar 12, 2026</td><td class="id-mono">ch_3T9RmS7QSl16uhjV1DiscC</td><td class="tnum">89.99</td><td class="tnum">89.00</td><td class="tnum">0.99</td><td>Payment;charge</td></tr>
+          <tr><td>Mar 05, 2026</td><td class="id-mono">ch_3T74yH7QSl16uhjV0DiscD</td><td class="tnum">75.00</td><td class="tnum">76.00</td><td class="tnum">−1.00</td><td>Payment;charge</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="tab-missingsrc" class="tab-pane" style="display:none">
+      <div class="px-4 py-3 text-[12px] text-gray-500 border-b border-gray-200 bg-amber-50">
+        <strong class="text-amber-900">3 transactions on the Stripe side have no counterpart in QBO.</strong> Total: $50.00 — matches the balance delta above.
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Date ↓</th>
+            <th>Stripe ID</th>
+            <th class="text-right" style="text-align:right">Amount</th>
+            <th>Type</th>
+            <th class="text-right" style="text-align:right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Mar 29, 2026</td><td class="id-mono">ch_3TG4xV7QSl16uhjV9MissA</td><td class="tnum">$22.50</td><td>Payment;charge</td><td class="tnum"><button class="btn btn-o">Match / Ignore</button></td></tr>
+          <tr><td>Mar 24, 2026</td><td class="id-mono">ch_3TE2bn7QSl16uhjV0MissB</td><td class="tnum">$18.00</td><td>Payment;charge</td><td class="tnum"><button class="btn btn-o">Match / Ignore</button></td></tr>
+          <tr><td>Mar 19, 2026</td><td class="id-mono">ch_3TC8nB7QSl16uhjV0MissC</td><td class="tnum">$9.50</td><td>Payment;charge</td><td class="tnum"><button class="btn btn-o">Match / Ignore</button></td></tr>
+        </tbody>
+      </table>
+      <div class="px-4 py-2 text-xs text-gray-500 border-t border-gray-200">Sum: $50.00 — resolving these in QBO closes the balance delta.</div>
+    </div>
+
+    <div id="tab-ignored" class="tab-pane" style="display:none">
+      <div class="py-16 text-center text-gray-400 text-sm">No rows in this view.</div>
+    </div>
+  </div>
+</div>
+
+<div class="annot">
+  <span class="close" onclick="this.parentElement.remove()">×</span>
+  <strong>Full-flow MVP — page 3 / 3</strong><br/>
+  Balance block renders only in <strong>Treatment</strong>. Toggle A/B top-right to see the pre-DIS-259 layout.<br/>
+  Numbers come from FDD §3 worked example (−$50 delta).<br/>
+  Balance-block classes are byte-compatible with <a href="../mock/">mock/</a>.
+</div>
+
+<script>
+  // ---- variant ----
+  function readVariant(){
+    return sessionStorage.getItem('dis259_variant') || 'treatment';
+  }
+  function applyVariant(v){
+    const block = document.getElementById('balance-block');
+    const pill = document.getElementById('balance-pill');
+    const unsupported = sessionStorage.getItem('dis259_recon_supported') === '0';
+    const showBlock = v === 'treatment' && !unsupported;
+    block.style.display = showBlock ? 'block' : 'none';
+    pill.style.display  = showBlock ? 'inline-flex' : 'none';
+    document.getElementById('unsupported-notice').style.display = unsupported ? 'flex' : 'none';
+  }
+  function setVariant(v){
+    sessionStorage.setItem('dis259_variant', v);
+    document.getElementById('v-control').classList.toggle('active', v==='control');
+    document.getElementById('v-treatment').classList.toggle('active', v==='treatment');
+    applyVariant(v);
+  }
+
+  // ---- balance state ----
+  function setState(state){
+    ['off','match','none'].forEach(s=>{
+      document.getElementById('st-'+s).classList.toggle('active', s===state);
+    });
+    const block=document.getElementById('balance-block');
+    block.classList.remove('state-off','state-match','state-none');
+    document.getElementById('bb-off').style.display='none';
+    document.getElementById('bb-match').style.display='none';
+    document.getElementById('bb-none').style.display='none';
+    const pill=document.getElementById('balance-pill');
+    pill.classList.remove('c-red','c-green','c-gray','c-amber');
+    if(state==='off'){
+      block.classList.add('state-off');
+      document.getElementById('bb-off').style.display='block';
+      pill.classList.add('c-red');
+      pill.textContent='⚠ Balance off by $50.00';
+    } else if(state==='match'){
+      block.classList.add('state-match');
+      document.getElementById('bb-match').style.display='block';
+      pill.classList.add('c-green');
+      pill.textContent='✓ Balance matches';
+    } else {
+      block.classList.add('state-none');
+      document.getElementById('bb-none').style.display='block';
+      pill.classList.add('c-gray');
+      pill.textContent='– No beginning balance';
+    }
+    sessionStorage.setItem('dis259_recon_state', state);
+  }
+
+  function switchTab(name){
+    document.querySelectorAll('.tab-btn').forEach(b=>{
+      const active=b.getAttribute('data-tab')===name;
+      b.classList.toggle('tab-active', active);
+      b.classList.toggle('tab-inactive', !active);
+    });
+    document.querySelectorAll('.tab-pane').forEach(p=>p.style.display='none');
+    const pane=document.getElementById('tab-'+name);
+    if(pane) pane.style.display='block';
+  }
+
+  // ---- init from sessionStorage ----
+  (function init(){
+    const state = sessionStorage.getItem('dis259_recon_state') || 'off';
+    setState(state);
+    // If PayPal row was clicked, swap the header text
+    if(sessionStorage.getItem('dis259_recon_id') === 'r7-paypal'){
+      document.getElementById('recon-title').textContent = 'PayPal clearing (USD)';
+      document.getElementById('recon-subtitle').textContent = 'PayPal / Mar 1 - 31, 2026';
+    }
+    setVariant(readVariant());
+  })();
+</script>
+</body>
+</html>
