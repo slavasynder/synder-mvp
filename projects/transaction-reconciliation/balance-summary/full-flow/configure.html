@@ -445,6 +445,12 @@
     xero: {icon:'X', iconClass:'xero-icon', label:'Xero',                name:'Cool dollars',                     defaultMode:'assisted'},
     qbd:  {icon:'D', iconClass:'qbd-icon',  label:'QuickBooks Desktop',  name:'Acme LLC',                         defaultMode:'manual'},
   };
+  // Platform-specific Automation mode availability (real Synder behavior)
+  const PLATFORM_MODES = {
+    qbo:  { modes:['automated','manual'],     default:'automated' },
+    xero: { modes:['assisted','manual'],      default:'assisted'  },
+    qbd:  { modes:['manual'],                 default:'manual'    }
+  };
   let accPlatform = 'qbo';
   let accMode = 'automated';
 
@@ -456,10 +462,21 @@
     icon.textContent = cfg.icon;
     document.getElementById('acc-name').textContent = cfg.name;
     document.getElementById('acc-platform-label').textContent = cfg.label;
-    setAccMode(cfg.defaultMode);
+    // Show only the mode buttons available for this platform
+    const allowed = PLATFORM_MODES[p].modes;
+    ['automated','assisted','manual'].forEach(m=>{
+      const btn = document.getElementById('acc-mode-'+m);
+      if(btn) btn.style.display = allowed.includes(m) ? '' : 'none';
+    });
+    // Reset mode to platform default if the current mode is no longer allowed
+    const nextMode = allowed.includes(accMode) ? accMode : PLATFORM_MODES[p].default;
+    setAccMode(nextMode);
   }
 
   function setAccMode(mode){
+    // Guard: if the requested mode isn't allowed on the current platform, fall back to its default
+    const allowed = PLATFORM_MODES[accPlatform].modes;
+    if(!allowed.includes(mode)) mode = PLATFORM_MODES[accPlatform].default;
     accMode = mode;
     ['automated','assisted','manual'].forEach(m=>{
       const btn = document.getElementById('acc-mode-'+m);
