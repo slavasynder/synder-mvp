@@ -416,6 +416,26 @@
     sessionStorage.setItem('dis259_variant', v);
     document.getElementById('v-control').classList.toggle('active', v==='control');
     document.getElementById('v-treatment').classList.toggle('active', v==='treatment');
+    updateBalanceUiForVariant();
+  }
+  // Control cohort sees the pre-DIS-259 configure UI: no balance-reconciliation
+  // surfaces, no "New" chips, no guide links. Treatment renders per current logic.
+  function updateBalanceUiForVariant(){
+    const isControl = readVariant() === 'control';
+    const ids = [
+      'auto-balance-panel','auto-balance-unsupported',
+      'assisted-balance-panel','assisted-balance-unsupported',
+      'manual-balance-panel','manual-balance-unsupported'
+    ];
+    if(isControl){
+      ids.forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.style.display = 'none';
+      });
+    } else {
+      // Treatment: restore per integration-support logic
+      updateManualBalanceVisibility();
+    }
   }
   setVariant(readVariant());
 
@@ -532,6 +552,16 @@
   // When integration is unsupported (PayPal, mixed-currency), replace that section — in whichever
   // mode is currently active — with the blue info strip. Other mode content stays as-is.
   function updateManualBalanceVisibility(){
+    // Control cohort: no balance UI at all — defer to variant sweep.
+    if(readVariant() === 'control'){
+      ['auto-balance-panel','auto-balance-unsupported',
+       'assisted-balance-panel','assisted-balance-unsupported',
+       'manual-balance-panel','manual-balance-unsupported'].forEach(id=>{
+        const el = document.getElementById(id);
+        if(el) el.style.display = 'none';
+      });
+      return;
+    }
     const supported = INTEGS[integ].supported;
     // Automated
     document.getElementById('auto-balance-panel').style.display          = supported ? 'block' : 'none';
