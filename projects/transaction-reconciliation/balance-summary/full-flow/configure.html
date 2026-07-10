@@ -212,22 +212,38 @@
             <div class="auto-helper" style="margin-top:8px">
               Synder will automatically retrieve the GL Account register and map balances for you.
             </div>
-            <div class="bal-section">
+            <div id="auto-balance-panel" class="bal-section">
               <div class="b-title">Balance reconciliation <span class="chip chip-new">New</span></div>
               <div class="b-body">
                 Beginning + Reported balances are pulled alongside transactions from the GL Account register.
                 <a href="#" class="guide-link" title="Design pass: platform-specific guide TBD">Balance reconciliation guide →</a>
               </div>
             </div>
+            <div id="auto-balance-unsupported" class="paypal-notice" style="display:none">
+              <span class="icon">ⓘ</span>
+              <div>
+                Balance reconciliation isn't available for this integration — mixed-currency reporting. Row-level reconciliation continues as usual.
+                <br/>
+                <a href="#" title="Design pass: platform-specific guide TBD">Balance reconciliation guide →</a>
+              </div>
+            </div>
           </div>
 
           <!-- Assisted content (Xero) -->
           <div id="acc-content-assisted" style="display:none">
-            <div class="bal-section">
+            <div id="assisted-balance-panel" class="bal-section">
               <div class="b-title">Balance reconciliation <span class="chip chip-new">New</span></div>
               <div class="b-body">
                 Beginning + Reported balances come from the Running Balance column in the same Xero Account Transactions upload.
                 <a href="#" class="guide-link" title="Design pass: platform-specific guide TBD">Balance reconciliation guide →</a>
+              </div>
+            </div>
+            <div id="assisted-balance-unsupported" class="paypal-notice" style="display:none">
+              <span class="icon">ⓘ</span>
+              <div>
+                Balance reconciliation isn't available for this integration — mixed-currency reporting. Row-level reconciliation continues as usual.
+                <br/>
+                <a href="#" title="Design pass: platform-specific guide TBD">Balance reconciliation guide →</a>
               </div>
             </div>
             <div class="field-label mt-3">Upload file <span style="color:#dc2626">*</span></div>
@@ -510,12 +526,20 @@
     sessionStorage.setItem('dis259_integ_mode', mode);
   }
 
-  // ---- Balance-inputs visibility ----
-  // Show manual balance inputs ONLY when accounting is Manual AND integration is supported.
-  // For unsupported integration (PayPal), show the red-tinted info strip instead.
+  // ---- Balance-section visibility ----
+  // When integration is supported, show the mode-specific balance section (Automated card /
+  // Assisted card / Manual balance-inputs panel).
+  // When integration is unsupported (PayPal, mixed-currency), replace that section — in whichever
+  // mode is currently active — with the blue info strip. Other mode content stays as-is.
   function updateManualBalanceVisibility(){
-    if(accMode !== 'manual') return; // controlled by content-manual show/hide anyway
     const supported = INTEGS[integ].supported;
+    // Automated
+    document.getElementById('auto-balance-panel').style.display          = supported ? 'block' : 'none';
+    document.getElementById('auto-balance-unsupported').style.display    = supported ? 'none'  : 'flex';
+    // Assisted
+    document.getElementById('assisted-balance-panel').style.display      = supported ? 'block' : 'none';
+    document.getElementById('assisted-balance-unsupported').style.display= supported ? 'none'  : 'flex';
+    // Manual
     document.getElementById('manual-balance-panel').style.display        = supported ? 'block' : 'none';
     document.getElementById('manual-balance-unsupported').style.display  = supported ? 'none'  : 'flex';
   }
