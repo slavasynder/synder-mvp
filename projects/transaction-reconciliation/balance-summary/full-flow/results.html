@@ -506,6 +506,15 @@
     const pill = document.getElementById('balance-pill');
     const unsupported = sessionStorage.getItem('dis259_recon_supported') === '0';
     const manualEmpty = scen === 'r-manual-empty';
+    // Per FDD §S8 — PayPal (unsupported) shows no balance UI whatsoever, not even in treatment.
+    // Configuration screen is the single point where the user learns balance recon is unavailable.
+    if(scen === 'r7-paypal'){
+      block.style.display = 'none';
+      pill.style.display = 'none';
+      document.getElementById('unsupported-notice').style.display = 'none';
+      document.getElementById('manual-empty-notice').style.display = 'none';
+      return;
+    }
     // Balance block hidden for control OR unsupported OR manual-empty
     const showBlock = v === 'treatment' && !unsupported && !manualEmpty;
     block.style.display = showBlock ? 'block' : 'none';
@@ -610,17 +619,16 @@
       scenarioLabel.style.display = 'inline-flex';
       scenarioLabelText.textContent = 'Manual · no values entered';
     } else if(scen === 'r7-paypal'){
+      // Per FDD §S8 — module doesn't render on unsupported clearings; no error/warning UI on the reconciliation itself.
+      // The `Balance reconciliation not available` message on the configuration screen is the single point where the user
+      // learns about it. Results page for PayPal should look identical to pre-DIS-259 TxnRecon: header + tabs + table only.
       document.getElementById('recon-title').textContent = 'PayPal clearing (USD)';
-      document.getElementById('recon-subtitle').textContent = 'PayPal / Mar 1 - 31, 2026 · Unsupported clearing';
-      setState('off'); // internal state is off but pill hidden via unsupported branch below; we'll override pill
+      document.getElementById('recon-subtitle').textContent = 'PayPal / Mar 1 - 31, 2026';
       stateToggleWrap.style.display = 'none';
-      scenarioLabel.style.display = 'inline-flex';
-      scenarioLabelText.textContent = 'PayPal · unsupported clearing';
-      // Override pill to a Not-reconciled state for the unsupported case
-      const pill = document.getElementById('balance-pill');
-      pill.classList.remove('c-red','c-green','c-gray');
-      pill.classList.add('c-amber');
-      pill.textContent = '⚠ Balance not reconciled';
+      // Hide scenario label too (reviewer preference)
+      scenarioLabel.style.display = 'none';
+      // No setState() call — we intentionally do NOT render any bb-* section.
+      // applyVariant() (called below via setVariant) has a paypal guard that hides block, pill, and both notices.
     } else {
       // Default scenario (r3 off-by, or others) — keep the state toggle available
       const state = sessionStorage.getItem('dis259_recon_state') || 'off';

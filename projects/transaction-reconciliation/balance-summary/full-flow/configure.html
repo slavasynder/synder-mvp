@@ -76,9 +76,17 @@
     .upload-dz .upload-req{font-size:11px;color:#dc2626;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;}
     .upload-dz .upload-cta{font-size:13px;color:#334155;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;}
     .upload-dz .upload-hint{font-size:11.5px;color:#64748b;margin-top:4px;}
-    /* PayPal balance-verification-unavailable strip */
-    .paypal-notice{background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:10px 14px;border-radius:6px;margin-top:10px;font-size:12px;line-height:1.5;display:flex;gap:8px;align-items:flex-start;}
-    .paypal-notice .icon{color:#dc2626;font-size:14px;line-height:1;margin-top:1px;}
+    /* PayPal balance-verification-unavailable strip — blue info treatment */
+    .paypal-notice{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;padding:10px 14px;border-radius:6px;margin-top:10px;font-size:12px;line-height:1.5;display:flex;gap:8px;align-items:flex-start;}
+    .paypal-notice .icon{color:#2563eb;font-size:14px;line-height:1;margin-top:1px;}
+    .paypal-notice a{color:#1d4ed8;text-decoration:underline;}
+    /* Subdued balance-reconciliation mentions on the accounting side */
+    .balance-mention{font-size:11.5px;color:#64748b;line-height:1.5;margin-top:8px;padding-left:2px;}
+    .balance-mention .guide-link{display:block;margin-top:4px;color:#64748b;text-decoration:underline;text-decoration-color:#cbd5e1;text-underline-offset:2px;}
+    .balance-mention .guide-link:hover{text-decoration-color:#64748b;color:#334155;}
+    .balance-mention-inline{display:flex;justify-content:flex-end;font-size:11.5px;margin-top:-2px;margin-bottom:6px;}
+    .balance-mention-inline a{color:#64748b;text-decoration:underline;text-decoration-color:#cbd5e1;text-underline-offset:2px;}
+    .balance-mention-inline a:hover{text-decoration-color:#64748b;color:#334155;}
     .annot{position:fixed;bottom:16px;right:16px;background:#1f2937;color:#f9fafb;padding:10px 14px;border-radius:6px;font-size:12px;max-width:340px;box-shadow:0 10px 25px rgba(0,0,0,0.2);line-height:1.5;z-index:30;}
     .annot strong{color:#fef3c7;}
     .annot .close{position:absolute;top:6px;right:8px;color:#94a3b8;cursor:pointer;font-size:14px;}
@@ -195,10 +203,18 @@
           <!-- Automated content -->
           <div id="acc-content-automated" class="auto-helper" style="display:none">
             Synder will automatically retrieve the GL Account register and map balances for you.
+            <div class="balance-mention">
+              Balance reconciliation included — Beginning + Reported are pulled alongside transactions.
+              <a href="#" class="guide-link" title="Design pass: platform-specific guide TBD">Balance reconciliation guide →</a>
+            </div>
           </div>
 
           <!-- Assisted content (Xero) -->
           <div id="acc-content-assisted" style="display:none">
+            <div class="balance-mention" style="margin-top:10px">
+              Balance reconciliation included — sourced from the Running Balance column in the same upload.
+              <a href="#" class="guide-link" title="Design pass: platform-specific guide TBD">Balance reconciliation guide →</a>
+            </div>
             <div class="field-label mt-3">Upload file <span style="color:#dc2626">*</span></div>
             <div class="instructions-card">
               <div id="xero-instr-header" class="instructions-header" onclick="toggleInstructions('xero-instr')">
@@ -232,6 +248,9 @@
             <!-- Balance inputs — visible only when integration is supported (i.e. NOT PayPal) -->
             <div id="manual-balance-panel" class="manual-panel" style="margin-top:14px">
               <div class="m-title">Manual balance entry <span class="chip">Optional</span></div>
+              <div class="balance-mention-inline">
+                <a href="#" title="Design pass: platform-specific guide TBD">Balance reconciliation guide →</a>
+              </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label class="field-label" style="margin-bottom:4px">Beginning balance</label>
@@ -244,15 +263,17 @@
               </div>
               <div class="helper">
                 Optional. Enter both to render the balance module on results. Leave blank to skip balance verification for this reconciliation. No carry-over from prior period (per FDD §2).
-                <br/>
-                <a href="#" title="Design pass: platform-specific guidance">Where to find these →</a>
               </div>
             </div>
 
-            <!-- PayPal (unsupported integration) — replaces the balance inputs -->
+            <!-- PayPal (unsupported integration) — replaces the balance inputs. Blue info treatment, not red warning. -->
             <div id="manual-balance-unsupported" class="paypal-notice" style="display:none">
-              <span class="icon">⚠</span>
-              <div>Balance verification isn't available for this integration (mixed-currency reporting). Row-level reconciliation continues as usual.</div>
+              <span class="icon">ⓘ</span>
+              <div>
+                Balance reconciliation isn't available for this integration — mixed-currency reporting. Row-level reconciliation continues as usual.
+                <br/>
+                <a href="#" title="Design pass: platform-specific guide TBD">Balance reconciliation guide →</a>
+              </div>
             </div>
           </div>
         </div>
