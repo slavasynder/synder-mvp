@@ -645,21 +645,29 @@
     flashToast('📩 HubSpot meeting-booked received → state = engaged. 24h re-show cancelled.');
   }
 
+  function clearFormForReshow() {
+    // Per §2 Answer persistence: form re-renders empty on 24h re-show — no prepopulation.
+    state.step = 1;
+    state.answers = { q1: null, q2: null, q3: null, phone: null, phoneTime: null, phoneTz: null };
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+    document.getElementById('phone-number').value = '';
+    document.getElementById('phone-error').classList.add('hidden');
+    document.getElementById('phone-fields').classList.add('hidden');
+  }
+
   function simulate24h() {
-    // Two cases per Slava's clarification:
-    // 1) skipped → re-show form → after resolve, go STRAIGHT to product (TYP already shown)
-    // 2) pending-hubspot (no confirm within 24h) → re-show form
     if (state.wizardState === 'skipped') {
-      flashToast('⏱ 24h passed. Form re-renders. skipped=true stays (per §2). TYP will not show again.');
+      flashToast('⏱ 24h passed. Form re-renders empty (per §2 — no prepopulation). skipped=true stays. TYP suppressed.');
       state.wizardState = 'unresolved';
-      // skipped signal is durable — stays true for history; engaged wins as suppress signal (per §2).
+      clearFormForReshow();
       updateStateChip();
       renderForm(1);
       return;
     }
     if (state.wizardState === 'pending-hubspot') {
-      flashToast('⏱ 24h passed, no meeting-booked → form re-renders. TYP will not show again.');
+      flashToast('⏱ 24h passed, no meeting-booked → form re-renders empty. TYP suppressed. HubSpot props stay; next Submit overwrites.');
       state.wizardState = 'unresolved';
+      clearFormForReshow();
       updateStateChip();
       renderForm(1);
       return;
