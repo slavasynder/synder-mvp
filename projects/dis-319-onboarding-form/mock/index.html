@@ -518,11 +518,13 @@
     const phoneTime = state.answers.phoneTime || '';
     const phoneTz = state.answers.phoneTz || '';
 
+    // Zoom + Shortcut share content — same HubSpot Zoom call in both cases.
+    const zoomOrShortcut = `<div class="flex gap-3 items-start"><span class="text-2xl">💬</span><div><div class="font-semibold mb-1">Your Zoom call is all set</div><div class="text-sm text-slate-700">Your Synder specialist will see you there. Talk soon.</div><div class="text-xs text-emerald-700 mt-2">A booking tab was opened for you to pick a time.</div></div></div>`;
     const variants = {
-      zoom: `<div class="flex gap-3 items-start"><span class="text-2xl">💬</span><div><div class="font-semibold mb-1">Your Zoom call is all set</div><div class="text-sm text-slate-700">Your Synder specialist will see you there. Talk soon.</div><div class="text-xs text-emerald-700 mt-2">A booking tab was opened for you to pick a time.</div></div></div>`,
+      zoom: zoomOrShortcut,
+      shortcut: zoomOrShortcut,
       phone: `<div class="flex gap-3 items-start"><span class="text-2xl">📞</span><div><div class="font-semibold mb-1">We'll give you a call</div><div class="text-sm text-slate-700">We'll call you at <b>${phone}</b>, aiming for <b>${phoneTime} ${phoneTz}</b>. We'll do our best to fit that window.</div></div></div>`,
       email: `<div class="flex gap-3 items-start"><span class="text-2xl">✉️</span><div><div class="font-semibold mb-1">Expect an email shortly</div><div class="text-sm text-slate-700">A personal email at <b>${email}</b> in the next few hours.</div></div></div>`,
-      shortcut: `<div class="flex gap-3 items-start"><span class="text-2xl">📅</span><div><div class="font-semibold mb-1">Your call is set</div><div class="text-sm text-slate-700">Your Synder specialist will see you there. Talk soon.</div><div class="text-xs text-emerald-700 mt-2">A booking tab was opened for you to pick a time.</div></div></div>`,
     };
     document.getElementById('confirmation-content').innerHTML = variants[channel] || variants.email;
     updateStateChip();
