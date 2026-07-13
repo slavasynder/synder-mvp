@@ -609,9 +609,9 @@
     // 1) skipped → re-show form → after resolve, go STRAIGHT to product (TYP already shown)
     // 2) pending-hubspot (no confirm within 24h) → re-show form
     if (state.wizardState === 'skipped') {
-      flashToast('⏱ 24h passed. Form re-renders. TYP will not show again.');
+      flashToast('⏱ 24h passed. Form re-renders. skipped=true stays (per §2). TYP will not show again.');
       state.wizardState = 'unresolved';
-      state.skipped = false;
+      // skipped signal is durable — stays true for history; engaged wins as suppress signal (per §2).
       updateStateChip();
       renderForm(1);
       return;
