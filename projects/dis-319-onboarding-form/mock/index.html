@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIS-319 — Pro Sandbox Onboarding Form (Mock)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .fade-in { animation: fadeIn 200ms ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .radio-card:has(input:checked) { border-color: #059669; background-color: #ecfdf5; }
+  .radio-card:has(input:checked) .radio-dot { background-color: #059669; border-color: #059669; }
+  .radio-card:has(input:checked) .radio-dot::after { opacity: 1; }
+  .radio-dot::after { content: ''; position: absolute; inset: 3px; border-radius: 999px; background: white; opacity: 0; transition: opacity 120ms; }
+  .toggle-input:checked + .toggle-track { background-color: #059669; }
+  .toggle-input:checked + .toggle-track .toggle-thumb { transform: translateX(20px); }
+  .progress-fill { transition: width 400ms ease-out; }
+  .devchip { font-family: 'ui-monospace', 'SF Mono', monospace; }
+</style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+
+<!-- Dev / demo controls -->
+<div class="fixed top-4 right-4 z-50 bg-slate-900 text-white rounded-xl shadow-2xl w-80 overflow-hidden">
+  <div class="px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <div class="w-2 h-2 bg-emerald-400 rounded-full"></div>
+      <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Demo Controls</span>
+    </div>
+    <button onclick="togglePanel()" class="text-slate-400 hover:text-white text-xs">Hide</button>
+  </div>
+  <div id="dev-panel" class="px-4 py-3 space-y-3">
+    <div>
+      <div class="text-xs text-slate-400 mb-1">Wizard state</div>
+      <div id="state-chip" class="devchip inline-block px-2 py-1 rounded bg-slate-800 text-emerald-300 text-xs">unresolved</div>
+    </div>
+    <div>
+      <div class="text-xs text-slate-400 mb-1">HubSpot signals</div>
+      <div class="flex flex-wrap gap-1">
+        <div id="chip-engaged" class="devchip px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-xs">engaged: —</div>
+        <div id="chip-skipped" class="devchip px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-xs">skipped: —</div>
+      </div>
+    </div>
+    <div>
+      <div class="text-xs text-slate-400 mb-1">TYP shown this session</div>
+      <div id="chip-typ" class="devchip px-2 py-0.5 rounded bg-slate-800 text-slate-400 text-xs inline-block">no</div>
+    </div>
+    <div class="border-t border-slate-700 pt-3 space-y-1.5">
+      <button onclick="simulateHubspotConfirm()" class="w-full text-left text-xs bg-slate-800 hover:bg-slate-700 rounded px-2 py-1.5 text-slate-200">
+        📩 Simulate HubSpot <code class="text-emerald-300">meeting-booked</code>
+      </button>
+      <button onclick="simulate24h()" class="w-full text-left text-xs bg-slate-800 hover:bg-slate-700 rounded px-2 py-1.5 text-slate-200">
+        ⏱ Simulate 24h + new session
+      </button>
+      <button onclick="resetAll()" class="w-full text-left text-xs bg-rose-950 hover:bg-rose-900 rounded px-2 py-1.5 text-rose-200">
+        ↻ Reset flow
+      </button>
+    </div>
+    <div class="border-t border-slate-700 pt-2 text-[10px] text-slate-500 leading-relaxed">
+      This is a proposal mock. Not final copy or visuals.
+    </div>
+  </div>
+</div>
+
+<button id="show-panel-btn" onclick="togglePanel()" class="fixed top-4 right-4 z-50 hidden bg-slate-900 text-white rounded-full shadow-lg px-3 py-2 text-xs">⚙ Demo</button>
+
+<!-- =========================================================
+     ENTRY / SIMULATOR
+     ========================================================= -->
+<section id="scr-entry" class="screen min-h-screen flex items-center justify-center p-8">
+  <div class="max-w-lg w-full bg-white rounded-2xl shadow-xl p-8 fade-in">
+    <div class="text-center mb-6">
+      <div class="inline-flex w-14 h-14 bg-emerald-100 rounded-2xl items-center justify-center mb-4">
+        <span class="text-emerald-600 font-bold text-2xl">S</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900">DIS-319 — Pro Sandbox Onboarding</h1>
+      <p class="text-slate-500 mt-2">Interactive mock of the simplified flow: form → existing Thank You page → product. Skip re-shows the form after 24h.</p>
+    </div>
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
+      <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Flow to demonstrate</div>
+      <ol class="text-sm text-slate-700 space-y-1 list-decimal list-inside">
+        <li>Customer subscribes to Pro Sandbox</li>
+        <li>Form appears (3 steps, skip option on Steps 1&nbsp;+&nbsp;2, shortcut option too)</li>
+        <li>After fill / skip → existing Thank You page (autocharge toggle, unchanged)</li>
+        <li>Skip → form re-shows 24h later → then straight into product (no TYP again)</li>
+      </ol>
+    </div>
+    <button onclick="startFlow()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 rounded-xl transition-all">
+      Simulate: I just subscribed to Pro →
+    </button>
+    <div class="mt-3 text-center text-xs text-slate-400">Uses the demo controls (top-right) to fast-forward time and confirm bookings.</div>
+  </div>
+</section>
+
+<!-- =========================================================
+     FORM WRAPPER — Steps 1, 2, 3
+     Full-page layout, Synder nav hidden (per FDD §S1)
+     ========================================================= -->
+<section id="scr-form" class="screen hidden min-h-screen bg-slate-100">
+  <div class="max-w-2xl mx-auto px-6 pt-10 pb-16">
+
+    <!-- Synder logo strip (nav hidden per FDD; just the mark) -->
+    <div class="flex items-center gap-2 mb-8">
+      <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold text-sm">S</span>
+      </div>
+      <span class="text-slate-800 font-semibold text-sm">Synder</span>
+    </div>
+
+    <!-- Header + progress -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-xs font-semibold uppercase tracking-wider text-emerald-700">
+          Step <span id="step-current">1</span> of 3
+        </div>
+        <div class="text-xs text-slate-400">Takes about a minute</div>
+      </div>
+      <div class="h-1.5 bg-slate-200 rounded-full overflow-hidden">
+        <div id="progress-fill" class="progress-fill h-full bg-emerald-500 rounded-full" style="width: 33%"></div>
+      </div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div id="step-1" class="step">
+      <h2 class="text-2xl font-bold text-slate-900 mb-2">How many sales channels or payment platforms are you connecting?</h2>
+      <p class="text-slate-500 mb-6 text-sm">We'll use this to understand how involved your setup will be.</p>
+      <div class="space-y-2.5" id="step-1-options">
+        <label class="radio-card block bg-white border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-emerald-300 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0"></span>
+            <input type="radio" name="q1" value="just_1" class="hidden">
+            <span class="text-slate-800 font-medium">Just 1</span>
+          </div>
+        </label>
+        <label class="radio-card block bg-white border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-emerald-300 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0"></span>
+            <input type="radio" name="q1" value="2_3" class="hidden">
+            <span class="text-slate-800 font-medium">2–3 platforms</span>
+          </div>
+        </label>
+        <label class="radio-card block bg-white border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-emerald-300 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0"></span>
+            <input type="radio" name="q1" value="4_or_more" class="hidden">
+            <span class="text-slate-800 font-medium">4 or more</span>
+          </div>
+        </label>
+        <label class="radio-card block bg-white border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-emerald-300 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0"></span>
+            <input type="radio" name="q1" value="not_sure" class="hidden">
+            <span class="text-slate-800 font-medium">Not sure yet</span>
+          </div>
+        </label>
+        <label class="radio-card block bg-white border-2 border-emerald-200 rounded-xl p-4 cursor-pointer hover:border-emerald-400 transition-colors">
+          <div class="flex items-start gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0 mt-0.5"></span>
+            <input type="radio" name="q1" value="shortcut" class="hidden">
+            <div>
+              <div class="text-slate-800 font-medium">Let's just have an activation session — I'll tell you everything there</div>
+              <div class="text-xs text-emerald-700 mt-1">📞 Books you a call directly</div>
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step-2" class="step hidden">
+      <h2 class="text-2xl font-bold text-slate-900 mb-2">When do you need your setup running?</h2>
+      <p class="text-slate-500 mb-6 text-sm">We'll use this to choose the right level of attention from our specialists.</p>
+      <div class="space-y-2.5" id="step-2-options">
+        <label class="radio-card block bg-white border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-emerald-300 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0"></span>
+            <input type="radio" name="q2" value="no_rush" class="hidden">
+            <span class="text-slate-800 font-medium">No rush — I'm getting started gradually</span>
+          </div>
+        </label>
+        <label class="radio-card block bg-white border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-emerald-300 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0"></span>
+            <input type="radio" name="q2" value="within_2_weeks" class="hidden">
+            <span class="text-slate-800 font-medium">Within the next 2 weeks</span>
+          </div>
+        </label>
+        <label class="radio-card block bg-white border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-emerald-300 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0"></span>
+            <input type="radio" name="q2" value="urgent" class="hidden">
+            <span class="text-slate-800 font-medium">This week — it's urgent</span>
+          </div>
+        </label>
+        <label class="radio-card block bg-white border-2 border-emerald-200 rounded-xl p-4 cursor-pointer hover:border-emerald-400 transition-colors">
+          <div class="flex items-start gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0 mt-0.5"></span>
+            <input type="radio" name="q2" value="shortcut" class="hidden">
+            <div>
+              <div class="text-slate-800 font-medium">Let's just have an activation session — I'll tell you everything there</div>
+              <div class="text-xs text-emerald-700 mt-1">📞 Books you a call directly</div>
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step-3" class="step hidden">
+      <h2 class="text-2xl font-bold text-slate-900 mb-2">How would you like us to reach out?</h2>
+      <p class="text-slate-500 mb-6 text-sm">Pick what works for you — we'll get back to you accordingly.</p>
+      <div class="space-y-2.5">
+        <label class="radio-card block bg-white border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-emerald-300 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0"></span>
+            <input type="radio" name="q3" value="zoom" class="hidden" onchange="togglePhoneFields()">
+            <div class="flex-1 flex items-center justify-between">
+              <span class="text-slate-800 font-medium">Zoom call</span>
+              <span class="text-xs font-semibold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">Recommended</span>
+            </div>
+          </div>
+        </label>
+        <label class="radio-card block bg-white border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-emerald-300 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0"></span>
+            <input type="radio" name="q3" value="phone" class="hidden" onchange="togglePhoneFields()">
+            <span class="text-slate-800 font-medium">Phone call</span>
+          </div>
+        </label>
+
+        <!-- Inline phone fields (revealed on Phone select) -->
+        <div id="phone-fields" class="hidden bg-slate-50 border-2 border-emerald-200 border-dashed rounded-xl p-4 space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Phone number <span class="text-rose-500">*</span></label>
+            <input id="phone-number" type="tel" placeholder="+1 555 123 4567" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <div id="phone-error" class="text-xs text-rose-600 mt-1 hidden">Phone number is required</div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Preferred time of day</label>
+              <select id="phone-time" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option>9am–12pm</option>
+                <option>12pm–3pm</option>
+                <option>3pm–6pm</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Timezone</label>
+              <select id="phone-tz" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option>America/New_York</option>
+                <option>America/Los_Angeles</option>
+                <option>Europe/London</option>
+                <option>Europe/Berlin</option>
+                <option>Asia/Singapore</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <label class="radio-card block bg-white border-2 border-slate-200 rounded-xl p-4 cursor-pointer hover:border-emerald-300 transition-colors">
+          <div class="flex items-center gap-3">
+            <span class="radio-dot relative w-5 h-5 rounded-full border-2 border-slate-300 flex-shrink-0"></span>
+            <input type="radio" name="q3" value="email" class="hidden" onchange="togglePhoneFields()">
+            <span class="text-slate-800 font-medium">Email first</span>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- Footer: primary CTA + skip/booking link -->
+    <div class="mt-8 space-y-3">
+      <button id="btn-primary" onclick="onPrimary()" class="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold py-3.5 rounded-xl transition-all">
+        Continue
+      </button>
+      <div class="flex items-center justify-between text-sm">
+        <button id="btn-skip" onclick="onSkip()" class="text-slate-500 hover:text-slate-700 underline decoration-slate-300 hover:decoration-slate-600">
+          I'll fill this in later
+        </button>
+        <button id="btn-book-link" onclick="onBookLink()" class="text-emerald-700 hover:text-emerald-800 font-medium">
+          📅 Schedule a call
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-8 text-center text-xs text-slate-400">
+      Your Synder specialist will use these answers to activate the paid features with you.
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     EXISTING THANK YOU PAGE (unchanged from today)
+     Shown once after form resolution
+     ========================================================= -->
+<section id="scr-typ" class="screen hidden min-h-screen bg-white">
+  <div class="max-w-2xl mx-auto px-6 pt-10 pb-16">
+    <div class="flex items-center gap-2 mb-10">
+      <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+        <span class="text-white font-bold text-sm">S</span>
+      </div>
+      <span class="text-slate-800 font-semibold text-sm">Synder</span>
+    </div>
+
+    <!-- Generic TYP content — kept as-is -->
+    <div class="text-center mb-10">
+      <div class="inline-flex w-16 h-16 bg-emerald-100 rounded-full items-center justify-center mb-5">
+        <svg class="w-9 h-9 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <h1 class="text-3xl font-bold text-slate-900 mb-2">Thanks for subscribing to Synder Pro!</h1>
+      <p class="text-slate-500 max-w-md mx-auto">Your subscription is active. Head into the product to start syncing.</p>
+    </div>
+
+    <!-- Autocharge toggle (existing) -->
+    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
+      <label class="flex items-start justify-between gap-4 cursor-pointer">
+        <div class="flex-1">
+          <div class="font-semibold text-slate-900">Autocharge me if sync balance is depleted</div>
+          <div class="text-sm text-slate-500 mt-1">We'll top up 500 syncs each time you run out — no interruption to your sync.</div>
+        </div>
+        <div class="relative inline-block flex-shrink-0 mt-1">
+          <input id="autocharge-toggle" type="checkbox" checked class="toggle-input sr-only">
+          <div class="toggle-track w-11 h-6 bg-slate-300 rounded-full transition-colors">
+            <div class="toggle-thumb absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"></div>
+          </div>
+        </div>
+      </label>
+    </div>
+
+    <!-- Primary CTA -->
+    <button onclick="continueToSynder()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3.5 rounded-xl transition-all">
+      Continue to Synder →
+    </button>
+
+    <div class="mt-6 text-center text-xs text-slate-400">
+      You can manage your subscription anytime under Settings → Billing.
+    </div>
+
+    <!-- Mock note showing this is the unchanged TYP -->
+    <div class="mt-10 border-t border-dashed border-slate-200 pt-5">
+      <div class="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-xs text-amber-800 font-medium">
+        📝 Mock note: this is the existing Thank You page — no changes in DIS-319
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     PRODUCT HOME (mock — where users land after TYP or after form resolution on re-show)
+     ========================================================= -->
+<section id="scr-product" class="screen hidden min-h-screen bg-slate-50">
+  <div class="border-b border-slate-200 bg-white">
+    <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-xs">S</span>
+          </div>
+          <span class="text-slate-800 font-semibold text-sm">Synder</span>
+        </div>
+        <nav class="flex gap-1 text-sm">
+          <a class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-900 font-medium">Dashboard</a>
+          <a class="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100">Transactions</a>
+          <a class="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100">Reconciliation</a>
+          <a class="px-3 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100">Settings</a>
+        </nav>
+      </div>
+      <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center text-slate-600 text-xs font-semibold">SL</div>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto px-6 py-10">
+    <h1 class="text-2xl font-bold text-slate-900 mb-6">Welcome to Synder Pro 👋</h1>
+
+    <div class="grid grid-cols-3 gap-4 mb-8">
+      <div class="bg-white border border-slate-200 rounded-xl p-5">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Auto-sync</div>
+        <div class="text-sm text-slate-600">Ready to activate after setup</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-xl p-5">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Historical Import</div>
+        <div class="text-sm text-slate-600">Ready to activate after setup</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-xl p-5">
+        <div class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Smart Rules</div>
+        <div class="text-sm text-slate-600">Ready to activate after setup</div>
+      </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl p-6">
+      <div class="text-slate-500 text-sm">
+        <span id="product-status-msg">You're in.</span> <span class="text-xs text-slate-400">— (mock product surface for the demo)</span>
+      </div>
+    </div>
+
+    <!-- Legacy "Welcome to Pro!" modal — suppressed for engaged. Shown here only to explain what's replaced. -->
+    <div class="mt-10 text-center">
+      <div class="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-xs text-amber-800 font-medium">
+        🚫 The legacy "Welcome to Pro!" modal is suppressed — it's replaced by this flow
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     BOOKING TAB (simulated pop-up window)
+     ========================================================= -->
+<div id="booking-toast" class="hidden fixed bottom-6 left-6 z-40 bg-slate-900 text-white rounded-2xl shadow-2xl w-96 overflow-hidden fade-in">
+  <div class="px-4 py-3 border-b border-slate-700 flex items-center gap-2">
+    <div class="flex gap-1.5">
+      <div class="w-3 h-3 bg-rose-500 rounded-full"></div>
+      <div class="w-3 h-3 bg-amber-400 rounded-full"></div>
+      <div class="w-3 h-3 bg-emerald-500 rounded-full"></div>
+    </div>
+    <span class="text-xs text-slate-400 flex-1 truncate">meetings.hubspot.com/synder-meetings/call-with-your-csm</span>
+  </div>
+  <div class="p-5">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="text-2xl">📅</span>
+      <div class="font-semibold">HubSpot booking page opened</div>
+    </div>
+    <div class="text-sm text-slate-300 mb-4">In the real flow, this is a new browser tab where the customer picks a slot. When HubSpot fires <code class="bg-slate-800 px-1 py-0.5 rounded text-emerald-300">meeting-booked</code>, the wizard state flips to <code class="bg-slate-800 px-1 py-0.5 rounded text-emerald-300">engaged</code>.</div>
+    <button onclick="hideBooking()" class="text-xs text-slate-400 hover:text-white">Close tab</button>
+  </div>
+</div>
+
+<!-- =========================================================
+     TOAST — 24h re-show / engaged / etc.
+     ========================================================= -->
+<div id="toast" class="hidden fixed bottom-6 right-6 z-40 bg-slate-900 text-white rounded-xl shadow-2xl px-5 py-3 fade-in max-w-sm"></div>
+
+<script>
+  // ----- State -----
+  const initialState = {
+    step: 1,
+    answers: { q1: null, q2: null, q3: null, phone: null, phoneTime: null, phoneTz: null },
+    wizardState: 'unresolved', // unresolved | pending-hubspot | engaged | skipped
+    engaged: false,
+    skipped: false,
+    typShownThisSession: false,
+    hasSeenForm: false,
+    resolutionPath: null, // phone | email | zoom | shortcut | skip
+  };
+  let state = structuredClone(initialState);
+
+  // ----- Screen navigation -----
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    const el = document.getElementById(id);
+    el.classList.remove('hidden');
+    el.classList.add('fade-in');
+    window.scrollTo(0, 0);
+  }
+
+  function updateStateChip() {
+    const chip = document.getElementById('state-chip');
+    chip.textContent = state.wizardState;
+    const colors = {
+      unresolved: 'bg-slate-800 text-slate-300',
+      'pending-hubspot': 'bg-amber-900/40 text-amber-300',
+      engaged: 'bg-emerald-900/50 text-emerald-300',
+      skipped: 'bg-rose-900/40 text-rose-300',
+    };
+    chip.className = 'devchip inline-block px-2 py-1 rounded text-xs ' + colors[state.wizardState];
+
+    document.getElementById('chip-engaged').textContent = 'engaged: ' + (state.engaged ? 'true' : '—');
+    document.getElementById('chip-engaged').className = 'devchip px-2 py-0.5 rounded text-xs ' + (state.engaged ? 'bg-emerald-900/40 text-emerald-300' : 'bg-slate-800 text-slate-400');
+    document.getElementById('chip-skipped').textContent = 'skipped: ' + (state.skipped ? 'true' : '—');
+    document.getElementById('chip-skipped').className = 'devchip px-2 py-0.5 rounded text-xs ' + (state.skipped ? 'bg-rose-900/40 text-rose-300' : 'bg-slate-800 text-slate-400');
+    document.getElementById('chip-typ').textContent = state.typShownThisSession ? 'yes (once)' : 'no';
+    document.getElementById('chip-typ').className = 'devchip px-2 py-0.5 rounded text-xs inline-block ' + (state.typShownThisSession ? 'bg-slate-700 text-slate-200' : 'bg-slate-800 text-slate-400');
+  }
+
+  // ----- Flow -----
+  function startFlow() { renderForm(1); }
+
+  function renderForm(step) {
+    state.step = step;
+    state.hasSeenForm = true;
+    showScreen('scr-form');
+    document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
+    document.getElementById('step-' + step).classList.remove('hidden');
+    document.getElementById('step-current').textContent = step;
+    document.getElementById('progress-fill').style.width = (step / 3 * 100) + '%';
+    document.getElementById('btn-primary').textContent = step === 3 ? 'Submit' : 'Continue';
+    document.getElementById('btn-skip').classList.toggle('invisible', step === 3);
+    document.getElementById('btn-book-link').classList.toggle('invisible', step === 3);
+    updateStateChip();
+  }
+
+  function selectedValue(q) {
+    const el = document.querySelector(`input[name="${q}"]:checked`);
+    return el ? el.value : null;
+  }
+
+  function onPrimary() {
+    if (state.step === 1 || state.step === 2) {
+      const q = 'q' + state.step;
+      const val = selectedValue(q);
+      if (!val) { flashToast('Please pick an option'); return; }
+      state.answers[q] = val;
+      if (val === 'shortcut') { resolveWithShortcut(); return; }
+      renderForm(state.step + 1);
+      return;
+    }
+    // Step 3 — Submit
+    const val = selectedValue('q3');
+    if (!val) { flashToast('Please pick an option'); return; }
+    if (val === 'phone') {
+      const phone = document.getElementById('phone-number').value.trim();
+      if (!phone) {
+        document.getElementById('phone-error').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('phone-error').classList.add('hidden');
+      state.answers.phone = phone;
+      state.answers.phoneTime = document.getElementById('phone-time').value;
+      state.answers.phoneTz = document.getElementById('phone-tz').value;
+    }
+    state.answers.q3 = val;
+    resolveWithSubmit(val);
+  }
+
+  function togglePhoneFields() {
+    const val = selectedValue('q3');
+    document.getElementById('phone-fields').classList.toggle('hidden', val !== 'phone');
+  }
+
+  function onSkip() {
+    state.skipped = true;
+    state.wizardState = 'skipped';
+    state.resolutionPath = 'skip';
+    updateStateChip();
+    goToTypThenProduct('skip');
+  }
+
+  function onBookLink() {
+    // Per §2 Resolution Paths — booking-link click = no state change; booking tab opens
+    showBooking('Booking tab opened. Wizard stays open — no state change.');
+  }
+
+  function resolveWithSubmit(channel) {
+    if (channel === 'phone' || channel === 'email') {
+      state.wizardState = 'engaged';
+      state.engaged = true;
+      state.resolutionPath = channel;
+      updateStateChip();
+      goToTypThenProduct(channel);
+    } else {
+      // zoom — HubSpot-deferred
+      state.wizardState = 'pending-hubspot';
+      state.resolutionPath = 'zoom';
+      updateStateChip();
+      showBooking('Booking tab opened (Zoom). Waiting for HubSpot meeting-booked to flip state to engaged.');
+      goToTypThenProduct('zoom');
+    }
+  }
+
+  function resolveWithShortcut() {
+    state.wizardState = 'pending-hubspot';
+    state.resolutionPath = 'shortcut';
+    updateStateChip();
+    showBooking('Booking tab opened (shortcut). Waiting for HubSpot meeting-booked.');
+    goToTypThenProduct('shortcut');
+  }
+
+  // ----- TYP / Product routing -----
+  function goToTypThenProduct(path) {
+    if (state.typShownThisSession) {
+      // TYP already seen (e.g. skipped previously → landed on TYP → 24h re-show → filled)
+      // Go straight to product per Slava's clarification
+      enterProduct();
+      return;
+    }
+    state.typShownThisSession = true;
+    updateStateChip();
+    showScreen('scr-typ');
+  }
+
+  function continueToSynder() { enterProduct(); }
+
+  function enterProduct() {
+    showScreen('scr-product');
+    const msgs = {
+      phone: 'Your Synder specialist will call — welcome to Pro.',
+      email: 'Your Synder specialist will email you shortly — welcome to Pro.',
+      zoom: 'Your Zoom call is set — your Synder specialist will see you there.',
+      shortcut: 'Your call is set — talk soon.',
+      skip: 'You can complete setup any time. We\'ll check back in a day.',
+    };
+    document.getElementById('product-status-msg').textContent = msgs[state.resolutionPath] || 'You\'re in.';
+  }
+
+  // ----- Demo controls -----
+  function simulateHubspotConfirm() {
+    if (state.wizardState !== 'pending-hubspot') {
+      flashToast('No pending HubSpot state — start a Zoom or shortcut flow first.');
+      return;
+    }
+    state.wizardState = 'engaged';
+    state.engaged = true;
+    updateStateChip();
+    flashToast('📩 HubSpot meeting-booked received → state = engaged. 24h re-show cancelled.');
+  }
+
+  function simulate24h() {
+    // Two cases per Slava's clarification:
+    // 1) skipped → re-show form → after resolve, go STRAIGHT to product (TYP already shown)
+    // 2) pending-hubspot (no confirm within 24h) → re-show form
+    if (state.wizardState === 'skipped') {
+      flashToast('⏱ 24h passed. Form re-renders. TYP will not show again.');
+      state.wizardState = 'unresolved';
+      state.skipped = false;
+      updateStateChip();
+      renderForm(1);
+      return;
+    }
+    if (state.wizardState === 'pending-hubspot') {
+      flashToast('⏱ 24h passed, no meeting-booked → form re-renders. TYP will not show again.');
+      state.wizardState = 'unresolved';
+      updateStateChip();
+      renderForm(1);
+      return;
+    }
+    if (state.wizardState === 'engaged') {
+      flashToast('State is engaged. No re-show needed.');
+      return;
+    }
+    flashToast('No pending state to fast-forward. Start the flow first.');
+  }
+
+  function resetAll() {
+    state = structuredClone(initialState);
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+    document.getElementById('phone-number').value = '';
+    document.getElementById('phone-error').classList.add('hidden');
+    document.getElementById('phone-fields').classList.add('hidden');
+    updateStateChip();
+    showScreen('scr-entry');
+    hideBooking();
+  }
+
+  function showBooking(msg) {
+    const el = document.getElementById('booking-toast');
+    el.classList.remove('hidden');
+    setTimeout(() => hideBooking(), 5000);
+  }
+  function hideBooking() { document.getElementById('booking-toast').classList.add('hidden'); }
+
+  function flashToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.remove('hidden');
+    clearTimeout(t._h);
+    t._h = setTimeout(() => t.classList.add('hidden'), 3500);
+  }
+
+  function togglePanel() {
+    const p = document.getElementById('dev-panel');
+    const btn = document.getElementById('show-panel-btn');
+    const card = p.parentElement;
+    if (p.classList.contains('hidden')) {
+      p.classList.remove('hidden');
+      card.classList.remove('hidden');
+      btn.classList.add('hidden');
+    } else {
+      p.classList.add('hidden');
+      card.classList.add('hidden');
+      btn.classList.remove('hidden');
+    }
+  }
+
+  // ----- Init -----
+  updateStateChip();
+</script>
+</body>
+</html>

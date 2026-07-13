@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIS-319 — Pro Sandbox Onboarding Form</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+<div class="max-w-3xl mx-auto px-6 py-16">
+  <a href="../../" class="text-sm text-gray-500 hover:text-emerald-600">← Synder MVP Hub</a>
+
+  <div class="mt-6 mb-10">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="bg-emerald-100 text-emerald-700 text-xs font-semibold px-2 py-1 rounded">Proposal mock</span>
+      <span class="bg-gray-100 text-gray-600 text-xs font-semibold px-2 py-1 rounded">DIS-319</span>
+    </div>
+    <h1 class="text-3xl font-bold text-gray-900 mb-2">Pro Sandbox Onboarding Form</h1>
+    <p class="text-gray-500 text-lg">Simplified flow: after subscribing to Pro Sandbox, the customer sees a short setup form. Fill or skip → existing Thank You page (unchanged) → product. Skip → form re-shows in 24h.</p>
+  </div>
+
+  <a href="mock/" class="block bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-emerald-300 transition-all duration-200 group mb-6">
+    <div class="flex items-start justify-between">
+      <div>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-1 rounded">Interactive</span>
+        </div>
+        <h2 class="text-xl font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">Interactive Mock</h2>
+        <p class="text-gray-500 mt-1">3-step form (channels · urgency · contact preference) with shortcut option, skip path, phone inline fields, and existing TYP reused as the terminal screen.</p>
+        <div class="flex flex-wrap gap-3 mt-3 text-sm text-gray-400">
+          <span>📱 Form + TYP + product</span>
+          <span>🎛 Simulated HubSpot confirm</span>
+          <span>⏱ 24h re-show</span>
+        </div>
+      </div>
+      <svg class="w-5 h-5 text-gray-400 group-hover:text-emerald-500 mt-1 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </div>
+  </a>
+
+  <div class="bg-white border border-gray-200 rounded-xl p-6">
+    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">Flow demonstrated</h3>
+    <ol class="space-y-2 text-sm text-gray-700 list-decimal list-inside">
+      <li><b>Purchase Pro Sandbox</b> → form appears (nav hidden, route-guarded)</li>
+      <li><b>Step 1</b> — sales channels (with shortcut option) · <b>Step 2</b> — urgency (with shortcut option) · <b>Step 3</b> — contact preference (Zoom / Phone / Email)</li>
+      <li><b>Fill or Skip</b> → existing Thank You page renders (autocharge toggle unchanged)</li>
+      <li><b>Continue to Synder</b> → product</li>
+      <li><b>Skipped path:</b> 24h later on next session, form re-shows. After resolve → straight into product (TYP not shown again).</li>
+      <li><b>Zoom / shortcut:</b> booking tab opens on Continue/Submit; state = <code class="bg-gray-100 px-1 rounded text-emerald-700">pending-hubspot</code> until <code class="bg-gray-100 px-1 rounded text-emerald-700">meeting-booked</code> arrives. No confirm in 24h → form re-shows.</li>
+    </ol>
+
+    <div class="mt-5 pt-5 border-t border-gray-100 text-xs text-gray-400">
+      Parent FDD: <code class="bg-gray-100 px-1 rounded">projects/dis-319/thank-you-page-wizard-v2.md</code> (in the Tyrion workspace)
+    </div>
+  </div>
+</div>
+</body>
+</html>
