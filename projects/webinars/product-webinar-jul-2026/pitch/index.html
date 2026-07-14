@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Product Webinar · July 2026 — Synder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      colors: { 'gray-850': '#18212f' }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #111827; color: #f9fafb; font-family: 'Inter', system-ui, sans-serif; }
+
+  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: #3b82f6; transition: width 0.3s ease; z-index: 100; }
+  #slide-deck { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+  .slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 60px 32px 80px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+  .slide.active { opacity: 1; pointer-events: all; }
+  .slide-inner { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 0; overflow-y: auto; max-height: calc(100vh - 140px); scrollbar-width: none; }
+  .slide-inner::-webkit-scrollbar { display: none; }
+
+  #nav-dots { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 100; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #374151; cursor: pointer; transition: background 0.2s, transform 0.2s; }
+  .dot.active { background: #3b82f6; transform: scale(1.4); }
+  .dot:hover:not(.active) { background: #6b7280; }
+
+  #slide-counter { position: fixed; bottom: 20px; right: 28px; font-size: 12px; color: #6b7280; font-variant-numeric: tabular-nums; z-index: 100; }
+
+  #overview { position: fixed; inset: 0; background: rgba(17,24,39,0.97); display: none; z-index: 200; overflow-y: auto; padding: 40px 32px; }
+  #overview.visible { display: block; }
+  #overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; max-width: 1200px; margin: 0 auto; }
+  #overview h2 { text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 24px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .thumb { background: #1f2937; border: 2px solid #374151; border-radius: 10px; padding: 14px; cursor: pointer; transition: border-color 0.15s, transform 0.15s; aspect-ratio: 16/9; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; overflow: hidden; }
+  .thumb:hover { border-color: #3b82f6; transform: scale(1.03); }
+  .thumb.active-thumb { border-color: #3b82f6; }
+  .thumb-num { font-size: 10px; color: #6b7280; margin-bottom: 6px; }
+  .thumb-title { font-size: 12px; font-weight: 600; color: #d1d5db; line-height: 1.3; }
+  #overview-close { position: fixed; top: 24px; right: 32px; color: #6b7280; cursor: pointer; font-size: 24px; z-index: 210; }
+  #overview-close:hover { color: #f9fafb; }
+
+  .card { background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 20px 24px; }
+  .card-sm { background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 14px 18px; }
+  .accent { color: #3b82f6; }
+  .success { color: #22c55e; }
+  .warning { color: #f59e0b; }
+  .violet { color: #a78bfa; }
+  .muted { color: #9ca3af; }
+
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .tag-violet { background: rgba(167,139,250,0.15); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.3); }
+  .tag-gray { background: rgba(107,114,128,0.15); color: #9ca3af; border: 1px solid rgba(107,114,128,0.3); }
+
+  .slide-title { font-size: 2.2rem; font-weight: 800; line-height: 1.15; color: #f9fafb; }
+  .slide-subtitle { font-size: 1rem; color: #9ca3af; font-weight: 400; margin-top: 6px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  .h-divider { border: none; border-top: 1px solid #374151; margin: 14px 0; }
+
+  .highlight-box { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: 10px; padding: 14px 18px; }
+  .warning-box { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 14px 18px; }
+  .success-box { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 14px 18px; }
+  .violet-box { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.3); border-radius: 10px; padding: 14px 18px; }
+
+  #keyboard-hint { position: fixed; bottom: 20px; left: 28px; font-size: 11px; color: #4b5563; z-index: 100; }
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.4s ease both; }
+
+  .demo-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59,130,246,0.15); border: 2px solid rgba(59,130,246,0.4);
+    border-radius: 10px; padding: 8px 18px; font-size: 0.95rem; font-weight: 700;
+    color: #60a5fa; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .demo-badge .pulse-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+  .jira-chip {
+    display: inline-block; font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10.5px; padding: 1px 8px; border-radius: 4px;
+    background: rgba(59,130,246,0.12); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25);
+  }
+
+  :fullscreen body, :-webkit-full-screen body { background: #111827; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div id="slide-deck">
+
+  <!-- ─────────── SLIDE 1: TITLE ─────────── -->
+  <div class="slide" data-slide="1">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-blue" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Internal · July 2026</div>
+        <h1 style="font-size:3rem; font-weight:800; line-height:1.1; color:#f9fafb; margin-bottom:18px;">
+          Product Webinar<br /><span style="color:#60a5fa;">Recent releases &amp; what to do with them</span>
+        </h1>
+        <p style="font-size:1.15rem; color:#9ca3af; margin-bottom:12px; font-weight:400;">Four features that shipped recently. What each one is, who it's for, and — where relevant — the ask.</p>
+        <p style="font-size:1rem; color:#6b7280; margin-bottom:40px;">30 min · Live demo throughout · Q&amp;A · Recap &amp; asks</p>
+        <div style="width:60px; height:2px; background:#374151; margin:0 auto 40px;"></div>
+        <div>
+          <p style="font-size:14px; color:#d1d5db; font-weight:700;">Slava</p>
+          <p style="font-size:11px; color:#6b7280; letter-spacing:0.06em; text-transform:uppercase;">Product Manager</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 2: AGENDA ─────────── -->
+  <div class="slide" data-slide="2">
+    <div class="slide-inner">
+      <div class="section-label">Agenda</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">How we'll spend 30 minutes</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">One through-line — <span style="color:#a78bfa; font-weight:600;">trust the numbers.</span> See it · understand it · verify it · fix it.</p>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div class="card" style="border-left:4px solid #6b7280; display:flex; align-items:center; gap:16px; padding:11px 18px;">
+          <div style="width:32px; height:32px; background:rgba(107,114,128,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;">👋</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; font-size:14px;">Open · What we're covering</div>
+          </div>
+          <div class="tag tag-gray">2 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #a78bfa; display:flex; align-items:center; gap:16px; padding:11px 18px;">
+          <div style="width:32px; height:32px; background:rgba(167,139,250,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;">📊</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; font-size:14px;">Financials (Business Insights 2.0)</div>
+            <div style="font-size:12px; color:#9ca3af;">See it — reporting reborn as a first-class Synder surface.</div>
+          </div>
+          <div class="tag tag-violet">5 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #3b82f6; display:flex; align-items:center; gap:16px; padding:11px 18px;">
+          <div style="width:32px; height:32px; background:rgba(59,130,246,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;">⚡</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; font-size:14px;">Sync Speed on Per Transaction</div>
+            <div style="font-size:12px; color:#9ca3af;">Understand it — volume + time breakdown by process, self-serve.</div>
+          </div>
+          <div class="tag tag-blue">5 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #22c55e; display:flex; align-items:center; gap:16px; padding:11px 18px;">
+          <div style="width:32px; height:32px; background:rgba(34,197,94,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;">🔗</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; font-size:14px;">Automated Transaction Reconciliation — Shopify &amp; Amazon</div>
+            <div style="font-size:12px; color:#9ca3af;">Verify it — zero-upload matching against accounting.</div>
+          </div>
+          <div class="tag tag-green">6 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #fbbf24; display:flex; align-items:center; gap:16px; padding:11px 18px;">
+          <div style="width:32px; height:32px; background:rgba(251,191,36,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;">🧹</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; font-size:14px;">Error Grouping in Sync Issues</div>
+            <div style="font-size:12px; color:#9ca3af;">Fix it — one fix, N resyncs.</div>
+          </div>
+          <div class="tag tag-amber">5 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #f59e0b; display:flex; align-items:center; gap:16px; padding:11px 18px;">
+          <div style="width:32px; height:32px; background:rgba(245,158,11,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0;">💬</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; font-size:14px;">Q&amp;A · Close &amp; asks</div>
+          </div>
+          <div class="tag tag-amber">7 min</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 3: FINANCIALS (BI 2.0) ─────────── -->
+  <div class="slide" data-slide="3">
+    <div class="slide-inner">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+        <div class="section-label" style="margin-bottom:0;">1 / 4 · See it</div>
+        <span class="tag tag-violet">Needs feedback</span>
+      </div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Financials <span style="color:#a78bfa;">— Business Insights 2.0</span></h1>
+      <p class="slide-subtitle" style="margin-bottom:22px;">Old standalone Business Insights, re-launched as a first-class <em>Financials</em> section inside Synder. Reports, P&amp;L, Balance Sheet — all in one place.</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card-sm">
+          <div style="font-size:11px; font-weight:700; color:#a78bfa; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">What's there</div>
+          <div style="font-size:13px; color:#d1d5db; line-height:1.55;">
+            New sidebar: <b>Overview · My reports · Templates · P&amp;L · Balance Sheet</b>. Three ways to create a report: <b>From Template · From Scratch · With AI</b>.
+          </div>
+        </div>
+        <div class="card-sm">
+          <div style="font-size:11px; font-weight:700; color:#fbbf24; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Gating</div>
+          <div style="font-size:13px; color:#d1d5db; line-height:1.55;">
+            <b>Balance Sheet + P&amp;L</b> visible only for <b>Per Transaction + QuickBooks Online</b> orgs. Everyone else sees Financials without those two.
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-bottom:14px;">
+        <div style="font-size:11px; font-weight:700; color:#fbbf24; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Raw edges — be honest</div>
+        <div style="font-size:12.5px; color:#fde68a; line-height:1.5;">
+          <b>SET-592</b> — chart broken when grouped by Product · <b>SET-597</b> — group-limit ignored in preview. Both shipped as "not in this quarter". Late-arriving polish bugs (SD-17759, SD-17760) fixed same-day.
+        </div>
+      </div>
+
+      <div class="violet-box" style="margin-bottom:14px;">
+        <div style="font-size:11px; font-weight:700; color:#c4b5fd; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">The ask</div>
+        <div style="font-size:13px; color:#ddd6fe; line-height:1.5;">
+          Walk <b>one customer</b> through Financials this month. Log what they say. Adoption today: <b>48 users</b> first 7d vs 300/mo target · <b>13 reports</b> created in the first 30 days.
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div class="demo-badge">
+          <span class="pulse-dot"></span>
+          Live demo
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="jira-chip">SET-617</span>
+          <span class="jira-chip">SET-516</span>
+          <span class="jira-chip">SET-571</span>
+          <span class="jira-chip">SD-17738</span>
+          <span class="jira-chip">DIS-337</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 4: SYNC SPEED ─────────── -->
+  <div class="slide" data-slide="4">
+    <div class="slide-inner">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+        <div class="section-label" style="margin-bottom:0;">2 / 4 · Understand it</div>
+        <span class="tag tag-blue">Launched 2026-06-05</span>
+      </div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Sync Speed dashboard <span style="color:#60a5fa;">— Per Transaction</span></h1>
+      <p class="slide-subtitle" style="margin-bottom:22px;">Customers can finally see how much they're syncing and what's slowing it down — no Support ticket required. <b>PT orgs only</b> (not QBD, not Summary Sync).</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card-sm">
+          <div style="font-size:11px; font-weight:700; color:#60a5fa; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Graph 1 — Volume</div>
+          <div style="font-size:13px; color:#d1d5db; line-height:1.55;">
+            Transactions synced per platform, aggregated <b>daily · weekly · monthly · 6mo · 12mo · custom</b>. Filter by platform and status (Failed / Synced / Warnings / Skipped / Canceled).
+          </div>
+        </div>
+        <div class="card-sm">
+          <div style="font-size:11px; font-weight:700; color:#60a5fa; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Graph 2 — Time breakdown</div>
+          <div style="font-size:13px; color:#d1d5db; line-height:1.55;">
+            Avg per-transaction sync time, <b>split by process step</b>: integration fetch, QBO customer lookup, RevRec lookup, JE creation… Toggle to drill from group to step level.
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="margin-bottom:14px;">
+        <div style="font-size:11px; font-weight:700; color:#93c5fd; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Why this matters</div>
+        <div style="font-size:13px; color:#bfdbfe; line-height:1.5;">
+          Answers <em>"how long will it take to sync my 50k historical transactions?"</em> without a Support ticket. Gives CFTs a data-backed reason to recommend Premium dedicated when a step is a bottleneck.
+        </div>
+      </div>
+
+      <div class="success-box" style="margin-bottom:14px;">
+        <div style="font-size:11px; font-weight:700; color:#4ade80; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Trust signal</div>
+        <div style="font-size:12.5px; color:#bbf7d0; line-height:1.5;">
+          Tooltip discloses <b>"~8% of sync time is untracked"</b> and <b>"queue wait time excluded"</b> — we're upfront about what the number means.
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div class="demo-badge">
+          <span class="pulse-dot"></span>
+          Live demo
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="jira-chip">SD-14922</span>
+          <span class="jira-chip">SET-206 / 207</span>
+          <span class="jira-chip">SD-15549</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 5: TXNRECON SHOPIFY & AMAZON ─────────── -->
+  <div class="slide" data-slide="5">
+    <div class="slide-inner">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+        <div class="section-label" style="margin-bottom:0;">3 / 4 · Verify it</div>
+        <span class="tag tag-green">Biggest sales story</span>
+      </div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Automated Transaction Reconciliation <span style="color:#4ade80;">— Shopify &amp; Amazon</span></h1>
+      <p class="slide-subtitle" style="margin-bottom:22px;">TxnRecon used to cover Stripe + PayPal only. Now Shopify and Amazon are first-class — no file uploads, no column mapping.</p>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card-sm">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:11px; font-weight:700; color:#4ade80; text-transform:uppercase; letter-spacing:0.06em;">Shopify</span>
+            <span class="tag tag-green" style="font-size:10px; padding:1px 8px;">2026-03-04</span>
+          </div>
+          <div style="font-size:13px; color:#d1d5db; line-height:1.55;">
+            Auto-fetch <b>"Transactions and associated payouts"</b>. Reconciles <b>Shopify Payments</b> clearing against <b>QBO</b> or <b>Synder Summary datasource</b>.
+          </div>
+        </div>
+        <div class="card-sm">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:11px; font-weight:700; color:#4ade80; text-transform:uppercase; letter-spacing:0.06em;">Amazon V2</span>
+            <span class="tag tag-green" style="font-size:10px; padding:1px 8px;">2026-04-30</span>
+          </div>
+          <div style="font-size:13px; color:#d1d5db; line-height:1.55;">
+            Auto-fetch <b>Settlement reports</b>. Reconciles against <b>Synder Summary datasource</b>. QBO-direct not yet.
+          </div>
+        </div>
+      </div>
+
+      <div class="card-sm" style="margin-bottom:14px; background:#1a2230;">
+        <div style="font-size:11px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">The flow — before → after</div>
+        <div style="display:flex; align-items:center; gap:10px; font-size:12.5px; color:#d1d5db;">
+          <span style="color:#f87171;">Manual spreadsheet reconcile</span>
+          <span style="color:#4b5563;">→</span>
+          <span style="color:#d1d5db;">Pick date range</span>
+          <span style="color:#4b5563;">→</span>
+          <span style="color:#d1d5db;"><b>Start matching</b></span>
+          <span style="color:#4b5563;">→</span>
+          <span style="color:#4ade80;">Matched · Discrepancy · Not Matched · Ignored</span>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-bottom:14px;">
+        <div style="font-size:11px; font-weight:700; color:#fbbf24; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">Coverage limits — don't oversell</div>
+        <div style="font-size:12.5px; color:#fde68a; line-height:1.5;">
+          <b>Shopify:</b> Shopify Payments clearing only (not "Other orders clearing"); multi-currency fragile.<br />
+          <b>Amazon:</b> Summary datasource only; no upload/Standard mode (files are TSV, not CSV); 0-amount rows not auto-ignored.
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div class="demo-badge">
+          <span class="pulse-dot"></span>
+          Live demo
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="jira-chip">SD-16696</span>
+          <span class="jira-chip">SD-16699</span>
+          <span class="jira-chip">SD-16698</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 6: ERROR GROUPING ─────────── -->
+  <div class="slide" data-slide="6">
+    <div class="slide-inner">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+        <div class="section-label" style="margin-bottom:0;">4 / 4 · Fix it</div>
+        <span class="tag tag-amber">One fix → N resyncs</span>
+      </div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Error Grouping <span style="color:#fbbf24;">in Sync Issues</span></h1>
+      <p class="slide-subtitle" style="margin-bottom:22px;">Failed syncs now grouped by error message. Fix the root cause once — bulk-resync every transaction affected by it.</p>
+
+      <div class="card-sm" style="margin-bottom:14px;">
+        <div style="font-size:11px; font-weight:700; color:#fbbf24; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">The mechanic</div>
+        <div style="display:flex; align-items:center; gap:8px; font-size:12.5px; color:#d1d5db; flex-wrap:wrap;">
+          <span class="tag tag-red" style="font-size:11px;">Account not found — 150</span>
+          <span style="color:#4b5563;">→</span>
+          <span>Fix mapping</span>
+          <span style="color:#4b5563;">→</span>
+          <span style="color:#60a5fa;"><b>See related transactions</b></span>
+          <span style="color:#4b5563;">→</span>
+          <span>Select all</span>
+          <span style="color:#4b5563;">→</span>
+          <span style="color:#4ade80;"><b>Sync</b></span>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:16px;">
+        <div class="card-sm">
+          <div style="font-size:11px; font-weight:700; color:#c4b5fd; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Where it lives</div>
+          <div style="font-size:13px; color:#d1d5db; line-height:1.55;">
+            <b>Dashboard</b> (formerly Control Panel). Groups <b>FAILED · CANCELED · ROLLBACK_FAILED · ROLLBACK_CANCELED · RULE_FAILED</b>. PT users + admins see per-txn issues; only admins see datasource errors.
+          </div>
+        </div>
+        <div class="card-sm">
+          <div style="font-size:11px; font-weight:700; color:#c4b5fd; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">Adoption today</div>
+          <div style="font-size:13px; color:#d1d5db; line-height:1.55;">
+            <b>937 orgs</b> had a groupable sync failure in the last 90 days. <b>118 opened</b> the grouped view (~13%). Headroom to push in Support replies.
+          </div>
+        </div>
+      </div>
+
+      <div class="warning-box" style="margin-bottom:14px;">
+        <div style="font-size:11px; font-weight:700; color:#fbbf24; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;">v1 limits</div>
+        <div style="font-size:12.5px; color:#fde68a; line-height:1.5;">
+          Groups by <b>raw message string</b> — variants like <em>"total 40 vs 39"</em> and <em>"total 41 vs 40"</em> are separate rows. Saved Search caps at <b>~500 webhooks</b> per batch. Refresh lag <b>~1h</b>. Archived txns excluded.
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+        <div class="demo-badge">
+          <span class="pulse-dot"></span>
+          Live demo
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="jira-chip">SD-15327</span>
+          <span class="jira-chip">SET-522</span>
+          <span class="jira-chip">DIS-295</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 7: Q&A ─────────── -->
+  <div class="slide" data-slide="7">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-green" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Q&amp;A · 4 min</div>
+        <h1 style="font-size:2.6rem; font-weight:800; line-height:1.15; color:#f9fafb; margin-bottom:16px;">
+          Questions?
+        </h1>
+        <p style="font-size:1.05rem; color:#9ca3af; margin-bottom:32px; max-width:680px;">
+          Anything you'd like to see again, dig into, or push back on. Chat or unmute.
+        </p>
+        <div style="max-width:640px; margin:0 auto;">
+          <div class="card" style="border-left:4px solid #22c55e; text-align:left;">
+            <div style="font-size:11px; font-weight:700; color:#4ade80; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Prompts if the room is quiet</div>
+            <ul style="font-size:13.5px; color:#d1d5db; line-height:1.65; padding-left:18px;">
+              <li>Any customer this month who'd immediately benefit from one of these?</li>
+              <li>What's the biggest ask you're still hearing that we didn't cover today?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 8: CLOSE + ASKS ─────────── -->
+  <div class="slide" data-slide="8">
+    <div class="slide-inner">
+      <div class="section-label">Close</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Three asks before you go</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">If nothing else, take these home from today.</p>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+        <div class="card" style="border-left:4px solid #a78bfa; display:flex; gap:16px; align-items:flex-start;">
+          <div style="font-size:22px; font-weight:800; color:#a78bfa; line-height:1; flex-shrink:0; min-width:32px;">1.</div>
+          <div>
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:4px;">Walk one customer through Financials this month</div>
+            <div style="font-size:13px; color:#9ca3af;">And log what they say. We need the signal — adoption is soft and we can still shape it.</div>
+          </div>
+        </div>
+        <div class="card" style="border-left:4px solid #3b82f6; display:flex; gap:16px; align-items:flex-start;">
+          <div style="font-size:22px; font-weight:800; color:#60a5fa; line-height:1; flex-shrink:0; min-width:32px;">2.</div>
+          <div>
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:4px;">Reuse Sync Speed &amp; Error Grouping in Support replies</div>
+            <div style="font-size:13px; color:#9ca3af;">Instead of ad-hoc explanations — send the customer to the surface that already answers them.</div>
+          </div>
+        </div>
+        <div class="card" style="border-left:4px solid #22c55e; display:flex; gap:16px; align-items:flex-start;">
+          <div style="font-size:22px; font-weight:800; color:#4ade80; line-height:1; flex-shrink:0; min-width:32px;">3.</div>
+          <div>
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:4px;">Sales — lead with TxnRecon on any Shopify or Amazon prospect</div>
+            <div style="font-size:13px; color:#9ca3af;">Balance/Transaction Reconciliation was #1 at 95% interest in the Burkland webinar. That's the story.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-box" style="text-align:center;">
+        <div style="font-size:13.5px; color:#93c5fd; line-height:1.55;">
+          <b>Through-line:</b> Financials (see it) · Sync Speed (understand it) · TxnRecon Shopify/Amazon (verify it) · Error Grouping (fix it).<br />
+          <span style="color:#bfdbfe;">All four point at the same platform promise — <em>trust the numbers</em>.</span>
+        </div>
+      </div>
+
+      <p style="text-align:center; color:#6b7280; font-size:12px; margin-top:22px;">Thanks 🦁</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Overview grid -->
+<div id="overview">
+  <span id="overview-close">✕</span>
+  <h2>All Slides — Press Esc to close</h2>
+  <div id="overview-grid"></div>
+</div>
+
+<!-- Navigation -->
+<div id="nav-dots"></div>
+<div id="slide-counter">1 / 8</div>
+<div id="keyboard-hint">← → Navigate · Esc Overview · F Fullscreen</div>
+
+<script>
+const TOTAL = 8;
+const TITLES = [
+  "Product Webinar — July 2026",
+  "How we'll spend 30 minutes",
+  "Financials · Business Insights 2.0",
+  "Sync Speed dashboard · Per Transaction",
+  "Automated TxnRecon · Shopify & Amazon",
+  "Error Grouping in Sync Issues",
+  "Q&A",
+  "Three asks before you go"
+];
+
+let current = 1;
+
+const dotsEl = document.getElementById('nav-dots');
+for (let i = 1; i <= TOTAL; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.dataset.slide = i;
+  d.title = TITLES[i-1];
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+const grid = document.getElementById('overview-grid');
+for (let i = 1; i <= TOTAL; i++) {
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb' + (i === 1 ? ' active-thumb' : '');
+  thumb.dataset.slide = i;
+  thumb.innerHTML = `<div class="thumb-num">Slide ${i}</div><div class="thumb-title">${TITLES[i-1]}</div>`;
+  thumb.addEventListener('click', () => { goTo(i); hideOverview(); });
+  grid.appendChild(thumb);
+}
+
+function goTo(n) {
+  if (n < 1 || n > TOTAL) return;
+  const prev = document.querySelector('.slide.active');
+  if (prev) prev.classList.remove('active');
+  const prevDot = document.querySelector('.dot.active');
+  if (prevDot) prevDot.classList.remove('active');
+  const prevThumb = document.querySelector('.thumb.active-thumb');
+  if (prevThumb) prevThumb.classList.remove('active-thumb');
+
+  current = n;
+  const next = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (next) next.classList.add('active');
+  const dots = document.querySelectorAll('.dot');
+  if (dots[n-1]) dots[n-1].classList.add('active');
+  const thumbs = document.querySelectorAll('.thumb');
+  if (thumbs[n-1]) thumbs[n-1].classList.add('active-thumb');
+
+  document.getElementById('slide-counter').textContent = `${n} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = ((n / TOTAL) * 100) + '%';
+}
+
+goTo(1);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current - 1);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    const ov = document.getElementById('overview');
+    if (ov.classList.contains('visible')) hideOverview();
+    else showOverview();
+  } else if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault();
+    toggleFullscreen();
+  }
+});
+
+function showOverview() { document.getElementById('overview').classList.add('visible'); }
+function hideOverview() { document.getElementById('overview').classList.remove('visible'); }
+document.getElementById('overview-close').addEventListener('click', hideOverview);
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+  else document.exitFullscreen().catch(() => {});
+}
+
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    if (dx < 0) goTo(current + 1);
+    else goTo(current - 1);
+  }
+}, { passive: true });
+</script>
+</body>
+</html>
