@@ -461,6 +461,45 @@ tailwind.config = {
     </div>
   </div>
 
+  <!-- ─────────── SLIDE 9: SUPPORT / STAY IN TOUCH ─────────── -->
+  <div class="slide" data-slide="9">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up" style="max-width:780px; width:100%;">
+        <div class="tag tag-blue" style="margin-bottom:20px; font-size:12px; padding: 4px 14px;">Stay in touch</div>
+        <h1 style="font-size:2.4rem; font-weight:800; line-height:1.15; color:#f9fafb; margin-bottom:14px;">
+          Questions after today? <span style="color:#60a5fa;">Reach out any time.</span>
+        </h1>
+        <p style="font-size:1.05rem; color:#9ca3af; margin-bottom:32px;">
+          Our team's happy to help — whether it's about the features we just showed or anything else in Synder.
+        </p>
+
+        <div class="grid-2" style="margin-bottom:20px; text-align:left;">
+          <div class="card" style="border-left:4px solid #60a5fa;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+              <div style="width:38px; height:38px; background:rgba(59,130,246,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">✉️</div>
+              <div style="font-weight:700; color:#f9fafb; font-size:15px;">Email support</div>
+            </div>
+            <div style="font-size:14px; color:#d1d5db; line-height:1.55;">
+              Write to <a href="mailto:help@synder.com" style="color:#60a5fa; font-weight:600; text-decoration:none;">help@synder.com</a> — for anyone on any plan, any time.
+            </div>
+          </div>
+
+          <div class="card" style="border-left:4px solid #4ade80;">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+              <div style="width:38px; height:38px; background:rgba(34,197,94,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px;">💬</div>
+              <div style="font-weight:700; color:#f9fafb; font-size:15px;">Live chat</div>
+            </div>
+            <div style="font-size:14px; color:#d1d5db; line-height:1.55;">
+              Available in-app on <b>Trial</b>, <b>Pro</b>, and <b>Pro Max</b> plans — right from your Synder account.
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size:14px; color:#6b7280;">Thanks for spending 30 minutes with us — see you next time. 🦁</p>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Overview grid -->
@@ -472,20 +511,21 @@ tailwind.config = {
 
 <!-- Navigation -->
 <div id="nav-dots"></div>
-<div id="slide-counter">1 / 8</div>
+<div id="slide-counter">1 / 9</div>
 <div id="keyboard-hint">← → Navigate · Esc Overview · F Fullscreen</div>
 
 <script>
-const TOTAL = 8;
+const TOTAL = 9;
 const TITLES = [
-  "Product Webinar — July 2026",
+  "What's new in Synder — July 2026",
   "How we'll spend 30 minutes",
   "Financials · Business Insights 2.0",
   "Sync Speed dashboard · Per Transaction",
-  "Automated TxnRecon · Shopify & Amazon",
+  "Automated Reconciliation · Shopify & Amazon",
   "Error Grouping in Sync Issues",
   "Q&A",
-  "Three asks before you go"
+  "Where to go next",
+  "Stay in touch"
 ];
 
 let current = 1;
