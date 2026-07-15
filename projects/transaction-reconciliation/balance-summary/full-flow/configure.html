@@ -66,8 +66,19 @@
     .manual-panel .m-title .chip{background:#ede9fe;color:#6b21a8;font-size:10px;padding:1px 8px;}
     .manual-panel input.txt{width:100%;border:1px solid #d1d5db;border-radius:4px;padding:8px 10px;font-size:13px;background:white;}
     .manual-panel input.txt:focus{outline:none;border-color:#7c3aed;}
+    .manual-panel input.txt.error{border-color:#dc2626;background:#fef2f2;}
+    .manual-panel input.txt.error:focus{border-color:#dc2626;}
+    .manual-panel .field-error{font-size:11px;color:#dc2626;margin-top:4px;display:none;}
+    .manual-panel .field-error.visible{display:block;}
     .manual-panel .helper{font-size:11.5px;color:#6b21a8;margin-top:10px;line-height:1.5;}
     .manual-panel .helper a{text-decoration:underline;cursor:help;}
+    /* Manual enable-checkbox row (gate for Beginning + Reported inputs) */
+    .manual-enable{background:#faf5ff;border:1px solid #e9d5ff;border-radius:6px;padding:12px 14px;margin-top:14px;display:flex;align-items:flex-start;gap:10px;cursor:pointer;user-select:none;}
+    .manual-enable input[type=checkbox]{margin-top:2px;width:16px;height:16px;accent-color:#7c3aed;cursor:pointer;flex-shrink:0;}
+    .manual-enable .me-body{flex:1;}
+    .manual-enable .me-title{font-size:12.5px;font-weight:600;color:#6b21a8;display:flex;align-items:center;gap:8px;}
+    .manual-enable .me-title .chip{background:#ede9fe;color:#6b21a8;font-size:10px;padding:1px 8px;}
+    .manual-enable .me-hint{font-size:11.5px;color:#6b21a8;margin-top:2px;line-height:1.5;}
     /* Automated helper */
     .auto-helper{background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:10px 14px;margin-top:8px;font-size:12px;color:#1e3a8a;line-height:1.5;}
     /* Assisted instructions collapsible */
@@ -306,24 +317,35 @@
               <div class="upload-hint">CSV / Excel format, up to 100MB</div>
             </div>
 
-            <!-- Balance inputs — visible only when integration is supported (i.e. NOT PayPal) -->
-            <div id="manual-balance-panel" class="manual-panel" style="margin-top:14px">
-              <div class="m-title">Manual balance entry <span class="chip chip-new">New</span> <span class="chip">Optional</span></div>
+            <!-- Balance-recon enable checkbox — visible only when integration is supported (i.e. NOT PayPal). Default OFF. -->
+            <label id="manual-balance-enable" class="manual-enable" for="manual-enable-cb">
+              <input type="checkbox" id="manual-enable-cb" onchange="toggleManualBalanceEnable(this.checked)"/>
+              <div class="me-body">
+                <div class="me-title">Enable balance reconciliation for this reconciliation <span class="chip chip-new">New</span></div>
+                <div class="me-hint">Adds a Beginning + Reported ending balance check on the results page. Off by default — turn on when you want to verify totals for this period.</div>
+              </div>
+            </label>
+
+            <!-- Balance inputs — revealed only when the enable checkbox is checked. Both fields required when visible. -->
+            <div id="manual-balance-panel" class="manual-panel" style="display:none;margin-top:10px">
+              <div class="m-title">Manual balance entry <span class="chip chip-new">New</span></div>
               <div class="balance-mention-inline">
                 <a href="#" title="Design pass: platform-specific guide TBD">Balance reconciliation guide →</a>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label class="field-label" style="margin-bottom:4px">Beginning balance</label>
-                  <input id="manual-beginning" class="txt" placeholder="Enter to enable balance verification"/>
+                  <label class="field-label" style="margin-bottom:4px">Beginning balance <span style="color:#dc2626">*</span></label>
+                  <input id="manual-beginning" class="txt" placeholder="e.g. 10,000.00"/>
+                  <div id="manual-beginning-err" class="field-error">Required when balance reconciliation is enabled.</div>
                 </div>
                 <div>
-                  <label class="field-label" style="margin-bottom:4px">Reported ending balance</label>
-                  <input id="manual-reported" class="txt" placeholder="Enter to enable balance verification"/>
+                  <label class="field-label" style="margin-bottom:4px">Reported ending balance <span style="color:#dc2626">*</span></label>
+                  <input id="manual-reported" class="txt" placeholder="e.g. 18,000.00"/>
+                  <div id="manual-reported-err" class="field-error">Required when balance reconciliation is enabled.</div>
                 </div>
               </div>
               <div class="helper">
-                Optional. Enter both to render the balance module on results. Leave blank to skip balance verification for this reconciliation. No carry-over from prior period (per FDD §2).
+                Both values are required to render the balance module on results. Uncheck the box above to skip balance verification for this reconciliation. No carry-over from prior period (per FDD §2).
               </div>
             </div>
 
@@ -455,7 +477,7 @@
     const ids = [
       'auto-balance-panel','auto-balance-unsupported',
       'assisted-balance-panel','assisted-balance-unsupported',
-      'manual-balance-panel','manual-balance-unsupported'
+      'manual-balance-enable','manual-balance-panel','manual-balance-unsupported'
     ];
     if(isControl){
       ids.forEach(id=>{
@@ -620,7 +642,7 @@
     if(readVariant() === 'control'){
       ['auto-balance-panel','auto-balance-unsupported',
        'assisted-balance-panel','assisted-balance-unsupported',
-       'manual-balance-panel','manual-balance-unsupported'].forEach(id=>{
+       'manual-balance-enable','manual-balance-panel','manual-balance-unsupported'].forEach(id=>{
         const el = document.getElementById(id);
         if(el) el.style.display = 'none';
       });
@@ -633,9 +655,32 @@
     // Assisted
     document.getElementById('assisted-balance-panel').style.display      = supported ? 'block' : 'none';
     document.getElementById('assisted-balance-unsupported').style.display= supported ? 'none'  : 'flex';
-    // Manual
-    document.getElementById('manual-balance-panel').style.display        = supported ? 'block' : 'none';
+    // Manual — supported path is gated behind the enable-checkbox; unsupported swaps in the blue info strip.
+    document.getElementById('manual-balance-enable').style.display       = supported ? 'flex' : 'none';
+    const enableCb = document.getElementById('manual-enable-cb');
+    const balanceEnabled = supported && enableCb && enableCb.checked;
+    document.getElementById('manual-balance-panel').style.display        = balanceEnabled ? 'block' : 'none';
     document.getElementById('manual-balance-unsupported').style.display  = supported ? 'none'  : 'flex';
+    // When the checkbox is off (or integration is unsupported), clear any lingering validation state.
+    if(!balanceEnabled) clearManualBalanceErrors();
+  }
+
+  // Toggle the Beginning + Reported input row when the user checks/unchecks the enable box.
+  function toggleManualBalanceEnable(checked){
+    const panel = document.getElementById('manual-balance-panel');
+    if(panel) panel.style.display = checked ? 'block' : 'none';
+    if(!checked) clearManualBalanceErrors();
+  }
+
+  function clearManualBalanceErrors(){
+    ['manual-beginning','manual-reported'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.classList.remove('error');
+    });
+    ['manual-beginning-err','manual-reported-err'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.classList.remove('visible');
+    });
   }
 
   // ---- Instructions collapsible ----
@@ -661,9 +706,32 @@
     } else if(accMode === 'assisted' && accPlatform === 'xero'){
       scenario = 'r-xero-assisted';
     } else if(accMode === 'manual' && supported){
-      const beg = (document.getElementById('manual-beginning')||{}).value || '';
-      const rep = (document.getElementById('manual-reported')||{}).value || '';
-      scenario = (beg.trim() && rep.trim()) ? 'r-manual-with-values' : 'r-manual-empty';
+      const enableCb = document.getElementById('manual-enable-cb');
+      const balanceEnabled = enableCb && enableCb.checked;
+      if(!balanceEnabled){
+        // Checkbox off → skip balance verification, route to the "skipped" flow (S4.2).
+        scenario = 'r-manual-empty';
+      } else {
+        const beg = (document.getElementById('manual-beginning')||{}).value || '';
+        const rep = (document.getElementById('manual-reported')||{}).value || '';
+        if(beg.trim() && rep.trim()){
+          scenario = 'r-manual-with-values';
+        } else {
+          // Checkbox on but at least one field empty — block navigation and surface validation (S4.3).
+          const begEl = document.getElementById('manual-beginning');
+          const repEl = document.getElementById('manual-reported');
+          if(!beg.trim()){
+            begEl.classList.add('error');
+            document.getElementById('manual-beginning-err').classList.add('visible');
+          }
+          if(!rep.trim()){
+            repEl.classList.add('error');
+            document.getElementById('manual-reported-err').classList.add('visible');
+          }
+          (begEl && !beg.trim() ? begEl : repEl).focus();
+          return;
+        }
+      }
     } else {
       // Default off-by scenario (Automated / other combinations)
       scenario = 'new-jun-2026';

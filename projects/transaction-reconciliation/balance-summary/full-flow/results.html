@@ -90,12 +90,23 @@
     .variant-switch span{color:#64748b;font-weight:600;padding:0 6px;text-transform:uppercase;letter-spacing:.04em;}
     .variant-switch button{padding:4px 10px;border:none;background:transparent;color:#475569;font-weight:500;border-radius:4px;cursor:pointer;font-size:12px;}
     .variant-switch button.active{background:white;color:#0f172a;box-shadow:0 1px 2px rgba(0,0,0,0.08);}
-    /* unsupported clearing notice */
-    .unsupported-notice{background:#fffbeb;border:1px solid #fde68a;color:#92400e;margin:12px 24px;padding:12px 16px;border-radius:8px;display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.5;}
-    .unsupported-notice .icon{color:#d97706;font-size:16px;line-height:1;margin-top:1px;}
-    /* manual empty notice */
-    .manual-empty-notice{background:#f8fafc;border:1px solid #e5e7eb;color:#475569;margin:12px 24px;padding:10px 14px;border-radius:6px;font-size:12.5px;line-height:1.5;}
-    .manual-empty-notice a{color:#2563eb;text-decoration:underline;}
+    /* In-recon blue info notice — shared shape for PayPal-unsupported (S8) + Manual-skipped (S4.2) */
+    .info-notice{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;margin:12px 24px;padding:10px 14px;border-radius:6px;font-size:12.5px;line-height:1.5;display:flex;gap:10px;align-items:flex-start;}
+    .info-notice .icon{color:#2563eb;font-size:14px;line-height:1;margin-top:1px;flex-shrink:0;}
+    .info-notice .body{flex:1;}
+    .info-notice a{color:#1d4ed8;text-decoration:underline;}
+    .info-notice .close{color:#64748b;cursor:pointer;font-size:16px;font-weight:600;line-height:1;margin-left:8px;padding:0 4px;flex-shrink:0;}
+    .info-notice .close:hover{color:#1e3a8a;}
+    /* Balance-block collapse chevron in .bb-header */
+    .bb-collapse{background:none;border:none;color:#64748b;cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;transition:transform .15s, background .15s;}
+    .bb-collapse:hover{background:rgba(15,23,42,0.06);}
+    .balance-block.collapsed .bb-collapse{transform:rotate(180deg);}
+    .balance-block.collapsed .bb-grid,
+    .balance-block.collapsed .bb-footnote,
+    .balance-block.collapsed .bb-match-strip{display:none !important;}
+    .balance-block.state-off   .bb-collapse{color:#9f1239;}
+    .balance-block.state-match .bb-collapse{color:#065f46;}
+    .bb-header-right{display:flex;align-items:center;gap:10px;}
     /* purple chip for Manual mode */
     .c-purple{background:#ede9fe;color:#6b21a8;}
     /* scenario label */
@@ -140,9 +151,13 @@
     <div>
       <div class="flex items-center gap-2.5 flex-wrap">
         <h1 id="recon-title" class="text-[21px] font-bold text-gray-900 leading-tight">Stripe Stripe Test (sandbox) (required for Synder)</h1>
-        <span class="chip c-green">Finished</span>
-        <span class="chip c-amber">Not reconciled</span>
-        <span id="balance-pill" class="chip c-red">⚠ Balance off by $50.00</span>
+        <!--
+          Consolidated reconciliation status pill (FDD §S6, updated). One pill folds row-level + balance
+          into a single header state. Reserved CSS states c-blue (In progress) and c-red (Error) exist
+          in the stylesheet but aren't demoed here — those are lifecycle states carried over from
+          existing TxnRecon behavior and not simulated in this MVP scenario set.
+        -->
+        <span id="status-pill" class="chip c-amber">⚠ Attention required</span>
       </div>
       <div id="recon-subtitle" class="text-[13px] text-gray-500 mt-0.5">Stripe Test (sandbox) / Mar 1 - 31, 2026</div>
     </div>
@@ -157,18 +172,22 @@
   </div>
 </div>
 
-<!-- Unsupported-clearing notice (shown only for PayPal row) -->
-<div id="unsupported-notice" class="unsupported-notice" style="display:none">
-  <span class="icon">⚠</span>
-  <div>
-    <strong>Balance verification not available for this clearing.</strong><br/>
-    This integration's transactions are reported in multiple currencies; balance verification isn't supported for this clearing yet. Row-level reconciliation works as usual. <span class="text-amber-800/70">(FDD §2 · Unsupported clearing)</span>
+<!-- Unsupported-clearing notice (PayPal, FDD §S8) — closable blue info notice INSIDE the reconciliation, above the tabs -->
+<div id="unsupported-notice" class="info-notice" style="display:none">
+  <span class="icon">ⓘ</span>
+  <div class="body">
+    Balance reconciliation isn't available for this integration — mixed-currency reporting. Row-level reconciliation continues as usual. <a href="#" title="Design pass: platform-specific guide TBD">Balance reconciliation guide →</a>
   </div>
+  <span class="close" onclick="dismissNotice('paypalNoticeDismissed', 'unsupported-notice')" title="Dismiss">×</span>
 </div>
 
-<!-- Manual mode, no values entered — unobtrusive info strip -->
-<div id="manual-empty-notice" class="manual-empty-notice" style="display:none">
-  Balance verification skipped — Manual mode, no values entered on this reconciliation. Row-level reconciliation runs as usual. <a href="configure.html">Enter Beginning + Reported →</a>
+<!-- Manual mode, checkbox off — closable blue info notice (FDD §S4.2 skipped-notice) -->
+<div id="manual-empty-notice" class="info-notice" style="display:none">
+  <span class="icon">ⓘ</span>
+  <div class="body">
+    Balance reconciliation was skipped for this reconciliation. Enable it in the reconciliation setup to see the balance check. <a href="configure.html">Enter balance details →</a>
+  </div>
+  <span class="close" onclick="dismissNotice('manualSkippedNoticeDismissed', 'manual-empty-notice')" title="Dismiss">×</span>
 </div>
 
 <!-- Balance Summary block — hidden for control variant / unsupported clearing -->
@@ -178,7 +197,10 @@
   <div id="bb-off" class="bb-section">
     <div class="bb-header">
       <span class="bb-title">Balance Summary · Mar 1 – 31, 2026</span>
-      <span class="bb-meta">Automated · Beginning &amp; Reported from QBO clearing register · Debits and Credits from Stripe</span>
+      <div class="bb-header-right">
+        <span class="bb-meta">Automated · Beginning &amp; Reported from QBO clearing register · Debits and Credits from Stripe</span>
+        <button class="bb-collapse" onclick="toggleBalanceBlockCollapse()" title="Collapse / expand" aria-label="Collapse balance block">▲</button>
+      </div>
     </div>
     <div class="bb-grid">
       <div class="bb-cell">
@@ -230,7 +252,10 @@
   <div id="bb-match" class="bb-section" style="display:none">
     <div class="bb-header">
       <span class="bb-title">✓ Balance matches · Mar 1 – 31, 2026</span>
-      <span class="bb-meta">Automated · Beginning &amp; Reported from QBO clearing register · Debits and Credits from Stripe</span>
+      <div class="bb-header-right">
+        <span class="bb-meta">Automated · Beginning &amp; Reported from QBO clearing register · Debits and Credits from Stripe</span>
+        <button class="bb-collapse" onclick="toggleBalanceBlockCollapse()" title="Collapse / expand" aria-label="Collapse balance block">▲</button>
+      </div>
     </div>
     <div class="bb-grid">
       <div class="bb-cell">
@@ -278,7 +303,10 @@
   <div id="bb-xero-assisted" class="bb-section" style="display:none">
     <div class="bb-header">
       <span class="bb-title" style="color:#065f46;">✓ Balance matches · Feb 1 – 28, 2026</span>
-      <span class="bb-meta">Assisted · Beginning &amp; Reported from Xero Account Transactions report <span class="chip" style="background:#cffafe;color:#155e75;font-size:10px;margin-left:6px">Xero Assisted</span></span>
+      <div class="bb-header-right">
+        <span class="bb-meta">Assisted · Beginning &amp; Reported from Xero Account Transactions report <span class="chip" style="background:#cffafe;color:#155e75;font-size:10px;margin-left:6px">Xero Assisted</span></span>
+        <button class="bb-collapse" onclick="toggleBalanceBlockCollapse()" title="Collapse / expand" aria-label="Collapse balance block">▲</button>
+      </div>
     </div>
     <div class="bb-grid">
       <div class="bb-cell">
@@ -326,7 +354,10 @@
   <div id="bb-manual" class="bb-section" style="display:none">
     <div class="bb-header">
       <span class="bb-title" style="color:#065f46;">✓ Balance matches · Feb 1 – 28, 2026</span>
-      <span class="bb-meta">Manual · Beginning &amp; Reported entered by user <span class="chip c-purple" style="font-size:10px;margin-left:6px">Manual mode</span></span>
+      <div class="bb-header-right">
+        <span class="bb-meta">Manual · Beginning &amp; Reported entered by user <span class="chip c-purple" style="font-size:10px;margin-left:6px">Manual mode</span></span>
+        <button class="bb-collapse" onclick="toggleBalanceBlockCollapse()" title="Collapse / expand" aria-label="Collapse balance block">▲</button>
+      </div>
     </div>
     <div class="bb-grid">
       <div class="bb-cell">
@@ -374,7 +405,10 @@
   <div id="bb-none" class="bb-section" style="display:none">
     <div class="bb-header">
       <span class="bb-title">Balance Summary · Mar 1 – 31, 2026</span>
-      <span class="bb-meta">Sources unavailable — Beginning + Reported not fetched</span>
+      <div class="bb-header-right">
+        <span class="bb-meta">Sources unavailable — Beginning + Reported not fetched</span>
+        <button class="bb-collapse" onclick="toggleBalanceBlockCollapse()" title="Collapse / expand" aria-label="Collapse balance block">▲</button>
+      </div>
     </div>
     <div class="bb-grid" style="grid-template-columns:1fr auto">
       <div class="bb-cell" style="padding:16px 20px">
@@ -539,26 +573,54 @@
   function applyVariant(v){
     const scen = currentScenario();
     const block = document.getElementById('balance-block');
-    const pill = document.getElementById('balance-pill');
+    const pill = document.getElementById('status-pill');
     const unsupported = sessionStorage.getItem('dis259_recon_supported') === '0';
     const manualEmpty = scen === 'r-manual-empty';
-    // Per FDD §S8 — PayPal (unsupported) shows no balance UI whatsoever, not even in treatment.
-    // Configuration screen is the single point where the user learns balance recon is unavailable.
+    const unsupNotice = document.getElementById('unsupported-notice');
+    const manualNotice = document.getElementById('manual-empty-notice');
+
+    // Consolidated pill always renders (drives row-level + balance state).
+    // Reserved states c-blue (In progress) / c-red (Error) exist in CSS but aren't demoed here —
+    // in real Synder the pill also carries those lifecycle states. Not simulated.
+    pill.style.display = 'inline-flex';
+
     if(scen === 'r7-paypal'){
+      // FDD §S8 — no balance module, but the reconciliation now DOES surface a closable blue info notice
+      // (change 3, revised from earlier decision). Notice dismissal is per-session via sessionStorage.
       block.style.display = 'none';
-      pill.style.display = 'none';
-      document.getElementById('unsupported-notice').style.display = 'none';
-      document.getElementById('manual-empty-notice').style.display = 'none';
+      manualNotice.style.display = 'none';
+      const dismissed = sessionStorage.getItem('paypalNoticeDismissed') === 'true';
+      unsupNotice.style.display = (v === 'treatment' && !dismissed) ? 'flex' : 'none';
       return;
     }
+
     // Balance block hidden for control OR unsupported OR manual-empty
     const showBlock = v === 'treatment' && !unsupported && !manualEmpty;
     block.style.display = showBlock ? 'block' : 'none';
-    // Pill always shown in treatment (except control) — even for manual-empty & unsupported we show a pill,
-    // but with the appropriate state (⚠ Balance not reconciled).
-    pill.style.display = v === 'treatment' ? 'inline-flex' : 'none';
-    document.getElementById('unsupported-notice').style.display = unsupported && v === 'treatment' ? 'flex' : 'none';
-    document.getElementById('manual-empty-notice').style.display = manualEmpty && v === 'treatment' ? 'block' : 'none';
+
+    // Manual-skipped notice (FDD §S4.2) — same blue info shape as PayPal notice, different copy.
+    if(manualEmpty && v === 'treatment'){
+      const dismissed = sessionStorage.getItem('manualSkippedNoticeDismissed') === 'true';
+      manualNotice.style.display = dismissed ? 'none' : 'flex';
+    } else {
+      manualNotice.style.display = 'none';
+    }
+    // Non-paypal branch never shows the paypal-unsupported notice.
+    unsupNotice.style.display = 'none';
+  }
+
+  // Notice dismissal — persists per-session so a demo reviewer can reopen the page
+  // (or clear sessionStorage) to see it again.
+  function dismissNotice(storageKey, elementId){
+    sessionStorage.setItem(storageKey, 'true');
+    const el = document.getElementById(elementId);
+    if(el) el.style.display = 'none';
+  }
+
+  // Balance-block collapse — per-session, per-reconciliation (does not persist across reconciliations).
+  function toggleBalanceBlockCollapse(){
+    const block = document.getElementById('balance-block');
+    if(block) block.classList.toggle('collapsed');
   }
   function setVariant(v){
     sessionStorage.setItem('dis259_variant', v);
@@ -567,7 +629,26 @@
     applyVariant(v);
   }
 
-  // ---- balance state ----
+  // ---- balance state + consolidated header pill (FDD §S6) ----
+  // The pill folds row-level + balance into a single header state. Two states are demoed:
+  //   ✓ Reconciled       (green)  — balance Δ = 0 AND all rows reconciled
+  //   ⚠ Attention required (amber) — balance Δ ≠ 0 OR any row not reconciled
+  // Two states are reserved in CSS but not demoed here (out of scope for this MVP scenario set):
+  //   ⛔ Error  (red)  — technical failure       — reserved via .c-red
+  //   ⏳ In progress (blue/gray) — matching running — reserved via .c-blue / .c-gray
+  function setStatusPill(kind){
+    const pill = document.getElementById('status-pill');
+    pill.classList.remove('c-red','c-green','c-gray','c-amber','c-blue');
+    if(kind === 'reconciled'){
+      pill.classList.add('c-green');
+      pill.textContent = '✓ Reconciled';
+    } else {
+      // Default: attention required
+      pill.classList.add('c-amber');
+      pill.textContent = '⚠ Attention required';
+    }
+  }
+
   function setState(state){
     ['off','match','none'].forEach(s=>{
       const el = document.getElementById('st-'+s);
@@ -579,36 +660,29 @@
       const el = document.getElementById(id);
       if(el) el.style.display='none';
     });
-    const pill=document.getElementById('balance-pill');
-    pill.classList.remove('c-red','c-green','c-gray','c-amber');
     if(state==='off'){
       block.classList.add('state-off');
       document.getElementById('bb-off').style.display='block';
-      pill.classList.add('c-red');
-      pill.textContent='⚠ Balance off by $50.00';
+      setStatusPill('attention'); // Δ ≠ 0 → attention required
     } else if(state==='match'){
       block.classList.add('state-match');
       document.getElementById('bb-match').style.display='block';
-      pill.classList.add('c-green');
-      pill.textContent='✓ Balance matches';
+      setStatusPill('reconciled'); // Δ = 0, demo assumes rows clean
     } else if(state==='manual-match'){
       block.classList.add('state-match');
       document.getElementById('bb-manual').style.display='block';
-      pill.classList.add('c-green');
-      pill.textContent='✓ Balance reconciled';
+      setStatusPill('reconciled');
     } else if(state==='xero-assisted-match'){
       block.classList.add('state-match');
       document.getElementById('bb-xero-assisted').style.display='block';
-      pill.classList.add('c-green');
-      pill.textContent='✓ Balance reconciled';
+      setStatusPill('reconciled');
     } else if(state==='manual-empty'){
-      pill.classList.add('c-amber');
-      pill.textContent='⚠ Balance not reconciled';
+      // No balance module — pill driven by row-level status alone (FDD §S6.4). Demo has unresolved rows.
+      setStatusPill('attention');
     } else {
       block.classList.add('state-none');
       document.getElementById('bb-none').style.display='block';
-      pill.classList.add('c-gray');
-      pill.textContent='– No beginning balance';
+      setStatusPill('attention'); // sources missing — treat as attention required
     }
     sessionStorage.setItem('dis259_recon_state', state);
   }
@@ -655,16 +729,16 @@
       scenarioLabel.style.display = 'inline-flex';
       scenarioLabelText.textContent = 'Manual · no values entered';
     } else if(scen === 'r7-paypal'){
-      // Per FDD §S8 — module doesn't render on unsupported clearings; no error/warning UI on the reconciliation itself.
-      // The `Balance reconciliation not available` message on the configuration screen is the single point where the user
-      // learns about it. Results page for PayPal should look identical to pre-DIS-259 TxnRecon: header + tabs + table only.
+      // Per FDD §S8 (updated) — module doesn't render on unsupported clearings, but the reconciliation now
+      // DOES show a closable blue info notice above the tabs (change 3). Pill state driven by row-level
+      // status alone (FDD §S6.4) — demo has unresolved rows → attention required.
       document.getElementById('recon-title').textContent = 'PayPal clearing (USD)';
       document.getElementById('recon-subtitle').textContent = 'PayPal / Mar 1 - 31, 2026';
       stateToggleWrap.style.display = 'none';
       // Hide scenario label too (reviewer preference)
       scenarioLabel.style.display = 'none';
-      // No setState() call — we intentionally do NOT render any bb-* section.
-      // applyVariant() (called below via setVariant) has a paypal guard that hides block, pill, and both notices.
+      // No setState() call — we intentionally do NOT render any bb-* section. Set pill directly.
+      setStatusPill('attention');
     } else {
       // Default scenario (r3 off-by, or others) — keep the state toggle available
       const state = sessionStorage.getItem('dis259_recon_state') || 'off';
