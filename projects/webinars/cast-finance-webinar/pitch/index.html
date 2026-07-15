@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reconciliation Training Session for Cast Finance — Synder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+      colors: { 'gray-850': '#18212f' }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; background: #111827; color: #f9fafb; font-family: 'Inter', system-ui, sans-serif; }
+
+  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: #3b82f6; transition: width 0.3s ease; z-index: 100; }
+  #slide-deck { position: relative; width: 100%; height: 100vh; overflow: hidden; }
+  .slide { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 60px 32px 80px; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+  .slide.active { opacity: 1; pointer-events: all; }
+  .slide-inner { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 0; overflow-y: auto; max-height: calc(100vh - 140px); scrollbar-width: none; }
+  .slide-inner::-webkit-scrollbar { display: none; }
+
+  #nav-dots { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 100; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #374151; cursor: pointer; transition: background 0.2s, transform 0.2s; }
+  .dot.active { background: #3b82f6; transform: scale(1.4); }
+  .dot:hover:not(.active) { background: #6b7280; }
+
+  #slide-counter { position: fixed; bottom: 20px; right: 28px; font-size: 12px; color: #6b7280; font-variant-numeric: tabular-nums; z-index: 100; }
+
+  #overview { position: fixed; inset: 0; background: rgba(17,24,39,0.97); display: none; z-index: 200; overflow-y: auto; padding: 40px 32px; }
+  #overview.visible { display: block; }
+  #overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; max-width: 1200px; margin: 0 auto; }
+  #overview h2 { text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 24px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .thumb { background: #1f2937; border: 2px solid #374151; border-radius: 10px; padding: 14px; cursor: pointer; transition: border-color 0.15s, transform 0.15s; aspect-ratio: 16/9; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; overflow: hidden; }
+  .thumb:hover { border-color: #3b82f6; transform: scale(1.03); }
+  .thumb.active-thumb { border-color: #3b82f6; }
+  .thumb-num { font-size: 10px; color: #6b7280; margin-bottom: 6px; }
+  .thumb-title { font-size: 12px; font-weight: 600; color: #d1d5db; line-height: 1.3; }
+  #overview-close { position: fixed; top: 24px; right: 32px; color: #6b7280; cursor: pointer; font-size: 24px; z-index: 210; }
+  #overview-close:hover { color: #f9fafb; }
+
+  .card { background: #1f2937; border: 1px solid #374151; border-radius: 12px; padding: 20px 24px; }
+  .card-sm { background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 14px 18px; }
+  .accent { color: #3b82f6; }
+  .success { color: #22c55e; }
+  .warning { color: #f59e0b; }
+  .violet { color: #a78bfa; }
+  .muted { color: #9ca3af; }
+
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+  .tag-green { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .tag-violet { background: rgba(167,139,250,0.15); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.3); }
+  .tag-gray { background: rgba(107,114,128,0.15); color: #9ca3af; border: 1px solid rgba(107,114,128,0.3); }
+
+  .slide-title { font-size: 2.2rem; font-weight: 800; line-height: 1.15; color: #f9fafb; }
+  .slide-subtitle { font-size: 1rem; color: #9ca3af; font-weight: 400; margin-top: 6px; }
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+  .h-divider { border: none; border-top: 1px solid #374151; margin: 14px 0; }
+
+  .highlight-box { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: 10px; padding: 14px 18px; }
+  .warning-box { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 14px 18px; }
+  .success-box { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.3); border-radius: 10px; padding: 14px 18px; }
+  .violet-box { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.3); border-radius: 10px; padding: 14px 18px; }
+
+  #keyboard-hint { position: fixed; bottom: 20px; left: 28px; font-size: 11px; color: #4b5563; z-index: 100; }
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.4s ease both; }
+
+  .demo-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59,130,246,0.15); border: 2px solid rgba(59,130,246,0.4);
+    border-radius: 12px; padding: 12px 28px; font-size: 1.8rem; font-weight: 800;
+    color: #60a5fa; letter-spacing: 0.05em;
+  }
+  .demo-badge .pulse-dot { width: 12px; height: 12px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+  /* Concept diagram blocks */
+  .concept-node {
+    background: #1f2937; border: 1.5px solid #374151; border-radius: 12px;
+    padding: 14px 18px; text-align: center; font-size: 13px; color: #d1d5db; font-weight: 500;
+  }
+  .concept-arrow { display: flex; align-items: center; justify-content: center; color: #4b5563; font-size: 22px; }
+
+  :fullscreen body, :-webkit-full-screen body { background: #111827; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div id="slide-deck">
+
+  <!-- ─────────── SLIDE 1: TITLE ─────────── -->
+  <div class="slide" data-slide="1">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-violet" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Cast Finance × Synder — [WEBINAR_DATE]</div>
+        <h1 style="font-size:3rem; font-weight:800; line-height:1.1; color:#f9fafb; margin-bottom:18px;">
+          Reconciliation Training Session<br /><span style="color:#a78bfa;">for Cast Finance</span>
+        </h1>
+        <p style="font-size:1.15rem; color:#9ca3af; margin-bottom:12px; font-weight:400;">How Transaction Reconciliation works in Synder today, what's coming next, and a conversation around how it can fit Cast Finance's workflow.</p>
+        <p style="font-size:1rem; color:#6b7280; margin-bottom:40px;">60 min · Walkthrough · Live Demo · Q&A · Vote</p>
+        <div style="width:60px; height:2px; background:#374151; margin:0 auto 40px;"></div>
+        <div style="display:flex; gap:40px; justify-content:center; flex-wrap:wrap; align-items:flex-start;">
+          <div>
+            <p style="font-size:14px; color:#d1d5db; font-weight:700;">Slava</p>
+            <p style="font-size:11px; color:#6b7280; letter-spacing:0.06em; text-transform:uppercase;">Product Manager</p>
+          </div>
+          <div style="width:1px; background:#374151; align-self:stretch;"></div>
+          <div>
+            <p style="font-size:14px; color:#d1d5db; font-weight:700;">Barbara</p>
+            <p style="font-size:11px; color:#6b7280; letter-spacing:0.06em; text-transform:uppercase;">Product Marketing</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 2: AGENDA ─────────── -->
+  <div class="slide" data-slide="2">
+    <div class="slide-inner">
+      <div class="section-label">Overview</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">How We'll Spend the Hour</h1>
+      <p class="slide-subtitle" style="margin-bottom:28px;">Walkthrough, live demo, your questions, what's next, and a vote.</p>
+
+      <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
+        <div class="card" style="border-left:4px solid #6b7280; display:flex; align-items:center; gap:18px; padding:12px 18px;">
+          <div style="width:36px; height:36px; background:rgba(107,114,128,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">👋</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Welcome & Framing</div>
+            <div style="font-size:12.5px; color:#9ca3af;">Hosts, agenda, and why use Synder for reconciliation.</div>
+          </div>
+          <div class="tag tag-gray">5 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #3b82f6; display:flex; align-items:center; gap:18px; padding:12px 18px;">
+          <div style="width:36px; height:36px; background:rgba(59,130,246,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🔍</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Transaction Reconciliation — Live</div>
+            <div style="font-size:12.5px; color:#9ca3af;">Launch flow, four result cases, PT vs SM, non-Synder upload, resolution paths.</div>
+          </div>
+          <div class="tag tag-blue">23 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #22c55e; display:flex; align-items:center; gap:18px; padding:12px 18px;">
+          <div style="width:36px; height:36px; background:rgba(34,197,94,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">💬</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Your Questions</div>
+            <div style="font-size:12.5px; color:#9ca3af;">Anything about what you've just seen — chat or unmute.</div>
+          </div>
+          <div class="tag tag-green">12 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #a78bfa; display:flex; align-items:center; gap:18px; padding:12px 18px;">
+          <div style="width:36px; height:36px; background:rgba(167,139,250,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🚀</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Features Coming for Cast Finance</div>
+            <div style="font-size:12.5px; color:#9ca3af;">A look at how Transaction Reconciliation evolves next — six prototypes from our design team. You're the first ones seeing these.</div>
+          </div>
+          <div class="tag tag-violet">12 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #fbbf24; display:flex; align-items:center; gap:18px; padding:12px 18px;">
+          <div style="width:36px; height:36px; background:rgba(251,191,36,0.18); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🗳️</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Vote for a Feature</div>
+            <div style="font-size:12.5px; color:#9ca3af;">Tell us which feature is your favourite for Cast Finance.</div>
+          </div>
+          <div class="tag tag-amber">5 min</div>
+        </div>
+
+        <div class="card" style="border-left:4px solid #f59e0b; display:flex; align-items:center; gap:18px; padding:12px 18px;">
+          <div style="width:36px; height:36px; background:rgba(245,158,11,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0;">🤝</div>
+          <div style="flex:1;">
+            <div style="font-weight:700; color:#f9fafb; margin-bottom:2px;">Close + Next Steps</div>
+            <div style="font-size:12.5px; color:#9ca3af;">One follow-up email within 24 hours: recording, questionnaire, Suggest-a-Feature form, and a 2-minute session rating.</div>
+          </div>
+          <div class="tag tag-amber">3 min</div>
+        </div>
+      </div>
+
+      <div class="highlight-box">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-size:16px;">💬</span>
+          <span style="font-size:13px; color:#93c5fd;">Drop questions and reactions in chat anytime — Barbara will catch them.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 3: WHY SYNDER ─────────── -->
+  <div class="slide" data-slide="3">
+    <div class="slide-inner">
+      <div class="section-label">The Problem · Why Synder for Reconciliation</div>
+      <h1 class="slide-title" style="margin-bottom:6px;">Why Reconciliation with Synder</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Reconciliation is hard for a stack of reasons. Here's how Synder makes it less so.</p>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">Why reconciliation is hard</div>
+      <div class="grid-3" style="gap:8px; margin-bottom:20px;">
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🔀</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Many-to-one matching</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">One sale → receipt + fee + payout. By hand, at scale.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">❓</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Native tools work by totals</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Accounting platforms tie volume to a balance. You confirm totals, not which rows actually paired.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">📑</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Source is usually an Excel</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">For non-integrated accounts — statements, exports — shaped and compared by hand.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🧩</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Hard to scale across platforms</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Stripe isn't Shopify isn't PayPal. A different recipe per integration — painful across a portfolio.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">🕵</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Errors hide until audit</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Small mismatches surface months later — by then the trail is cold.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:14px;">⏳</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:12.5px;">Hours per client per month</div>
+          </div>
+          <div style="font-size:11px; color:#9ca3af; line-height:1.5;">Manual work scales with volume — and never shrinks.</div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">What Synder brings</div>
+      <div class="grid-3" style="gap:10px; margin-bottom:6px;">
+        <div class="card-sm" style="border-top:3px solid #22c55e; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">🔍</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Auditable</div>
+          </div>
+          <p style="font-size:11.5px; color:#d1d5db; line-height:1.55;">See <strong>which row matched which row</strong>, side by side — <strong>1-to-many, many-to-one, many-to-many</strong>. The hard part is finding the several transactions that belong to a single integration report entry — Synder surfaces them. Native QBO ties by totals.</p>
+        </div>
+
+        <div class="card-sm" style="border-top:3px solid #3b82f6; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">⚙️</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Automated</div>
+          </div>
+          <p style="font-size:11.5px; color:#d1d5db; line-height:1.55;">Synder matches and <strong>surgically points out what's wrong</strong> — which row, which side, which delta. <strong>Normalizes reports across platforms</strong> — Stripe, Shopify, Amazon each have their own shape; Synder does the heavy lifting of unifying them.</p>
+        </div>
+
+        <div class="card-sm" style="border-top:3px solid #a78bfa; padding:14px 16px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">⚡</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:13.5px;">Fast</div>
+          </div>
+          <p style="font-size:11.5px; color:#d1d5db; line-height:1.55;"><strong>Hours become minutes.</strong> No waiting for cash to land in the bank — platform data is available immediately.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 4: TR HOW IT WORKS ─────────── -->
+  <div class="slide" data-slide="4">
+    <div class="slide-inner">
+      <div class="section-label">Transaction Reconciliation</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">How It Works</h1>
+      <p class="slide-subtitle" style="margin-bottom:24px;">Pick the inputs. Pick how Synder matches. Read the result.</p>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Launch — Four Choices</div>
+      <div class="grid-4" style="margin-bottom:24px;">
+        <div class="card-sm" style="text-align:center;">
+          <div style="font-size:24px; margin-bottom:8px;">📅</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Period</div>
+          <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">Last month, quarter, custom</div>
+        </div>
+        <div class="card-sm" style="text-align:center;">
+          <div style="font-size:24px; margin-bottom:8px;">🔌</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Integration</div>
+          <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">Stripe, PayPal, Shopify…</div>
+        </div>
+        <div class="card-sm" style="text-align:center;">
+          <div style="font-size:24px; margin-bottom:8px;">📒</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Account</div>
+          <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">Where the txns land in QBO</div>
+        </div>
+        <div class="card-sm" style="text-align:center;">
+          <div style="font-size:24px; margin-bottom:8px;">⚙️</div>
+          <div style="font-weight:700; color:#f9fafb; font-size:13px;">Mode</div>
+          <div style="font-size:11.5px; color:#9ca3af; margin-top:4px;">Auto · Assisted · Manual</div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Result — Four Buckets</div>
+      <div class="grid-2" style="gap:10px; margin-bottom:16px;">
+        <div class="card-sm" style="border-left:3px solid #22c55e;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">✓</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:13.5px;">Matched</div>
+              <div style="font-size:12px; color:#9ca3af;">Integration ↔ accounting tied cleanly by ID.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #f59e0b;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">⚠</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:13.5px;">Discrepancy</div>
+              <div style="font-size:12px; color:#9ca3af;">Matched by ID, but the amounts disagree.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #ef4444;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">↗</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:13.5px;">Missing in Accounting</div>
+              <div style="font-size:12px; color:#9ca3af;">Integration sees it, books don't.</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #a78bfa;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">↙</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:13.5px;">Missing in Integration</div>
+              <div style="font-size:12px; color:#9ca3af;">Books have an entry the integration doesn't.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-box" style="font-size:12.5px; color:#4ade80; margin-bottom:10px;">
+        <strong>Read-only.</strong> Transaction Reconciliation <strong>does not consume sync credits</strong>, doesn't write to your books, and doesn't write to the integration. Safe to run anytime — it only reads and compares.
+      </div>
+
+      <div class="highlight-box" style="font-size:12.5px; color:#93c5fd;">
+        <strong>Plus:</strong> reconcile accounts that aren't Synder-connected at all — by uploading any report or file (e.g. a bank statement export) and mapping it through. Demo coming up.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 5: LIVE DEMO ─────────── -->
+  <div class="slide" data-slide="5">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:70vh;">
+      <div class="fade-up">
+        <div class="demo-badge" style="margin-bottom:28px;">
+          <div class="pulse-dot"></div>
+          LIVE DEMO
+        </div>
+        <h1 style="font-size:2.4rem; font-weight:800; color:#f9fafb; margin-bottom:14px;">Switching to Synder</h1>
+        <p style="font-size:1rem; color:#9ca3af; max-width:680px; margin: 0 auto 36px;">Four separate reconciliations walking the result buckets — then PT vs SM (with the Register language you know), then a non-Synder account reconciled against an uploaded report (bank statement as the example).</p>
+
+        <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap; max-width:780px; margin:0 auto;">
+          <div class="card-sm" style="background:rgba(34,197,94,0.06); border-color:rgba(34,197,94,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#4ade80; font-weight:600;">R1</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">All Matched</span>
+          </div>
+          <div class="card-sm" style="background:rgba(107,114,128,0.06); border-color:rgba(107,114,128,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#9ca3af; font-weight:600;">R2</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">To Ignore</span>
+          </div>
+          <div class="card-sm" style="background:rgba(245,158,11,0.06); border-color:rgba(245,158,11,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#fbbf24; font-weight:600;">R3</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">Discrepancy</span>
+          </div>
+          <div class="card-sm" style="background:rgba(239,68,68,0.06); border-color:rgba(239,68,68,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#f87171; font-weight:600;">R4</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">Missing Both Sides</span>
+          </div>
+          <div class="card-sm" style="background:rgba(167,139,250,0.06); border-color:rgba(167,139,250,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#c4b5fd; font-weight:600;">SM</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">Summary Sync · Register</span>
+          </div>
+          <div class="card-sm" style="background:rgba(59,130,246,0.06); border-color:rgba(59,130,246,0.3); padding:10px 16px;">
+            <span style="font-size:11px; color:#60a5fa; font-weight:600;">+</span> &nbsp;<span style="font-size:12.5px; color:#d1d5db;">Non-Synder Account · Uploaded Report</span>
+          </div>
+        </div>
+
+        <p style="font-size:12px; color:#6b7280; margin-top:36px;">Then back to slides for what's coming next.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 6: RESOLUTION PATHS TODAY ─────────── -->
+  <div class="slide" data-slide="6">
+    <div class="slide-inner">
+      <div class="section-label">Transaction Reconciliation</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Resolution Paths Today</h1>
+      <p class="slide-subtitle" style="margin-bottom:18px;">Zero matches or a wall of mismatches isn't a bad outcome — it's <strong>clarity</strong>. The first thing reconciliation tells you is whether the setup is right.</p>
+
+      <div class="highlight-box" style="font-size:12.5px; color:#93c5fd; margin-bottom:16px;">
+        Before treating a result as "data problem", check the configuration first. The four hygiene items below catch most of what looks like a reconciliation failure.
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">First — check the setup</div>
+      <div class="grid-3" style="gap:10px; margin-bottom:18px;">
+        <div class="card-sm" style="border-left:3px solid #3b82f6;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">🏦</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Clearing accounts</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Sales, refunds, fees, payouts all land in the same clearing account per integration.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #3b82f6;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">⚡</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Auto-import &amp; Auto-sync on</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Both need to be enabled. <strong>Auto-import</strong> pulls transactions into Synder; <strong>auto-sync</strong> pushes them through to accounting. Either off → Missing-in-Accounting gaps.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #3b82f6;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span style="font-size:18px;">🔄</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Sync hygiene</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">No Ready-to-Sync rows. No failed or cancelled rows. No deleted transactions left unresolved.</div>
+        </div>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">Then — when the result genuinely needs action</div>
+      <div class="grid-3" style="gap:10px;">
+        <div class="card-sm" style="border-left:3px solid #f59e0b;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+            <span style="font-size:18px;">🛠</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Adjust in books → refresh</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Fix the discrepancy in QBO/Xero, then refresh the reconciliation. In-Synder fix is on the roadmap.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #a78bfa;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+            <span style="font-size:18px;">🔗</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Manual matching</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">Pair missing rows on either side when ID-matching can't link them. Different conventions, manual entries, re-syncs.</div>
+        </div>
+        <div class="card-sm" style="border-left:3px solid #6b7280;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+            <span style="font-size:18px;">⏭</span>
+            <div style="font-weight:700; color:#f9fafb; font-size:13px;">Ignore</div>
+          </div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.5;">For rows that genuinely shouldn't be matched. Reconciliation math closes around them.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 7: YOUR QUESTIONS — Q&A TRANSITION ─────────── -->
+  <div class="slide" data-slide="7">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-green" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Q&A</div>
+        <h1 style="font-size:2.6rem; font-weight:800; line-height:1.15; color:#f9fafb; margin-bottom:18px;">
+          Any Questions on the Functionality?
+        </h1>
+        <p style="font-size:1.2rem; color:#d1d5db; max-width:760px; margin:0 auto 16px; line-height:1.5;">
+          That's everything we wanted to show on Transaction Reconciliation as it exists today. Anything about the functionality before we move into what's coming next?
+        </p>
+        <p style="font-size:1rem; color:#9ca3af; max-width:680px; margin:0 auto 36px; line-height:1.6;">
+          Drop questions in chat or unmute whenever. Barbara is watching both.
+        </p>
+
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; max-width:780px; margin:0 auto;">
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">Launching a reconciliation</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">Matched / Discrepancy / Missing</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">PT vs SM (Register)</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">Auto · Assisted · Manual modes</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">Non-Synder account upload</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">Manual matching</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">Resolution paths</div>
+          <div class="card-sm" style="padding:10px 16px; font-size:12px; color:#d1d5db;">Anything else on your mind</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 8: DEMO OF PROTOTYPES ─────────── -->
+  <div class="slide" data-slide="8">
+    <div class="slide-inner">
+      <div style="text-align:center; margin-bottom:32px;">
+        <div class="section-label" style="margin-bottom:10px;">Coming Next · For Cast Finance</div>
+        <h1 style="font-size:3rem; font-weight:800; line-height:1.15; color:#f9fafb; margin-bottom:16px;">Features Coming for Cast Finance</h1>
+        <p style="font-size:1.15rem; color:#9ca3af; font-weight:400; line-height:1.55; max-width:820px; margin:0 auto;">Here's what's been done — and how Transaction Reconciliation evolves next. Six prototypes from our design team. They're still in progress, so this is your chance to shape them before they ship.</p>
+      </div>
+
+      <div class="grid-3" style="gap:12px; margin-bottom:18px;">
+        <div class="card-sm" style="border-top:3px solid #a78bfa; padding:14px 16px;">
+          <div style="font-weight:700; color:#f9fafb; font-size:13.5px; margin-bottom:4px;">JE-from-Synder</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">Create the accounting entry for a Missing-in-Accounting row from inside Synder — no round-trip to QBO.</div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #a78bfa; padding:14px 16px;">
+          <div style="font-weight:700; color:#f9fafb; font-size:13.5px; margin-bottom:4px;">Balance Reconciliation</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">A balance-level lens inside Transaction Reconciliation. Aggregate first, then drill into rows when they disagree.</div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #a78bfa; padding:14px 16px;">
+          <div style="font-weight:700; color:#f9fafb; font-size:13.5px; margin-bottom:4px;">Match with AI</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">When ID matching fails, AI proposes a candidate based on amount, date, customer, memo — you accept or reject.</div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #a78bfa; padding:14px 16px;">
+          <div style="font-weight:700; color:#f9fafb; font-size:13.5px; margin-bottom:4px;">Firm-Level Reconciliation</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">One view across your portfolio of clients. Status, ownership, deadlines, bulk run.</div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #a78bfa; padding:14px 16px;">
+          <div style="font-weight:700; color:#f9fafb; font-size:13.5px; margin-bottom:4px;">Matching Rules</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">Configurable criteria stack (ID, amount, date, customer, memo) with tolerances. Saved presets, per-integration.</div>
+        </div>
+        <div class="card-sm" style="border-top:3px solid #a78bfa; padding:14px 16px;">
+          <div style="font-weight:700; color:#f9fafb; font-size:13.5px; margin-bottom:4px;">Audit Report</div>
+          <div style="font-size:11.5px; color:#9ca3af; line-height:1.55;">A final-stage shareable artifact from the reconciliation — ready to hand to an auditor, a client, or a partner.</div>
+        </div>
+      </div>
+
+      <div class="violet-box" style="font-size:12.5px; color:#c4b5fd;">
+        These are <strong>prototypes — not final designs</strong>. While they're still in progress, your input can adjust the workflow, the shape, and the priorities. Vote at the end on your favourite features — your ranking shapes which ones we push first. Links coming in the follow-up email.
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 9: VOTE + SUGGEST A FEATURE ─────────── -->
+  <div class="slide" data-slide="9">
+    <div class="slide-inner">
+      <div class="section-label">Your Turn</div>
+      <h1 class="slide-title" style="margin-bottom:8px;">Rank Favourite Features for Cast Finance</h1>
+      <p class="slide-subtitle" style="margin-bottom:22px;">Which features would you like to see in Synder? Rank the six prototypes — your vote tells us which ones to push first.</p>
+
+      <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:18px; max-width:680px; margin-left:auto; margin-right:auto; width:100%;">
+        <div class="card" style="border-top:3px solid #fbbf24;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+            <span style="font-size:22px;">🗳️</span>
+            <div style="font-weight:800; color:#f9fafb; font-size:15px;">Which features would you like to see in Synder?</div>
+          </div>
+          <p style="font-size:12.5px; color:#d1d5db; line-height:1.6; margin-bottom:12px;">Rank from <strong>1 to 6</strong> — <strong>1 = top feature</strong>, <strong>6 = least favourite</strong>. Each rank used once.</p>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:6px;">
+            <div class="card-sm" style="padding:8px 12px; font-size:12px; color:#d1d5db; background:rgba(167,139,250,0.05); display:flex; align-items:center; gap:10px;"><span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-size:10.5px; color:#9ca3af;">▢</span> JE-from-Synder</div>
+            <div class="card-sm" style="padding:8px 12px; font-size:12px; color:#d1d5db; background:rgba(167,139,250,0.05); display:flex; align-items:center; gap:10px;"><span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-size:10.5px; color:#9ca3af;">▢</span> Balance Reconciliation</div>
+            <div class="card-sm" style="padding:8px 12px; font-size:12px; color:#d1d5db; background:rgba(167,139,250,0.05); display:flex; align-items:center; gap:10px;"><span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-size:10.5px; color:#9ca3af;">▢</span> Match with AI</div>
+            <div class="card-sm" style="padding:8px 12px; font-size:12px; color:#d1d5db; background:rgba(251,191,36,0.05); display:flex; align-items:center; gap:10px;"><span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-size:10.5px; color:#9ca3af;">▢</span> Firm-level reconciliation</div>
+            <div class="card-sm" style="padding:8px 12px; font-size:12px; color:#d1d5db; background:rgba(251,191,36,0.05); display:flex; align-items:center; gap:10px;"><span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-size:10.5px; color:#9ca3af;">▢</span> Configurable matching rules</div>
+            <div class="card-sm" style="padding:8px 12px; font-size:12px; color:#d1d5db; background:rgba(251,191,36,0.05); display:flex; align-items:center; gap:10px;"><span style="display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-size:10.5px; color:#9ca3af;">▢</span> Audit report</div>
+          </div>
+          <div class="highlight-box" style="padding:12px 16px; margin-top:14px;">
+            <div style="font-size:11.5px; color:#93c5fd; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;">In chat</div>
+            <div style="font-size:12.5px; color:#d1d5db; line-height:1.6;">Barbara's dropping the <strong>poll link</strong> now. Take a minute or two — we'll watch results come in live on the call.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────── SLIDE 10: THANK YOU + COMMITMENT + SURVEY ─────────── -->
+  <div class="slide" data-slide="10">
+    <div class="slide-inner" style="align-items:center; text-align:center; justify-content:center; min-height:60vh;">
+      <div class="fade-up">
+        <div class="tag tag-amber" style="margin-bottom:24px; font-size:12px; padding: 4px 14px;">Close</div>
+        <h1 style="font-size:2.6rem; font-weight:800; line-height:1.15; color:#f9fafb; margin-bottom:18px;">
+          Thank You
+        </h1>
+        <p style="font-size:1.1rem; color:#d1d5db; max-width:720px; margin:0 auto 28px; line-height:1.6;">
+          Thanks for joining us today — and thanks for the feedback. Look out for these features rolling into Synder over the next few months.
+        </p>
+
+        <div style="display:flex; flex-direction:column; gap:12px; max-width:720px; margin:0 auto 24px;">
+          <div class="card" style="text-align:left; padding:16px 22px; display:flex; gap:14px; align-items:center;">
+            <span style="font-size:24px;">✉️</span>
+            <div>
+              <div style="font-weight:700; color:#f9fafb; font-size:14px;">Follow-up Email</div>
+              <div style="font-size:12.5px; color:#9ca3af; line-height:1.5;">A <strong>Suggest-a-Feature survey</strong> for anything in Transaction Reconciliation we didn't cover, plus a short <strong>questionnaire</strong> on how Cast Finance approaches reconciliation today. Both optional, both shape what we ship next.</div>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size:13px; color:#6b7280; max-width:640px; margin:0 auto 14px; line-height:1.6;">
+          Want to be a deeper co-design partner on anything we showed? Reach out to us directly — we'll wire it up.
+        </p>
+        <p style="font-size:14px; color:#d1d5db; max-width:640px; margin:0 auto; line-height:1.8;">
+          ✉️ <a href="mailto:slava@synder.com" style="color:#60a5fa; text-decoration:none; font-weight:600;">slava@synder.com</a>
+          &nbsp;·&nbsp;
+          <a href="mailto:barbara.malisz-talha@synder.com" style="color:#60a5fa; text-decoration:none; font-weight:600;">barbara.malisz-talha@synder.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Overview grid -->
+<div id="overview">
+  <span id="overview-close">✕</span>
+  <h2>All Slides — Press Esc to close</h2>
+  <div id="overview-grid"></div>
+</div>
+
+<!-- Navigation -->
+<div id="nav-dots"></div>
+<div id="slide-counter">1 / 10</div>
+<div id="keyboard-hint">← → Navigate · Esc Overview · F Fullscreen</div>
+
+<script>
+const TOTAL = 10;
+const TITLES = [
+  "Reconciliation Training Session for Cast Finance — Title",
+  "How We'll Spend the Hour",
+  "Why Reconciliation with Synder",
+  "Transaction Reconciliation — How It Works",
+  "Live Demo",
+  "Resolution Paths Today",
+  "Any Questions on the Functionality?",
+  "Features Coming for Cast Finance",
+  "Vote for a Feature",
+  "Thank You & Next Steps"
+];
+
+let current = 1;
+
+const dotsEl = document.getElementById('nav-dots');
+for (let i = 1; i <= TOTAL; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.dataset.slide = i;
+  d.title = TITLES[i-1];
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+}
+
+const grid = document.getElementById('overview-grid');
+for (let i = 1; i <= TOTAL; i++) {
+  const thumb = document.createElement('div');
+  thumb.className = 'thumb' + (i === 1 ? ' active-thumb' : '');
+  thumb.dataset.slide = i;
+  thumb.innerHTML = `<div class="thumb-num">Slide ${i}</div><div class="thumb-title">${TITLES[i-1]}</div>`;
+  thumb.addEventListener('click', () => { goTo(i); hideOverview(); });
+  grid.appendChild(thumb);
+}
+
+function goTo(n) {
+  if (n < 1 || n > TOTAL) return;
+  const prev = document.querySelector('.slide.active');
+  if (prev) prev.classList.remove('active');
+  const prevDot = document.querySelector('.dot.active');
+  if (prevDot) prevDot.classList.remove('active');
+  const prevThumb = document.querySelector('.thumb.active-thumb');
+  if (prevThumb) prevThumb.classList.remove('active-thumb');
+
+  current = n;
+  const next = document.querySelector(`.slide[data-slide="${n}"]`);
+  if (next) next.classList.add('active');
+  const dots = document.querySelectorAll('.dot');
+  if (dots[n-1]) dots[n-1].classList.add('active');
+  const thumbs = document.querySelectorAll('.thumb');
+  if (thumbs[n-1]) thumbs[n-1].classList.add('active-thumb');
+
+  document.getElementById('slide-counter').textContent = `${n} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = ((n / TOTAL) * 100) + '%';
+}
+
+goTo(1);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current + 1);
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (document.getElementById('overview').classList.contains('visible')) return;
+    goTo(current - 1);
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    const ov = document.getElementById('overview');
+    if (ov.classList.contains('visible')) hideOverview();
+    else showOverview();
+  } else if (e.key === 'f' || e.key === 'F') {
+    e.preventDefault();
+    toggleFullscreen();
+  }
+});
+
+function showOverview() { document.getElementById('overview').classList.add('visible'); }
+function hideOverview() { document.getElementById('overview').classList.remove('visible'); }
+document.getElementById('overview-close').addEventListener('click', hideOverview);
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+  else document.exitFullscreen().catch(() => {});
+}
+
+let touchStartX = 0, touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    if (dx < 0) goTo(current + 1);
+    else goTo(current - 1);
+  }
+}, { passive: true });
+</script>
+</body>
+</html>
