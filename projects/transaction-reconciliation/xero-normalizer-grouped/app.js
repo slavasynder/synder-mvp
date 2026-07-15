@@ -7,7 +7,7 @@
 // (available for downstream balance-reconciliation work).
 
 // ─── DOM plumbing ─────────────────────────────────────────────────────────────
-const $ = (id) => document.getElementById(id);
+const $ = (id) => (typeof document !== 'undefined' ? document.getElementById(id) : null);
 const state = {
     workbook: null,
     parsed: null,       // { headers, rows, clearingAccounts, arRows, apRows, golRows }
@@ -15,22 +15,24 @@ const state = {
     result: null,       // { rows, summary, warnings }
 };
 
-const dropZone = $('dropZone'), fileInput = $('fileInput');
-dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drop-active'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drop-active'));
-dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('drop-active');
-    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-});
-fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length) handleFile(e.target.files[0]);
-});
-$('clearFile').addEventListener('click', (e) => { e.stopPropagation(); resetUI(); });
-$('normalizeBtn').addEventListener('click', runNormalize);
-$('downloadBtn').addEventListener('click', downloadResult);
-$('tryDemoBtn').addEventListener('click', (e) => { e.stopPropagation(); loadDemoFile(); });
+if (typeof document !== 'undefined') {
+    const dropZone = $('dropZone'), fileInput = $('fileInput');
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drop-active'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drop-active'));
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drop-active');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+    $('clearFile').addEventListener('click', (e) => { e.stopPropagation(); resetUI(); });
+    $('normalizeBtn').addEventListener('click', runNormalize);
+    $('downloadBtn').addEventListener('click', downloadResult);
+    $('tryDemoBtn').addEventListener('click', (e) => { e.stopPropagation(); loadDemoFile(); });
+}
 
 async function loadDemoFile() {
     try {
@@ -223,11 +225,43 @@ function parseWorkbook(wb) {
     const resolvedBaseNetCol = isMultiCurrency ? baseNetCol : 'Net';
     const currencyCol = isMultiCurrency ? 'Currency' : null;
 
+    // Detect the base currency code for multi-currency files (e.g. 'USD' from 'Net (USD)').
+    // Used to detect the same-suffix Running Balance / Debit / Credit columns.
+    const baseCurrencyCode = isMultiCurrency && baseNetCol
+        ? (baseNetCol.match(/^Net \(([A-Z]{3})\)$/) || [])[1]
+        : null;
+
     // Also detect the Running Balance column. Multi-currency labels it with the
     // base currency code (`Running Balance (USD)`); single-currency drops the parens.
     const runningBalanceCol = headers.find(h =>
         typeof h === 'string' && (/^Running Balance \([A-Z]{3}\)$/.test(h) || h === 'Running Balance')
     );
+
+    // Detect Debit and Credit columns. Xero writes Running Balance as an Excel
+    // formula that references these; if they weren't ticked in the column picker
+    // the formula's references break and every Running Balance cell in the
+    // exported .xlsx caches to 0.00. We require them and compute the Running
+    // Balance ourselves from Debit − Credit rather than trusting the (often
+    // broken) cached value. See the Xero-support finding recorded in the FDD's
+    // Research log (2026-07-15).
+    //
+    // Naming: in multi-currency the base-currency variants match the base Net
+    // column (`Debit (USD)` / `Credit (USD)` in a USD org). Single-currency
+    // uses bare `Debit` / `Credit`. We look for the base-currency variant first
+    // and fall back to any suffixed variant so orgs whose picker labels things
+    // differently still parse.
+    let debitCol, creditCol;
+    if (isMultiCurrency && baseCurrencyCode) {
+        debitCol = headers.find(h => h === `Debit (${baseCurrencyCode})`)
+            || headers.find(h => typeof h === 'string' && /^Debit \([A-Z]{3}\)$/.test(h))
+            || (idx('Debit') !== -1 ? 'Debit' : undefined);
+        creditCol = headers.find(h => h === `Credit (${baseCurrencyCode})`)
+            || headers.find(h => typeof h === 'string' && /^Credit \([A-Z]{3}\)$/.test(h))
+            || (idx('Credit') !== -1 ? 'Credit' : undefined);
+    } else {
+        debitCol = idx('Debit') !== -1 ? 'Debit' : undefined;
+        creditCol = idx('Credit') !== -1 ? 'Credit' : undefined;
+    }
 
     // Required columns per variant. Missing → hard error.
     const COMMON_REQUIRED = ['Date', 'Source', 'Contact', 'Description', 'Reference'];
@@ -239,11 +273,15 @@ function parseWorkbook(wb) {
         if (!runningBalanceCol || !/^Running Balance \([A-Z]{3}\)$/.test(runningBalanceCol)) {
             missingCols.push('Running Balance ({currency}) — Xero doesn\'t always tick this by default when Grouping = Account is set; make sure to select it in the column picker');
         }
+        if (!debitCol) missingCols.push('Debit ({currency}) — Xero writes Running Balance as a formula that references this column; without it the exported Running Balance cells cache to 0.00');
+        if (!creditCol) missingCols.push('Credit ({currency}) — same reason as Debit');
     } else {
         if (idx('Net') === -1) missingCols.push('Net');
         if (!runningBalanceCol || runningBalanceCol !== 'Running Balance') {
             missingCols.push('Running Balance — Xero doesn\'t always tick this by default when Grouping = Account is set; make sure to select it in the column picker');
         }
+        if (!debitCol) missingCols.push('Debit — Xero writes Running Balance as a formula that references this column; without it the exported Running Balance cells cache to 0.00');
+        if (!creditCol) missingCols.push('Credit — same reason as Debit');
     }
     if (missingCols.length > 0) {
         throw new Error(`Required column(s) missing from the Xero export: ${missingCols.join('; ')}. Re-export from Xero → Reporting → Account Transactions with Grouping = Account and the full column set selected.`);
@@ -282,8 +320,10 @@ function parseWorkbook(wb) {
         if (currentAccount == null) continue;
 
         // Coerce numeric columns if they came through as strings (accounting-format
-        // negatives). Skip Running Balance since it's often a formula cell.
-        for (const cn of [netSourceCol, resolvedBaseNetCol, 'Debit (Source)', 'Credit (Source)']) {
+        // negatives). Skip Running Balance since it's a formula cell — we'll
+        // overwrite it below with a computed value anyway.
+        for (const cn of [netSourceCol, resolvedBaseNetCol, debitCol, creditCol, 'Debit (Source)', 'Credit (Source)']) {
+            if (!cn) continue;
             const ci = idx(cn);
             if (ci >= 0 && typeof r[ci] === 'string') {
                 r[ci] = parseAccountingNumber(r[ci]);
@@ -300,6 +340,25 @@ function parseWorkbook(wb) {
     const clearingAccounts = Object.keys(buckets).filter(a => !SPECIAL_ACCOUNTS.has(a));
     if (clearingAccounts.length === 0) throw new Error('No clearing account rows found. Ensure the Xero export includes the clearing account.');
 
+    // Compute Running Balance per section from Debit − Credit and overwrite the
+    // (broken) cached values on each data row. Xero writes Running Balance as
+    // an Excel formula whose cached value is 0.00 in the export; we derive the
+    // true running total ourselves. Opening balance defaults to 0 — Xero's
+    // Account Transactions report starts its running balance at 0 at the top
+    // of each account section within the report period.
+    const rbIdx = idx(runningBalanceCol);
+    const dIdx = idx(debitCol);
+    const cIdx = idx(creditCol);
+    for (const [_acct, rowsInSection] of Object.entries(buckets)) {
+        let running = 0;
+        for (const r of rowsInSection) {
+            const d = toNumForBalance(r[dIdx]);
+            const c = toNumForBalance(r[cIdx]);
+            running += d - c;
+            r[rbIdx] = running;
+        }
+    }
+
     // AR and AP are optional at the file level — a reconciliation period may
     // legitimately have no receivable or no payable activity, in which case
     // Xero omits that account's section from the export. We surface a soft
@@ -315,6 +374,8 @@ function parseWorkbook(wb) {
         baseNetCol: resolvedBaseNetCol,
         currencyCol,
         runningBalanceCol,
+        debitCol,
+        creditCol,
         // Kept for backwards compatibility with any external code that reads this
         baseColumn: resolvedBaseNetCol,
         clearingAccounts,
@@ -324,6 +385,16 @@ function parseWorkbook(wb) {
         buckets,
         softMissing,
     };
+}
+
+// Tolerant numeric coercion for Debit / Credit cells: numbers pass through,
+// accounting-format strings ("(28.38)") get parsed, empty / null / undefined
+// evaluate to 0. Kept separate from toNum so the caller can be explicit about
+// the "blank = 0" contract when accumulating a running total.
+function toNumForBalance(v) {
+    if (typeof v === 'number') return v;
+    if (v == null || v === '') return 0;
+    return parseAccountingNumber(v);
 }
 
 function colIndexer(headers) {

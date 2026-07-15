@@ -128,19 +128,27 @@
 
         <!-- Docs / Help -->
         <div class="bg-white border border-gray-200 rounded-xl p-6 text-sm text-gray-600">
-            <h3 class="font-semibold text-gray-900 mb-2">How to export the file from Xero (grouped)</h3>
+            <h3 class="font-semibold text-gray-900 mb-2">How to get Account Transactions from Xero</h3>
             <ol class="list-decimal ml-5 space-y-1">
-                <li>Xero → <span class="font-medium">Reporting → Account Transactions</span>.</li>
-                <li>In the <span class="font-medium">Account</span> filter, tick all four: the clearing account, Accounts Receivable, Accounts Payable, Realized Currency Gains.</li>
-                <li><span class="font-medium">Grouping / Summarise = Account</span> — this puts each account into its own section with a running-balance column.</li>
-                <li>Choose the date range.</li>
-                <li>Select columns: <code>Date</code>, <code>Source</code>, <code>Contact</code>, <code>Description</code>, <code>Reference</code>, <code>Net (Source)</code>, <code>Currency</code>, <code>Net (USD)</code> (or whatever your base currency is). The <code>Running Balance</code> column comes automatically with grouping.</li>
-                <li>Update → Export as Excel.</li>
+                <li>Open Xero Reporting <a class="text-blue-600 hover:underline" href="https://reporting.xero.com/" target="_blank" rel="noreferrer">reporting.xero.com</a> → Account Transactions.</li>
+                <li>Select accounts: <span class="font-medium">Clearing, Accounts Receivable, Accounts Payable, Realized Currency Gains</span>.</li>
+                <li>Pick the date range that matches the reconciliation date range.</li>
+                <li>Set <span class="font-medium">Grouping</span> to <span class="font-medium">Group by Account</span>.</li>
+                <li>
+                    Select columns: <code>Contact</code>, <code>Credit</code>, <code>Date</code>, <code>Debit</code>, <code>Description</code>, <code>Reference</code>, <code>Running Balance</code>, <code>Source</code>. Then also, depending on your Xero setup:
+                    <ul class="list-disc ml-6 mt-1 space-y-0.5">
+                        <li><span class="font-medium">Single-currency Xero:</span> <code>Net</code></li>
+                        <li><span class="font-medium">Multi-currency Xero:</span> <code>Net (Source)</code>, <code>Net ({your base currency})</code>, <code>Currency</code></li>
+                    </ul>
+                </li>
+                <li>Export as Excel.</li>
             </ol>
-            <p class="mt-3 text-gray-500">One reconciliation run = one clearing account. If you have several clearing accounts, run the export (and the normalizer) once per clearing account. The grouped format doesn't need an <code>Account</code> column — Xero writes each account as a labelled section instead.</p>
+            <p class="mt-3 text-gray-500"><span class="font-medium">Why Debit and Credit are required:</span> Xero computes <code>Running Balance</code> in the exported spreadsheet with a formula that references the Debit and Credit columns — without them ticked in the picker, every <code>Running Balance</code> cell in the file caches to 0.00. Ticking them lets us derive the true running balance from the file.</p>
+            <p class="mt-2 text-gray-500">Tip: save the report settings as a Custom view in Xero to avoid this next time.</p>
+            <p class="mt-2 text-gray-500">One reconciliation run = one clearing account. If you have several clearing accounts, run the export (and the normalizer) once per clearing account. The grouped format doesn't need an <code>Account</code> column — Xero writes each account as a labelled section instead.</p>
         </div>
     </div>
 
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=7"></script>
 </body>
 </html>
